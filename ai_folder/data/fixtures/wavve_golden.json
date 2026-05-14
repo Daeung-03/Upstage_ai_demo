@@ -1,0 +1,436 @@
+{
+  "_meta": {
+    "service_name": "Wavve",
+    "terms_version": "2026-04-16",
+    "document_source_url": "https://member.wavve.com/signup/terms?category=payment (유료상품 이용약관) + https://m.wavve.com/agreement/service (서비스 이용약관)",
+    "schema_version": "v0.2",
+    "labeler": "team",
+    "extraction_date": "2026-05-13",
+    "instructions": "각 필드의 'expected' 값을 약관 원문 기준으로 정답으로 편집하세요. model_value/source_quote는 참고용. 정답이 약관에 없으면 null 유지, 모호하면 'AMBIGUOUS'로 기록 후 note 작성. 리스트는 정렬된 형태로 입력. enum 값은 schema/enums.py 참조.",
+    "changelog": [
+      "v0.2 (2026-05-13): Wavve 첫 라벨링. 유료상품 이용약관(v2026.04.16) + 서비스 이용약관 통합 분석. Tier 1+2 신설 8필드 포함. 기존 null 처리된 16개 필드 대거 보강."
+    ],
+    "note": "Wavve는 두 개의 약관 문서: (1) 서비스 이용약관 (회원 일반) / (2) 유료상품 이용약관 (결제 관련, 2026-04-16 시행). 기존 JSON source_page는 PDF 약관에서 추출된 것으로 보이며, 본 라벨링은 동일 page 표기 유지하되 note에 조항 번호 명시. 한국 OTT 약관의 표준 패턴(전기통신사업법·디지털콘텐츠 보호지침 준수) 반영."
+  },
+  "pricing.base_price_krw": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": "약관 본문에 가격 명시 없음 — 별도 가격 페이지(wavve.com/voucher) 참조"
+  },
+  "pricing.billing_cycle": {
+    "expected": "monthly",
+    "model_value": null,
+    "model_uncertainty": "inferred",
+    "source_quote": "회사는 매월 서비스 이용계약의 자동갱신 및 이용요금 청구를 위해 서비스 이용기간 및 서비스 이용 기간 종료 후 일정기간 동안 회원의 결제관련정보를 보유할 수 있습니다.",
+    "source_page": null,
+    "note": "정정 — 기존 null. 유료상품 약관 제8조에 '매월 자동갱신' 명시. 월 단위 기본."
+  },
+  "pricing.auto_renewal_enabled": {
+    "expected": true,
+    "model_value": null,
+    "model_uncertainty": "confirmed",
+    "source_quote": "회원이 자동결제를 신청하시면 별도의 해지 신청을 하지 않을 경우, 유료서비스의 실제 이용 여부와 상관없이 정기적으로 지정된 결제 일자 및 수단으로 자동 청구 및 결제됩니다.",
+    "source_page": null,
+    "note": "정정 — 기존 null. 유료상품 약관 제8조 자동결제 및 해지."
+  },
+  "pricing.auto_renewal_consent": {
+    "expected": "opt_out_available",
+    "model_value": null,
+    "model_uncertainty": "confirmed",
+    "source_quote": "회원이 자동결제를 신청하시면 별도의 해지 신청을 하지 않을 경우, 유료서비스의 실제 이용 여부와 상관없이 정기적으로 자동 청구 및 결제됩니다.",
+    "source_page": null,
+    "note": "정정 — 기존 null. 자동결제 별도 신청(opt-in) + 해지 시 즉시 중단(opt-out 가능)."
+  },
+  "pricing.price_change_notice_days": {
+    "expected": 7,
+    "model_value": null,
+    "model_uncertainty": "inferred",
+    "source_quote": "적용일자 7일 이전부터 적용일자 전일까지 공지",
+    "source_page": 2,
+    "note": "정정 — 기존 null. 유료상품 약관에 가격 변경 일수 직접 명시 없음. 서비스 이용약관의 약관 변경 일반 조항(7일 사전 공지)을 가격 변경에 적용한다고 해석."
+  },
+  "pricing.price_change_notice_channels": {
+    "expected": [
+      "email",
+      "in_app_banner"
+    ],
+    "model_value": null,
+    "model_uncertainty": "inferred",
+    "source_quote": "서비스 초기 화면을 통하여 게시하거나 전자우편 기타의 방법으로 회원에게 개별 통지",
+    "source_page": 2,
+    "note": "정정 — 기존 null. 약관 변경 통지 채널을 가격 변경에 적용. '서비스 초기 화면 게시'는 in_app_banner로 매핑."
+  },
+  "free_trial.offered": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": "약관 본문에 무료체험 조항 명시 없음. 실무상 신규 가입 1개월 무료 등을 별도 프로모션으로 제공하나 약관에 통합 안 됨."
+  },
+  "free_trial.duration_days": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": ""
+  },
+  "free_trial.auto_convert_to_paid": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": ""
+  },
+  "free_trial.cancel_required_before_end": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": ""
+  },
+  "free_trial.payment_method_required_upfront": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": ""
+  },
+  "free_trial.notice_before_conversion_days": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": ""
+  },
+  "cancellation.method": {
+    "expected": "hybrid",
+    "model_value": "online",
+    "model_uncertainty": "confirmed",
+    "source_quote": "회원은 회사에 언제든지 탈퇴를 요청할 수 있으며 회사는 즉시 회원탈퇴를 처리합니다. 'MY>정보수정>회원탈퇴'에서 언제든지 탈퇴를 요청할 수 있으며, 고객센터 e‑mail, 전화 등으로 연락하면 신속하게 처리합니다.",
+    "source_page": 5,
+    "note": "정정 — 온라인(MY > 회원탈퇴) + 고객센터(이메일/전화) 동시 제공이므로 'hybrid'가 정확. 'online'은 부정확."
+  },
+  "cancellation.method_description": {
+    "expected": "온라인(MY > 정보수정 > 회원탈퇴) 또는 고객센터(이메일/전화)",
+    "model_value": "온라인 및 고객센터(e‑mail, 전화) 요청",
+    "model_uncertainty": "confirmed",
+    "source_quote": "'MY>정보수정>회원탈퇴'에서 언제든지 탈퇴를 요청할 수 있으며, 고객센터 e‑mail, 전화 등으로 연락하면 신속하게 처리합니다.",
+    "source_page": 5,
+    "note": ""
+  },
+  "cancellation.notice_period_days": {
+    "expected": 0,
+    "model_value": null,
+    "model_uncertainty": "inferred",
+    "source_quote": "자동결제를 해지하는 경우 다음 정기 결제 예정일로부터 청구 및 결제가 중단되어 서비스 이용기간 갱신이 중단됩니다. 회원은 기 결제한 서비스를 잔존 이용기간에도 제한 없이 이용할 수 있습니다.",
+    "source_page": null,
+    "note": "정정 — 기존 null. 유료상품 약관 제8조 3항. 별도 통지 기간 없이 다음 결제일부터 효력 발생."
+  },
+  "cancellation.penalty_present": {
+    "expected": false,
+    "model_value": null,
+    "model_uncertainty": "confirmed",
+    "source_quote": "회원은 기 결제한 서비스를 잔존 이용기간에도 제한 없이 이용할 수 있습니다.",
+    "source_page": null,
+    "note": "정정 — 기존 null. 해지 위약금 조항 없음. 잔존 기간 이용권 보장."
+  },
+  "cancellation.penalty_description": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": ""
+  },
+  "cancellation.proration_policy": {
+    "expected": "prorated_refund",
+    "model_value": null,
+    "model_uncertainty": "confirmed",
+    "source_quote": "회사는 환불시 회원의 서비스 이용 금액을 아래와 같이 공제하고 환불할 수 있습니다. ①유료서비스 이용금액 = 결제한 유료서비스의 일할 금액 X 기 이용일수 ... 회사는 회원의 사정으로 인한 환불시에는 제1항의 회원이 서비스 이용에 해당하는 금액을 잔여 금액에서 10% (결제대행수수료 및 부대비용)를 제외한 금액을 환불 조치합니다.",
+    "source_page": null,
+    "note": "정정 — 기존 null. 유료상품 약관 제12조 환불정책. **Netflix/Spotify와 달리 일할 계산 부분 환불 가능**(회원 사정 시 10% 공제). 한국 OTT 약관 중 가장 사용자 우호적 환불 정책."
+  },
+  "cancellation.blackout_periods": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": ""
+  },
+  "cancellation.cooling_off_refund_days": {
+    "expected": 7,
+    "model_value": null,
+    "model_uncertainty": "not_extracted",
+    "source_quote": "회사와 유료서비스의 이용에 관한 계약을 체결한 회원은 수신확인의 통지를 받은 날로부터 7일 이내에는 청약의 철회를 할 수 있습니다.",
+    "source_page": null,
+    "note": "v0.2 신설 필드 — 유료상품 약관 제10조 청약철회. 결제일 기준 7일."
+  },
+  "cancellation.cooling_off_conditions": {
+    "expected": "콘텐츠 미이용 (스트리밍/다운로드 미개시)",
+    "model_value": null,
+    "model_uncertainty": "not_extracted",
+    "source_quote": "①스트리밍/다운로드 등의 방식으로 상품에 해당하는 콘텐츠의 제공이 개시된 경우 ... 회원의 청약철회권이 제한될 수 있습니다.",
+    "source_page": null,
+    "note": "v0.2 신설 필드 — 유료상품 약관 제10조 1항. 콘텐츠 시청 시작 시 청약철회 불가."
+  },
+  "cancellation.third_party_cancellation_required": {
+    "expected": true,
+    "model_value": null,
+    "model_uncertainty": "not_extracted",
+    "source_quote": "회원이 전기통신사업법상 앱 마켓(예: Apple App Store, Google Play Store)을 통하여 그 앱 마켓사업자의 약관에 동의하고 자동결제를 신청한 경우에는 해당 약관이 본 조에 우선하여 적용됩니다.",
+    "source_page": null,
+    "note": "v0.2 신설 필드 — 유료상품 약관 제8조 7항. 인앱결제 시 해당 마켓 통해 해지 필수."
+  },
+  "terms_changes.notice_channels": {
+    "expected": [
+      "email",
+      "in_app_banner"
+    ],
+    "model_value": [
+      "in_app_banner",
+      "email"
+    ],
+    "model_uncertainty": "confirmed",
+    "source_quote": "서비스 초기 화면을 통하여 게시하거나 전자우편 기타의 방법으로 회원에게 개별 통지",
+    "source_page": 2,
+    "note": "리스트 정렬(알파벳)."
+  },
+  "terms_changes.notice_lead_time_days": {
+    "expected": 7,
+    "model_value": 7,
+    "model_uncertainty": "confirmed",
+    "source_quote": "적용일자 7일 이전부터 적용일자 전일까지 공지",
+    "source_page": 2,
+    "note": "서비스 이용약관 약관 변경 일반 조항. Netflix(30일)·Spotify(미명시)보다 짧음."
+  },
+  "terms_changes.user_consent_mechanism": {
+    "expected": "silent_acceptance",
+    "model_value": "deemed_agreed",
+    "model_uncertainty": "confirmed",
+    "source_quote": "시행일 이후에 서비스를 이용하는 회원은 변경된 약관에 동의한 것으로 간주합니다.",
+    "source_page": 2,
+    "note": "정정 — 스키마 enum 'deemed_agreed' 없음. 'silent_acceptance'로 매핑. 의사표시 의제 조항 명백."
+  },
+  "terms_changes.user_right_to_terminate_on_change": {
+    "expected": true,
+    "model_value": true,
+    "model_uncertainty": "confirmed",
+    "source_quote": "회원은 변경된 약관에 동의하지 않을 경우 이용계약을 해지할 수 있습니다.",
+    "source_page": 2,
+    "note": ""
+  },
+  "terms_changes.silent_acceptance_clause": {
+    "expected": true,
+    "model_value": null,
+    "model_uncertainty": "confirmed",
+    "source_quote": "시행일 이후에 서비스를 이용하는 회원은 변경된 약관에 동의한 것으로 간주합니다.",
+    "source_page": 2,
+    "note": "정정 — 기존 null. 명백한 silent acceptance 조항 존재. 공정위 시정 권고 대상 유형."
+  },
+  "terms_changes.price_change_explicit_consent": {
+    "expected": false,
+    "model_value": null,
+    "model_uncertainty": "not_extracted",
+    "source_quote": "",
+    "source_page": null,
+    "note": "v0.2 신설 필드 — 유료상품 약관에 가격 변경에 대한 별도 명시적 동의 절차 없음. 약관 변경 일반(silent acceptance)이 적용됨. Netflix(2.8 명시적 동의)와 대비."
+  },
+  "data_usage.collected_categories": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": "이용약관 본문에 데이터 수집 카테고리 명시 없음. 별도 개인정보처리방침 참조 필요."
+  },
+  "data_usage.third_party_sharing": {
+    "expected": "AMBIGUOUS",
+    "model_value": false,
+    "model_uncertainty": "ambiguous",
+    "source_quote": "목적 외로 이용하거나 제3자에게 제공할 수 없으며, 이를 위반한 경우에 모든 책임은 회사가 집니다. 다만, 다음의 경우에는 예외로 합니다.",
+    "source_page": 3,
+    "note": "정정 — 원칙적 금지 + 예외 조항 존재. '다만, 다음의 경우에는 예외' 이후의 예외가 source_quote에서 잘림. 실질적으로 3자 제공 가능 케이스 다수 — AMBIGUOUS 처리."
+  },
+  "data_usage.third_party_recipients": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": "약관 본문 미명시. 예외 케이스 별 수령자는 개인정보처리방침 참조 필요."
+  },
+  "data_usage.third_party_purposes": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": ""
+  },
+  "data_usage.retention_period_months": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": "이용약관 본문 미명시. 단, 유료상품 약관 제8조 1항: '서비스 이용기간 및 서비스 이용 기간 종료 후 일정기간 동안 회원의 결제관련정보를 보유'."
+  },
+  "data_usage.marketing_use": {
+    "expected": true,
+    "model_value": true,
+    "model_uncertainty": "confirmed",
+    "source_quote": "회사는 회원에게 편리하고 다양한 서비스를 제공하기 위하여 관련 법령이 정한 절차와 제한 범위 내에서 회원으로부터 수집한 개인정보를 이용하여 회사가 제공하는 각종 서비스에 대한 정보, 광고, 타사의 상품이나 서비스",
+    "source_page": 3,
+    "note": ""
+  },
+  "data_usage.marketing_consent": {
+    "expected": "opt_out_available",
+    "model_value": "opt_out_available",
+    "model_uncertainty": "confirmed",
+    "source_quote": "회원은 관련 법에 따른 거래 관련 정보 및 고객 문의 등에 대한 답변 등을 제외하고는 언제든지 전자우편 등에 대해서 서비스 및 광고를 거절할 수 있습니다.",
+    "source_page": 3,
+    "note": ""
+  },
+  "data_usage.cross_border_transfer": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": "Wavve는 한국 사업자(콘텐츠웨이브 주식회사). 국외 이전 가능성 낮으나 약관 본문 미명시."
+  },
+  "liability.service_disruption_compensation": {
+    "expected": false,
+    "model_value": null,
+    "model_uncertainty": "inferred",
+    "source_quote": "회원의 이용요금 미납 등 귀책사유로 인한 정기결제중지 및 이에 따른 서비스 이용정지로 인한 손해에 대해 회사는 책임을 지지 않습니다.",
+    "source_page": 6,
+    "note": "정정 — 기존 null. 회원 귀책 시 면책 명시. 단, 회사 귀책 시에는 디지털콘텐츠 보호지침에 따른 보상 가능(제14조)."
+  },
+  "liability.compensation_description": {
+    "expected": "디지털콘텐츠 이용자 보호지침에 따른 처리",
+    "model_value": null,
+    "model_uncertainty": "confirmed",
+    "source_quote": "회사는 유료서비스 하자 등에 의한 이용자피해보상의 기준·범위·방법 및 절차에 관한 사항을 디지털콘텐츠 이용자 보호지침에 따라 처리합니다.",
+    "source_page": null,
+    "note": "정정 — 기존 null. 유료상품 약관 제14조. 외부 지침(디지털콘텐츠 이용자 보호지침) 참조 — 보상 기준 자체는 약관 외부."
+  },
+  "liability.damages_cap_present": {
+    "expected": false,
+    "model_value": null,
+    "model_uncertainty": "inferred",
+    "source_quote": "",
+    "source_page": null,
+    "note": "정정 — 기존 null. 약관에 손해배상 한도 명시 없음. Spotify(12개월 결제액 또는 $30)와 대비. 한국 소비자보호법상 강행규정에 따라 한도 설정이 무효일 수 있음."
+  },
+  "liability.damages_cap_description": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": ""
+  },
+  "liability.force_majeure_scope": {
+    "expected": "천재지변 또는 이에 준하는 불가항력 기타 회사의 책임없는 사유",
+    "model_value": "천재지변 또는 이에 준하는 불가항력 기타 회사의 책임없는 사유",
+    "model_uncertainty": "confirmed",
+    "source_quote": "천재지변 또는 이에 준하는 불가항력 기타 회사의 책임없는 사유로 인하여 서비스를 제공할 수 없는 경우에는 서비스 제공에 관한 책임이 면제됩니다.",
+    "source_page": 6,
+    "note": "서비스 이용약관 면책 조항."
+  },
+  "liability.indirect_damages_excluded": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": "약관에 간접손해 명시적 제외 조항 없음. 한국법 일반 원칙 적용."
+  },
+  "disputes.governing_law": {
+    "expected": "대한민국 법률",
+    "model_value": "대한민국 법률",
+    "model_uncertainty": "confirmed",
+    "source_quote": "회사와 회원간에 제기된 소송에 대해서는 대한민국 법률을 준거법으로 합니다.",
+    "source_page": 6,
+    "note": "유료상품 약관 제16조."
+  },
+  "disputes.jurisdiction_clause": {
+    "expected": "회원 주소 관할 지방법원 (전속관할)",
+    "model_value": "회원 주소 관할 지방법원",
+    "model_uncertainty": "confirmed",
+    "source_quote": "회사와 회원간 발생한 분쟁에 관한 소송은 제소 당시의 회원의 주소에 의하고, 주소가 없는 경우 거소를 관할하는 지방법원의 전속관할로 합니다.",
+    "source_page": 6,
+    "note": "**Netflix(서울 배타적)·Spotify(서울 배타적)과 다름** — Wavve는 회원 주소지 관할 지방법원 전속관할. 한국 소비자보호 친화적 조항."
+  },
+  "disputes.arbitration_required": {
+    "expected": false,
+    "model_value": null,
+    "model_uncertainty": "inferred",
+    "source_quote": "",
+    "source_page": null,
+    "note": "정정 — 약관에 중재 의무 조항 없음. 부재로부터 false 추론. 한국 OTT 일반 패턴."
+  },
+  "disputes.class_action_waiver": {
+    "expected": false,
+    "model_value": null,
+    "model_uncertainty": "inferred",
+    "source_quote": "",
+    "source_page": null,
+    "note": "정정 — 약관에 집단소송 포기 조항 없음. 부재로부터 false 추론."
+  },
+  "account.minimum_age": {
+    "expected": 19,
+    "model_value": null,
+    "model_uncertainty": "not_extracted",
+    "source_quote": "회사는 만 19세 미만의 미성년이용자가 유료서비스를 이용하고자 하는 경우에 부모 등 법정 대리인의 동의를 얻거나, 계약체결 후 추인을 얻지 않으면 미성년자 본인 또는 법정대리인이 그 계약을 취소할 수 있다는 내용을 계약체결 전에 고지하는 조치를 취합니다.",
+    "source_page": null,
+    "note": "v0.2 신설 필드 — 유료상품 약관 제5조. 19세 미만은 법정대리인 동의 필요 (유료서비스 기준). 회원가입 자체는 14세 이상 가능(서비스 이용약관 별도)."
+  },
+  "account.sharing_restrictions": {
+    "expected": "personal_only",
+    "model_value": null,
+    "model_uncertainty": "not_extracted",
+    "source_quote": "wavve 코인을 이용하여 제공되는 각종 유료 서비스는 회사가 정한 범위 내에서 본 서비스상에서 본인이 직접 이용하는 것에 한정합니다. 이를 초과하는 이용방법은 영리 또는 비영리를 구분하지 않고 엄격히 금지되며, 제3자에게로의 일체의 복제, 전송, 배포, 대여, 방송 행위는 금지됩니다.",
+    "source_page": null,
+    "note": "v0.2 신설 필드 — 유료상품 약관 제9조 11항. **본인 직접 이용만 허용** — Netflix/Spotify의 가구 공유 옵션 없음. 가장 엄격한 공유 제한 정책."
+  },
+  "service.regional_content_restriction": {
+    "expected": true,
+    "model_value": null,
+    "model_uncertainty": "not_extracted",
+    "source_quote": "서비스에서 제공되는 콘텐츠는 제공사, 국가별로 라이선스 정책, 지역별 저작권 및 사업권역 문제 등 이용환경과 시기에 따라 이용 가능 콘텐츠의 수량 등 콘텐츠의 이용 조건이 다를 수 있습니다. ... 회사는 회원의 이용 국가 및 지역 확인을 위하여 IP정보 확인 및 회원 본인인증 절차를 거칠 수 있습니다.",
+    "source_page": null,
+    "note": "v0.2 신설 필드 — 유료상품 약관 제6조 2항. 지역별 콘텐츠 차이 + IP 기반 확인 명시."
+  },
+  "service.availability_disclaimer": {
+    "expected": true,
+    "model_value": null,
+    "model_uncertainty": "not_extracted",
+    "source_quote": "이용환경과 시기에 따라 이용 가능 콘텐츠의 수량 등 콘텐츠의 이용 조건이 다를 수 있습니다. 위와 같은 제한 사항은 서비스에 관한 회사의 귀책사유를 구성하지 아니 합니다.",
+    "source_page": null,
+    "note": "v0.2 신설 필드 — 유료상품 약관 제6조 2항. 콘텐츠 임의 변경/제공 중단 가능 명시."
+  },
+  "unfair_clause_flags": {
+    "expected": [
+      "POST-01",
+      "POST-05",
+      "약관 일방 변경권",
+      "의사표시_의제"
+    ],
+    "model_value": [
+      "의사표시_의제"
+    ],
+    "note": "정정 — POST-05(의사표시 의제, 약관 변경) + POST-01(일방적 약관 변경권). 회원 사정 환불 10% 공제(제12조 3항)는 한국 소비자보호법 검토 여지 있으나, 디지털콘텐츠 보호지침에 부합하면 합법 — 플래그 보류. 부분 환불(prorated)은 사용자 우호적 조항이므로 불공정 플래그 미해당."
+  }
+}
