@@ -24,6 +24,7 @@ TEMP_USER_ID = uuid.UUID("00000000-0000-0000-0000-000000000001")
 async def upload_term(
     service_name: str = Form(...),
     subscribed_at: Optional[str] = Form(None),
+    domain: str = Form("ETC"),
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_db),
 ):
@@ -31,7 +32,10 @@ async def upload_term(
     file_url = f"/files/{file.filename}"
 
     # str → date 변환
-    parsed_date = date.fromisoformat(subscribed_at) if subscribed_at else None
+    try:
+        parsed_date = date.fromisoformat(subscribed_at) if subscribed_at else None
+    except ValueError:
+        parsed_date = None
 
     term, version = await term_service.process_upload(
         db=db,
@@ -40,6 +44,7 @@ async def upload_term(
         subscribed_at=parsed_date,  # ← str 대신 date 객체로
         file_bytes=file_bytes,
         file_url=file_url,
+        domain=domain,
     )
 
     await db.commit()        # ← 추가
@@ -167,5 +172,5 @@ async def search_term(
     body: SearchRequest,
     db: AsyncSession = Depends(get_db),
 ):
-    # TODO: embed_chunks(body.query) → pgvector cosine search
-    return SearchResponse(results=[])
+    results = await term_service.search_chunks(db, term_id, body.query, body.top_k or 5)
+    return SearchResponse(results=results)
