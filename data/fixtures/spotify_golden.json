@@ -1,0 +1,447 @@
+{
+  "_meta": {
+    "service_name": "Spotify",
+    "terms_version": "2026-current",
+    "document_source_url": "https://www.spotify.com/kr-ko/legal/end-user-agreement/ + https://www.spotify.com/kr-ko/legal/paid-subscription-terms/",
+    "schema_version": "v0.2",
+    "labeler": "team",
+    "extraction_date": "2026-05-13",
+    "instructions": "각 필드의 'expected' 값을 약관 원문 기준으로 정답으로 편집하세요. model_value/source_quote는 참고용. 정답이 약관에 없으면 null 유지, 모호하면 'AMBIGUOUS'로 기록 후 note 작성. 리스트는 정렬된 형태로 입력. enum 값은 schema/enums.py 참조.",
+    "changelog": [
+      "v0.2 (2026-05-13): Spotify 첫 라벨링. 두 문서(EUA + PST) 통합 분석. Tier 1+2 신설 8필드 포함. free_trial/disputes 섹션 대폭 정정."
+    ],
+    "note": "Spotify는 두 개의 약관 문서가 있음: (1) End-User Agreement (EUA, 이용약관) / (2) Paid Subscription Terms (PST, 유료구독약관). PST가 EUA를 보완하며 충돌 시 PST 우선. source_page는 웹 약관이라 PDF 페이지 개념 부재 — section ID로 대체 (예: 'EUA-2.3' = EUA 섹션 2.3, 'PST-4.3' = PST 섹션 4.3)."
+  },
+  "pricing.base_price_krw": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": "약관 본문에 가격 명시 없음 — 별도 가격 페이지(spotify.com/kr-ko/premium) 참조"
+  },
+  "pricing.billing_cycle": {
+    "expected": "monthly",
+    "model_value": "monthly",
+    "model_uncertainty": "confirmed",
+    "source_quote": "월 단위 또는 구입 전에 고지되는 다른 반복 주기로 구독 요금을 선결제하는 방법",
+    "source_page": null,
+    "note": "EUA 2.3 결제 및 해지. 월 단위 기본, 선불 기간 옵션 존재."
+  },
+  "pricing.auto_renewal_enabled": {
+    "expected": true,
+    "model_value": true,
+    "model_uncertainty": "confirmed",
+    "source_quote": "유료 구독은 해지될 때까지 기한의 정함 없이 지속됩니다.",
+    "source_page": null,
+    "note": "EUA 2.3 청구 및 취소 / PST 3."
+  },
+  "pricing.auto_renewal_consent": {
+    "expected": "opt_out_available",
+    "model_value": "opt_out_available",
+    "model_uncertainty": "confirmed",
+    "source_quote": "회원에게 각 청구 기간의 첫날에 반복적으로 청구되며, 회원은 당시의 구독 요금을 결제하고, 당사(또는 제3자를 통해 가입한 경우 해당 제3자)가 회원의 결제 수단으로 요금을 청구하는 데에 동의합니다.",
+    "source_page": null,
+    "note": "EUA 2.3 — 자동 청구에 동의. 해지권 보장 (opt-out)."
+  },
+  "pricing.price_change_notice_days": {
+    "expected": 30,
+    "model_value": 30,
+    "model_uncertainty": "confirmed",
+    "source_quote": "Spotify는 반복 청구되는 구독 요금을 포함하여 유료 구독 요금, 선불 기간(아직 지불하지 않은 기간), 코드(앞의 정의 참고)를 수시로 변경할 수 있으며, 이 경우 이메일, 앱 내 알림, 기타 합리적인 방법을 통해 최소 30일 이상의 기간을 두고 회원에게 가격 변경을 사전에 고지합니다.",
+    "source_page": null,
+    "note": "EUA 2.3 가격 및 세금의 변경. 약관 변경 일반(7조)과 달리 가격 변경은 30일 명시."
+  },
+  "pricing.price_change_notice_channels": {
+    "expected": [
+      "app_push",
+      "email",
+      "web_notice"
+    ],
+    "model_value": [
+      "email",
+      "app_push",
+      "web_notice"
+    ],
+    "model_uncertainty": "confirmed",
+    "source_quote": "이메일, 앱 내 알림, 기타 합리적인 방법을 통해",
+    "source_page": null,
+    "note": "EUA 2.3 — 이메일·앱 내 알림(in-app)·기타 합리적 방법. 리스트 정렬."
+  },
+  "free_trial.offered": {
+    "expected": true,
+    "model_value": false,
+    "model_uncertainty": "confirmed",
+    "source_quote": "당사(또는 당사를 대신하여 제3자)는 일정 기간 무료 또는 할인된 요금으로 유료 구독을 체험할 수 있는 평가판(\"평가판\")을 수시로 제공할 수 있습니다.",
+    "source_page": null,
+    "note": "정정 — EUA 2 '평가판' + PST 4 '무료 및 할인 체험판' 별도 섹션 존재. 기존 model_value=false는 오류."
+  },
+  "free_trial.duration_days": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": "약관에 체험 기간 일수 직접 명시 없음 ('수시로 제공'). 청약철회 14일 별도 명시. 실무상 1개월 무료 제공이 일반적."
+  },
+  "free_trial.auto_convert_to_paid": {
+    "expected": "AMBIGUOUS",
+    "model_value": false,
+    "model_uncertainty": "ambiguous",
+    "source_quote": "회원이 유료 구독을 계속 유지하려면 평가판 종료 30일 전부터 종료시까지의 기간 내에 명시적으로 동의해야 합니다.",
+    "source_page": null,
+    "note": "EUA와 PST가 충돌. EUA(2.3 철회 권리)는 '명시적 동의 필요 — 거부/무대응 시 무료 다운그레이드'. 반면 PST 4(체험판)는 '결제 세부정보 제공 시 자동 청구 동의로 간주'. 무료 체험판 vs 유료 체험판 별로 다르게 동작 — AMBIGUOUS 처리."
+  },
+  "free_trial.cancel_required_before_end": {
+    "expected": "AMBIGUOUS",
+    "model_value": true,
+    "model_uncertainty": "ambiguous",
+    "source_quote": "체험판 이용이 종료되기 전 30일 이내에 명시적인 동의를 제공해야 합니다. ... 귀하가 유료 구독을 거절하거나 아무런 조치를 취하지 않을 경우 유료 구독 서비스 이용 권한이 상실되고, 체험 기간 종료 시 귀하의 Spotify 계정은 Spotify Free 계정으로 전환되며 요금은 청구되지 않습니다.",
+    "source_page": null,
+    "note": "EUA 기준 무대응 시 무료 다운그레이드 — 사전 해지 불필요. PST 4.3 기준 결제 수단 제공 체험판은 사전 해지 필요(자동 청구). 체험판 유형에 따라 달라짐."
+  },
+  "free_trial.payment_method_required_upfront": {
+    "expected": "AMBIGUOUS",
+    "model_value": false,
+    "model_uncertainty": "ambiguous",
+    "source_quote": "일부 체험판의 경우, 당사는 귀하가 체험판을 시작하기 위해 결제 세부 정보를 제공하도록 요구할 것입니다.",
+    "source_page": null,
+    "note": "PST 4 — 일부 체험판은 결제 수단 사전 제공 필수. 4.1.D는 '달리 광고되지 않는 한, 귀하는 Spotify가 승인한 유효하고 현재의 결제 수단을 Spotify에 제공해야 합니다'. 체험판 종류별로 달라짐."
+  },
+  "free_trial.notice_before_conversion_days": {
+    "expected": 30,
+    "model_value": 30,
+    "model_uncertainty": "confirmed",
+    "source_quote": "회원이 유료 구독을 계속 유지하려면 평가판 종료 30일 전부터 종료시까지의 기간 내에 명시적으로 동의해야 합니다.",
+    "source_page": null,
+    "note": "EUA 2.3 철회 권리 — 30일은 사용자가 명시적 동의를 표시할 수 있는 기간이지, Spotify의 일방적 사전 고지 의무가 아님. 의미 명확화를 위해 note 보강."
+  },
+  "cancellation.method": {
+    "expected": "online",
+    "model_value": "online",
+    "model_uncertainty": "confirmed",
+    "source_quote": "회원은 Spotify 계정에 로그인하여 계정 페이지의 안내를 따르거나 여기를 클릭하여 조회되는 지침에 따라 언제든지 유료 구독을 해지할 수 있습니다.",
+    "source_page": null,
+    "note": "EUA 2.3 청구 및 취소 / PST 3."
+  },
+  "cancellation.method_description": {
+    "expected": "Spotify 계정 페이지에서 온라인 해지",
+    "model_value": "Spotify 계정 페이지에서 온라인 해지",
+    "model_uncertainty": "confirmed",
+    "source_quote": "Spotify 계정에 로그인하여 계정 페이지의 안내를 따르거나",
+    "source_page": null,
+    "note": ""
+  },
+  "cancellation.notice_period_days": {
+    "expected": 0,
+    "model_value": null,
+    "model_uncertainty": "inferred",
+    "source_quote": "회원이 해지한 청구 기간이 종료되는 시점 이후부터 해지의 효력이 발생하며",
+    "source_page": null,
+    "note": "정정 — 별도 통지 기간 요건 없음. 즉시 신청, 결제 기간 종료 시 효력 발생. 기존 null은 not_specified로 표기되어 있었으나 사실상 0일로 추론 가능."
+  },
+  "cancellation.penalty_present": {
+    "expected": false,
+    "model_value": false,
+    "model_uncertainty": "confirmed",
+    "source_quote": "회원은 언제든지 본 약관을 해지할 수 있으며",
+    "source_page": null,
+    "note": "해지 위약금 조항 없음. 환불 거부와는 별개 항목."
+  },
+  "cancellation.penalty_description": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": ""
+  },
+  "cancellation.proration_policy": {
+    "expected": "no_refund",
+    "model_value": "no_refund",
+    "model_uncertainty": "confirmed",
+    "source_quote": "본 약관에 명시적으로 규정된 경우를 제외하고, 구독 기간 일부분에 대한 환불 또는 크레딧은 제공되지 않습니다.",
+    "source_page": null,
+    "note": "단, EUA 2.3 철회 권리(7일/14일 cooling-off) 예외 별도. cancellation.cooling_off_refund_days 참조."
+  },
+  "cancellation.blackout_periods": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": ""
+  },
+  "cancellation.cooling_off_refund_days": {
+    "expected": 7,
+    "model_value": null,
+    "model_uncertainty": "not_extracted",
+    "source_quote": "평가판 종료 후에는 매달 합의된 금액의 청구일로부터 7일 이내에 청약철회 권리를 행사할 수 있으나, 회원이 해당 기간 중 Spotify 서비스를 이용할 경우 청약철회권은 소멸됩니다.",
+    "source_page": null,
+    "note": "v0.2 신설 필드 — EUA 2.3 철회 권리. 매달 청구일로부터 7일. 최초 가입 시 14일 별도 존재."
+  },
+  "cancellation.cooling_off_conditions": {
+    "expected": "Spotify 서비스 미이용",
+    "model_value": null,
+    "model_uncertainty": "not_extracted",
+    "source_quote": "회원이 해당 기간 중 Spotify 서비스를 이용할 경우 청약철회권은 소멸됩니다.",
+    "source_page": null,
+    "note": "v0.2 신설 필드 — 청약철회 기간 중 서비스 이용 시 권리 소멸."
+  },
+  "cancellation.third_party_cancellation_required": {
+    "expected": true,
+    "model_value": null,
+    "model_uncertainty": "not_extracted",
+    "source_quote": "유료 구독에 대한 액세스를 제3자를 통해 구매하는 경우, 본 약관 외에 해당 제3자와의 별도 약관이 Spotify 서비스 이용에 적용될 수 있습니다.",
+    "source_page": null,
+    "note": "v0.2 신설 필드 — EUA 2.3 + PST 4.3. App Store/통신사 등 제3자 결제 시 해당 채널 통해 해지 필요."
+  },
+  "terms_changes.notice_channels": {
+    "expected": [
+      "email",
+      "in_app_banner",
+      "web_notice"
+    ],
+    "model_value": [
+      "email",
+      "app_push",
+      "web_notice",
+      "web_notice"
+    ],
+    "model_uncertainty": "confirmed",
+    "source_quote": "중대한 변경 사항의 경우, 당사는 이메일, 서비스 내 팝업 메시지, 또는 다른 방법을 통해 추가 통지를 할 것입니다.",
+    "source_page": null,
+    "note": "정정 — EUA 7. 기존 web_notice 중복 오류 제거. '서비스 내 팝업 메시지'는 app_push보다 in_app_banner가 정확."
+  },
+  "terms_changes.notice_lead_time_days": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": "약관 변경 일반은 일수 미명시 ('합리적인 방법으로 통지'). 가격 변경(2.3)만 30일 별도 명시 — pricing.price_change_notice_days 참조. 다크패턴 우려."
+  },
+  "terms_changes.user_consent_mechanism": {
+    "expected": "silent_acceptance",
+    "model_value": "deemed_agreed",
+    "model_uncertainty": "confirmed",
+    "source_quote": "본 약관의 변경 후 Spotify 서비스를 계속 사용하는 것은 회원이 해당 변경 사항에 동의하는 것으로 간주됩니다.",
+    "source_page": null,
+    "note": "정정 — enum 값 'deemed_agreed'는 스키마에 없음. 'silent_acceptance'(별도 의사표시 없으면 동의 간주)로 매핑. 의사표시 의제 조항으로 분류."
+  },
+  "terms_changes.user_right_to_terminate_on_change": {
+    "expected": true,
+    "model_value": true,
+    "model_uncertainty": "confirmed",
+    "source_quote": "수정된 약관에 따라 Spotify서비스를 계속 이용하기를 원하지 않는 경우, 당사에 연락하여 계정을 해지할 수 있습니다.",
+    "source_page": null,
+    "note": "정정 — 기존 source_quote는 일반 해지권. 약관 변경 거부 시 해지권 quote로 교체."
+  },
+  "terms_changes.silent_acceptance_clause": {
+    "expected": true,
+    "model_value": true,
+    "model_uncertainty": "confirmed",
+    "source_quote": "본 약관의 변경 후 Spotify 서비스를 계속 사용하는 것은 회원이 해당 변경 사항에 동의하는 것으로 간주됩니다.",
+    "source_page": null,
+    "note": "EUA 7 변경. 명시적 silent acceptance 조항. 공정위 시정 권고 대상 유형."
+  },
+  "terms_changes.price_change_explicit_consent": {
+    "expected": false,
+    "model_value": null,
+    "model_uncertainty": "not_extracted",
+    "source_quote": "회원이 가격 변경에 동의하지 않는 경우, 당사는 현재 결제 기간이 종료될 때 회원의 유료 구독을 종료할 권리를 보유하며, 이후 회원은 Spotify 서비스 무료 버전 계정으로 다운그레이드됩니다.",
+    "source_page": null,
+    "note": "v0.2 신설 필드 — Netflix(2.8 '동의를 받습니다')와 달리 Spotify는 명시적 동의 절차 부재. 30일 통지 + 거부 시 해지권만 보장 (opt-out 구조)."
+  },
+  "data_usage.collected_categories": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": "이용약관 본문에 데이터 수집 카테고리 명시 없음. 별도 개인정보처리방침(spotify.com/kr-ko/legal/privacy-policy) 참조 필요."
+  },
+  "data_usage.third_party_sharing": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": "이용약관 본문 명시 없음 — 개인정보처리방침 참조."
+  },
+  "data_usage.third_party_recipients": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": ""
+  },
+  "data_usage.third_party_purposes": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": ""
+  },
+  "data_usage.retention_period_months": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": ""
+  },
+  "data_usage.marketing_use": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": ""
+  },
+  "data_usage.marketing_consent": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": ""
+  },
+  "data_usage.cross_border_transfer": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": "이용약관에 명시 없음. 실무상 Spotify AB(스웨덴) 데이터 처리 — 개인정보처리방침 참조."
+  },
+  "liability.service_disruption_compensation": {
+    "expected": false,
+    "model_value": false,
+    "model_uncertainty": "confirmed",
+    "source_quote": "Spotify는 정부 기관의 조치, 기타 제3자 또는 당사의 통제 범위를 벗어나는 사건으로 인해 발생한 인터넷 또는 기타 서비스의 중단이나 장애와 관련하여 회원에게 책임을 지지 않으며, 환불 의무가 없습니다.",
+    "source_page": null,
+    "note": "EUA 2 서비스 제한 및 변경. 단, Spotify가 일방적으로 유료 구독을 중단하는 경우 선결제 금액 환불 의무 별도 존재."
+  },
+  "liability.compensation_description": {
+    "expected": "Spotify가 유료 구독을 일방적으로 중단하는 경우, 사용되지 않은 선불 기간에 대한 선결제 금액 환불",
+    "model_value": null,
+    "model_uncertainty": "confirmed",
+    "source_quote": "회원이 유료 구독에 대해 Spotify에 직접 선결제한 요금이 있고, 선불기간이 종료되기 전에 Spotify가 유료 구독을 중단하는 경우, 당사는 구독 중단 후 사용되지 않은 유료 구독의 선불 기간에 대해 회원에게 선결제한 요금을 환불해 드립니다.",
+    "source_page": null,
+    "note": "정정 — 기존 null. EUA 2조 명시적 환불 의무 조항 존재. quote 추가."
+  },
+  "liability.damages_cap_present": {
+    "expected": true,
+    "model_value": true,
+    "model_uncertainty": "confirmed",
+    "source_quote": "어떠한 경우에도 Spotify, 그 임원, 주주, 직원, 대리인, 이사, 자회사, 계열사, 승계인, 양수인, 공급업체 또는 라이선스 제공자는 (1) 간접, 특별, 부수적, 징벌적, 예시적, 또는 결과적 손해; (2) Spotify 서비스, 장치, 제3자 애플리케이션 또는 제3자 애플리케이션 콘텐츠의 사용 또는 사용 불능으로 인해 발생하는 모든 경우의 사용, 데이터, 비즈니스 또는 이익의 손실(직접적이든 간접적이든); 또는 (3) Spotify 서비스, 제3자 애플리케이션 또는 제3자 애플리케이션 콘텐츠와 관련된 모든 클레임에 대하여, (a) 첫 번째 청구 전 12개월 동안 회원이 Spotify에 지불한 금액 또는 (b) $30.00 중 더 큰 금액을 초과하는 범위에 대하여 책임지지 않습니다.",
+    "source_page": null,
+    "note": "EUA 6 책임 제한. 한국 거주자에게 $30.00 한도가 적용되는지 별도 검토 필요 (관련 법률 강행규정 우선)."
+  },
+  "liability.damages_cap_description": {
+    "expected": "첫 번째 청구 전 12개월 동안 회원이 Spotify에 지불한 금액 또는 $30.00 중 더 큰 금액",
+    "model_value": "첫 번째 청구 전 12개월 동안 회원이 Spotify에 지불한 금액 또는 $30.00 중 더 큰 금액을 초과하는 범위에 대하여 책임지지 않음",
+    "model_uncertainty": "confirmed",
+    "source_quote": "(a) 첫 번째 청구 전 12개월 동안 회원이 Spotify에 지불한 금액 또는 (b) $30.00 중 더 큰 금액을 초과하는 범위에 대하여 책임지지 않습니다.",
+    "source_page": null,
+    "note": ""
+  },
+  "liability.force_majeure_scope": {
+    "expected": "정부 기관의 조치, 기타 제3자 또는 Spotify의 통제 범위를 벗어나는 사건",
+    "model_value": "정부 기관의 조치, 기타 제3자 또는 당사의 통제 범위를 벗어나는 사건",
+    "model_uncertainty": "confirmed",
+    "source_quote": "Spotify는 정부 기관의 조치, 기타 제3자 또는 당사의 통제 범위를 벗어나는 사건으로 인해 발생한 인터넷 또는 기타 서비스의 중단이나 장애와 관련하여 회원에게 책임을 지지 않으며",
+    "source_page": null,
+    "note": ""
+  },
+  "liability.indirect_damages_excluded": {
+    "expected": true,
+    "model_value": true,
+    "model_uncertainty": "confirmed",
+    "source_quote": "(1) 간접, 특별, 부수적, 징벌적, 예시적, 또는 결과적 손해",
+    "source_page": null,
+    "note": "EUA 6 — 광범위한 간접손해 배제."
+  },
+  "disputes.governing_law": {
+    "expected": "대한민국 법률",
+    "model_value": "Sweden",
+    "model_uncertainty": "confirmed",
+    "source_quote": "대한민국 | 대한민국 법률 | 대한민국 서울 소재 법원(배타적)",
+    "source_page": null,
+    "note": "정정 — EUA 6.1 준거법 표. 한국 거주자는 대한민국 법률 적용. 기존 model_value 'Sweden'은 다른 국가 거주자에게만 적용되는 기본값(잘못된 해석)."
+  },
+  "disputes.jurisdiction_clause": {
+    "expected": "대한민국 서울 소재 법원 (배타적)",
+    "model_value": "Sweden (exclusive) for most countries; Korea (Seoul) exclusive",
+    "model_uncertainty": "confirmed",
+    "source_quote": "대한민국 | 대한민국 법률 | 대한민국 서울 소재 법원(배타적)",
+    "source_page": null,
+    "note": "정정 — 한국 거주자에게 적용되는 관할은 대한민국 서울 법원(배타적). EUA 6.1 표 명시."
+  },
+  "disputes.arbitration_required": {
+    "expected": false,
+    "model_value": true,
+    "model_uncertainty": "ambiguous",
+    "source_quote": "본 조에 따라 제6.2조가 적용되는 관할권에 소재하거나, 기반을 두거나, 사무실이 있거나, 사업을 영위하는 경우, 다음의 강제 중재 조항이 적용됩니다.",
+    "source_page": null,
+    "note": "정정 — 한국 거주자는 6.1 표에서 대한민국 법원이 '배타적' 관할로 지정되어 6.2조 중재 대상 외로 해석됨. 6.2조는 미국 등 일부 관할권에만 적용. 기존 model_value=true는 글로벌 약관 일반화 오류."
+  },
+  "disputes.class_action_waiver": {
+    "expected": false,
+    "model_value": true,
+    "model_uncertainty": "ambiguous",
+    "source_quote": "",
+    "source_page": null,
+    "note": "정정 — 약관에 명시적 집단소송 포기 조항은 6.2 중재 조항 내에 사실상 포함. 한국 거주자는 6.2 미적용으로 사실상 false. AMBIGUOUS 처리도 가능."
+  },
+  "account.minimum_age": {
+    "expected": 13,
+    "model_value": null,
+    "model_uncertainty": "not_extracted",
+    "source_quote": "Spotify 서비스를 이용하고 콘텐츠에 접근하려면 회원은 (1) 13세 이상(또는 회원이 거주하는 국가에서 정한 최소 연령 이상)이어야 하며",
+    "source_page": null,
+    "note": "v0.2 신설 필드 — EUA 1 연령 및 자격 요건. 약관 명시 13세. 한국 거주자는 정보통신망법상 14세 권장 가능성 존재 — '거주 국가에서 정한 최소 연령' 조항으로 위임."
+  },
+  "account.sharing_restrictions": {
+    "expected": "extra_member_allowed",
+    "model_value": null,
+    "model_uncertainty": "not_extracted",
+    "source_quote": "Premium Duo와 같은 '가구 유료 구독'은 유료 구독의 요금을 지불하는 계정 보유자('기본 계정 보유자' 또는 때때로 '요금제 관리자'라고 함)와 명시된 수의 부계정 보유자가 본인 및 각 부계정 보유자의 개인적인 용도로 해당 유료 구독을 이용할 수 있도록 합니다.",
+    "source_page": null,
+    "note": "v0.2 신설 필드 — PST 2.2 가구 유료 구독. 동일 주소지 가족 구성원만 부계정 가능. Premium Duo(2인), Premium Family(미국 등) 등."
+  },
+  "service.regional_content_restriction": {
+    "expected": true,
+    "model_value": null,
+    "model_uncertainty": "not_extracted",
+    "source_quote": "Spotify 서비스를 이용하고 콘텐츠에 접근하려면 회원은 ... (4) 서비스가 제공되는 국가에 거주해야 합니다.",
+    "source_page": null,
+    "note": "v0.2 신설 필드 — EUA 1 + EUA 2 서비스 제한 및 변경. 콘텐츠 가용성 국가별 차이 명시."
+  },
+  "service.availability_disclaimer": {
+    "expected": true,
+    "model_value": null,
+    "model_uncertainty": "not_extracted",
+    "source_quote": "Spotify는 Spotify 서비스를 통해 특정 콘텐츠를 제공할 의무가 없으며, Spotify 또는 콘텐츠 소유자는 통지 없이 특정 노래, 동영상, 팟캐스트 및 기타 콘텐츠를 삭제할 수 있습니다.",
+    "source_page": null,
+    "note": "v0.2 신설 필드 — EUA 2 서비스 제한 및 변경. 콘텐츠 임의 삭제 가능 명시 — 사용자 권리 행사 시 주의."
+  },
+  "unfair_clause_flags": {
+    "expected": [
+      "POST-01",
+      "POST-04",
+      "POST-05",
+      "면책/손배 제한",
+      "약관 일방 변경권",
+      "의사표시_의제"
+    ],
+    "model_value": [
+      "면책/손배 제한",
+      "의사표시_의제"
+    ],
+    "note": "정정 — POST-04(면책/손배 제한, EUA 6) + POST-05(의사표시 의제, EUA 7) + POST-01(일방적 약관 변경권, EUA 7 '수시로 변경'). 콘텐츠 일방 삭제권(EUA 2)도 잠재적 불공정 — Tier 3 코드 확장 검토. 한국 거주자 기준 $30.00 손해배상 한도는 한국법 강행규정과 충돌 가능."
+  }
+}

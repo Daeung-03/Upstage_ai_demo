@@ -1,0 +1,437 @@
+{
+    "_meta": {
+        "service_name": "Upstage (Console)",
+        "terms_version": "2024-08-01 (Terms of Use) + 2025-03-07 (Privacy Policy)",
+        "document_source_url": "https://www.upstage.ai/terms-policie/update-august-1-2024 + https://console.upstage.ai/docs/resources/terms-and-policies/privacy-policy",
+        "schema_version": "v0.2",
+        "labeler": "team",
+        "extraction_date": "2026-05-15",
+        "domain": "saas_ai_api",
+        "instructions": "각 필드의 'expected' 값을 약관 원문 기준으로 정답으로 편집하세요. model_value/source_quote는 참고용. 정답이 약관에 없으면 null 유지, 모호하면 'AMBIGUOUS'로 기록 후 note 작성. 리스트는 정렬된 형태로 입력. enum 값은 schema/enums.py 참조.",
+        "changelog": [
+            "v0.2 (2026-05-15): Upstage 첫 라벨링. Upstage Console Terms of Use + Privacy Policy 결합. **AI SaaS + API 도메인 — B2B 성격 강함**. Phase B 5-way 비교: 한국 사업자 vs 글로벌(Claude/GPT/Gemini/DeepSeek)."
+        ],
+        "schema_fit_note": "Upstage는 (1) Console API 사용량 기반 (2) 일부 Solar Chat 등 freemium 형태. **subscription schema보다 usage-based API에 가까움** → pricing.* 대부분 null. cancellation은 API 계정 탈퇴 의미. 한국 사업자 강행규정 적용.",
+        "note": "Upstage AI (한국 사업자, 서울 강남구). Document Parse + Information Extract + Solar Pro 3 + Groundedness Check 등 제공. **본 라벨링은 T-T 해커톤의 핵심 인프라 벤더 자기검증**. 만 14세 미만 정보 미수집(한국 정보통신망법)."
+    },
+    "pricing.base_price_krw": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": "Usage-based pricing — 토큰/페이지/호출당 과금. 정액 가격 부재. https://www.upstage.ai/pricing 참조."
+    },
+    "pricing.billing_cycle": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": "Usage-based — 정기 청구 모델 부재. 사용량 기준 후불 또는 prepaid 크레딧."
+    },
+    "pricing.auto_renewal_enabled": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": "구독 모델 부재."
+    },
+    "pricing.auto_renewal_consent": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": ""
+    },
+    "pricing.price_change_notice_days": {
+        "expected": 30,
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "한국 약관규제법 표준 — 회원 불리 변경 30일 사전 공지."
+    },
+    "pricing.price_change_notice_channels": {
+        "expected": [
+            "email",
+            "web_notice"
+        ],
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "Console + 등록 이메일 일반 표준."
+    },
+    "free_trial.offered": {
+        "expected": true,
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": "Solar Pro 무료 크레딧 제공 (신규 가입자). 약관 본문 명시 여부는 미확인."
+    },
+    "free_trial.duration_days": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": "기간 제한이 아닌 크레딧 한도 기반."
+    },
+    "free_trial.auto_convert_to_paid": {
+        "expected": false,
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "Usage-based이므로 결제 수단 등록해야 유료 사용 가능. 자동 전환 없음."
+    },
+    "free_trial.cancel_required_before_end": {
+        "expected": false,
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": ""
+    },
+    "free_trial.payment_method_required_upfront": {
+        "expected": false,
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "무료 크레딧은 결제 수단 등록 없이 사용 가능."
+    },
+    "free_trial.notice_before_conversion_days": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": ""
+    },
+    "cancellation.method": {
+        "expected": "online",
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "Upstage Console 계정 설정에서 셀프 해지."
+    },
+    "cancellation.method_description": {
+        "expected": "Upstage Console 계정 설정에서 셀프 탈퇴",
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": ""
+    },
+    "cancellation.notice_period_days": {
+        "expected": 0,
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "한국 약관 표준 — 언제든 탈퇴 가능."
+    },
+    "cancellation.penalty_present": {
+        "expected": false,
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "Usage-based — 위약금 부재."
+    },
+    "cancellation.penalty_description": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": ""
+    },
+    "cancellation.proration_policy": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": "Usage-based이므로 prorated 개념 부재. 미사용 prepaid 크레딧 환불 정책 별도."
+    },
+    "cancellation.blackout_periods": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": ""
+    },
+    "cancellation.cooling_off_refund_days": {
+        "expected": 7,
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "v0.2 신설 필드 — 한국 전자상거래법상 7일 청약철회권 적용. 단, 디지털 콘텐츠 미사용 조건. 직접 quote 확보 필요."
+    },
+    "cancellation.cooling_off_conditions": {
+        "expected": "Console API 미이용",
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "v0.2 신설 필드 — 한국 OTT 표준 패턴 추정."
+    },
+    "cancellation.third_party_cancellation_required": {
+        "expected": false,
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "v0.2 신설 필드 — Console 직접 결제. 앱마켓 게이트웨이 없음."
+    },
+    "terms_changes.notice_channels": {
+        "expected": [
+            "email",
+            "web_notice"
+        ],
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "한국 약관 표준 — 웹 게시 + 이메일."
+    },
+    "terms_changes.notice_lead_time_days": {
+        "expected": 30,
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "한국 약관 표준 — 불리한 변경 30일."
+    },
+    "terms_changes.user_consent_mechanism": {
+        "expected": "silent_acceptance",
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "한국 약관 표준."
+    },
+    "terms_changes.user_right_to_terminate_on_change": {
+        "expected": true,
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": ""
+    },
+    "terms_changes.silent_acceptance_clause": {
+        "expected": true,
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "한국 약관 표준 — 직접 quote 확보 필요."
+    },
+    "terms_changes.price_change_explicit_consent": {
+        "expected": false,
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "v0.2 신설 필드 — opt-out 구조."
+    },
+    "data_usage.collected_categories": {
+        "expected": [
+            "account_information",
+            "inputs_and_outputs",
+            "payment_information",
+            "usage_data"
+        ],
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "Input/output data in Upstage Console may be stored and used for service improvements, AI technology R&D, and compliance with related laws and regulations.",
+        "source_page": null,
+        "note": "Privacy Policy + Terms 명시. 리스트 알파벳 정렬."
+    },
+    "data_usage.third_party_sharing": {
+        "expected": "AMBIGUOUS",
+        "model_value": null,
+        "model_uncertainty": "ambiguous",
+        "source_quote": "",
+        "source_page": null,
+        "note": "Privacy Policy의 위탁 처리 명시. 광범위 3자 제공은 미명시. AMBIGUOUS."
+    },
+    "data_usage.third_party_recipients": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": ""
+    },
+    "data_usage.third_party_purposes": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": ""
+    },
+    "data_usage.retention_period_months": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": "Privacy Policy 별도 참조."
+    },
+    "data_usage.marketing_use": {
+        "expected": "AMBIGUOUS",
+        "model_value": null,
+        "model_uncertainty": "ambiguous",
+        "source_quote": "Input/output data in Upstage Console may be stored and used for service improvements, AI technology R&D",
+        "source_page": null,
+        "note": "**중요 — Input/Output 데이터를 AI R&D에 활용 명시**. 모델 학습 활용 시사이나 마케팅과는 구분. AMBIGUOUS."
+    },
+    "data_usage.marketing_consent": {
+        "expected": "opt_in_required",
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "한국 정보통신망법 — 마케팅 정보 사전 동의 필수."
+    },
+    "data_usage.cross_border_transfer": {
+        "expected": "AMBIGUOUS",
+        "model_value": null,
+        "model_uncertainty": "ambiguous",
+        "source_quote": "",
+        "source_page": null,
+        "note": "Upstage 한국 본사. AWS Marketplace 등 글로벌 인프라 사용 시 국외 이전 가능성. Privacy Policy 별도 확인."
+    },
+    "liability.service_disruption_compensation": {
+        "expected": "AMBIGUOUS",
+        "model_value": null,
+        "model_uncertainty": "ambiguous",
+        "source_quote": "",
+        "source_page": null,
+        "note": "한국 약관 표준 — 회사 귀책 외 면책. 회사 귀책 시 디지털콘텐츠 보호지침 적용 일반."
+    },
+    "liability.compensation_description": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": ""
+    },
+    "liability.damages_cap_present": {
+        "expected": false,
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "한국 OTT/SaaS 일반 — 명시적 손해배상 한도 부재. 직접 quote 확보 필요."
+    },
+    "liability.damages_cap_description": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": ""
+    },
+    "liability.force_majeure_scope": {
+        "expected": "천재지변 또는 이에 준하는 불가항력",
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "한국 약관 표준 표현."
+    },
+    "liability.indirect_damages_excluded": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": "직접 quote 확보 필요."
+    },
+    "disputes.governing_law": {
+        "expected": "대한민국 법률",
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": "한국 사업자(Upstage AI). 한국법 자명."
+    },
+    "disputes.jurisdiction_clause": {
+        "expected": "민사소송법상 관할법원",
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "한국 SaaS 표준."
+    },
+    "disputes.arbitration_required": {
+        "expected": false,
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "한국 약관에 중재 조항 일반적으로 없음."
+    },
+    "disputes.class_action_waiver": {
+        "expected": false,
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "집단소송 포기 조항 부재."
+    },
+    "account.minimum_age": {
+        "expected": 14,
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "The company does not intend for its websites or online services to be used by anyone under the age of 14",
+        "source_page": null,
+        "note": "v0.2 신설 필드 — Privacy Policy 명시. 한국 정보통신망법 기준 14세."
+    },
+    "account.sharing_restrictions": {
+        "expected": "personal_only",
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "Upon acceptance of the Terms, the Company grants members a non-transferable, non-sublicensable, non-exclusive license",
+        "source_page": null,
+        "note": "v0.2 신설 필드 — Terms 명시. non-transferable 1인 1계정."
+    },
+    "service.regional_content_restriction": {
+        "expected": false,
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "v0.2 신설 필드 — Upstage Console은 글로벌 API 서비스. 한국 외 사용자도 가능. AWS Marketplace 통한 글로벌 제공."
+    },
+    "service.availability_disclaimer": {
+        "expected": true,
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "v0.2 신설 필드 — AI SaaS 표준 AS IS."
+    },
+    "unfair_clause_flags": {
+        "expected": [
+            "POST-05",
+            "AI 학습 데이터 광범위 활용",
+            "의사표시_의제"
+        ],
+        "model_value": null,
+        "note": "POST-05(silent acceptance 추정) + **AI 학습 데이터 활용 명시** (Input/Output → R&D). 한국 약관 표준 친소비자 조항 일부 적용."
+    }
+}

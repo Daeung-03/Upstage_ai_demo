@@ -1,0 +1,470 @@
+{
+  "_meta": {
+    "service_name": "Claude (Anthropic Consumer)",
+    "terms_version": "2025-10-08 (Effective Date)",
+    "document_source_url": "https://www.anthropic.com/legal/consumer-terms",
+    "schema_version": "v0.2",
+    "labeler": "team",
+    "extraction_date": "2026-05-15",
+    "domain": "saas_ai_subscription",
+    "fixture_pdf": "claude_terms.html",
+    "baseline_run": "claude_run_baseline.json",
+    "instructions": "각 필드의 'expected' 값을 약관 원문 기준으로 정답으로 편집하세요. model_value/source_quote는 참고용. 정답이 약관에 없으면 null 유지, 모호하면 'AMBIGUOUS'로 기록 후 note 작성. 리스트는 정렬된 형태로 입력. enum 값은 schema/enums.py 참조.",
+    "changelog": [
+      "v0.2 (2026-05-15): Claude 첫 라벨링. Anthropic Consumer Terms of Service (Effective 2025-10-08) 전문 분석. **글로벌 AI SaaS 도메인 — OTT subscription schema와 부분 호환**. Subscription/cooling-off 양호, 한국 거주자 명시적 7일 청약철회권 보유.",
+      "v0.2 + Corrections (2026-05-15): 기존 model 라벨링의 중대 오류 다수 정정 — liability.damages_cap_present(false→true), liability.indirect_damages_excluded(false→true), cancellation.proration_policy(prorated→no_refund), notice_period_days/notice_before_conversion_days의 24 오해석 정정."
+    ],
+    "schema_fit_note": "Claude는 글로벌 AI SaaS (Claude Free/Pro/Max). subscription schema 적합. 단, free_trial 개념 부재(evaluation 별도) → free_trial 필드는 null. cooling_off_refund_days는 **거주국별 차등** — 한국/브라질/멕시코/대만은 7일, 그 외는 환불 불가.",
+    "note": "Anthropic PBC가 California 본사 운영하는 미국 사업자. 한국 거주자에 대한 7일 cooling-off 명시는 한국 소비자보호법 강행규정 준수의 글로벌 사례. 약관 변경 시 사전 통지 일수 미명시 + silent acceptance — 공정위 시정 권고 대상 가능성."
+  },
+  "pricing.base_price_krw": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": "약관 본문 가격 미명시. Model Pricing Page(anthropic.com/pricing) 참조."
+  },
+  "pricing.billing_cycle": {
+    "expected": "other",
+    "model_value": "monthly",
+    "model_uncertainty": "inferred",
+    "source_quote": "we or the App Distributor will automatically charge your Payment Method on each agreed-upon periodic renewal date until you cancel",
+    "source_page": null,
+    "note": "약관은 'periodic renewal date'만 명시 — Initial Term은 가입 시 선택. Claude Pro는 월간 기본, 연간 옵션 별도. 'monthly' 명시 없음."
+  },
+  "pricing.auto_renewal_enabled": {
+    "expected": true,
+    "model_value": true,
+    "model_uncertainty": "confirmed",
+    "source_quote": "If you sign up for a paid Subscription, we or the App Distributor will automatically charge your Payment Method on each agreed-upon periodic renewal date until you cancel.",
+    "source_page": null,
+    "note": "Section 6 Subscriptions ¶2 명시."
+  },
+  "pricing.auto_renewal_consent": {
+    "expected": "opt_out_available",
+    "model_value": "opt_out_available",
+    "model_uncertainty": "confirmed",
+    "source_quote": "Your Subscription will last for the Initial Term and will automatically renew, and your Payment Method will be charged, at the end of the Initial Term for an additional term equal in duration to the Initial Term ... until you cancel.",
+    "source_page": null,
+    "note": "해지 가능(opt-out) 구조. 명시적 동의 없음."
+  },
+  "pricing.price_change_notice_days": {
+    "expected": 30,
+    "model_value": 30,
+    "model_uncertainty": "confirmed",
+    "source_quote": "If these changes result in an increase in the fees payable by you, we will inform you at least 30 days in advance of the change.",
+    "source_page": null,
+    "note": "Section 6 Subscriptions ¶5. 가격 변경 30일 사전 통지 명시."
+  },
+  "pricing.price_change_notice_channels": {
+    "expected": [
+      "email"
+    ],
+    "model_value": [
+      "app_push",
+      "email",
+      "in_app_banner",
+      "web_notice"
+    ],
+    "model_uncertainty": "inferred",
+    "source_quote": "we will inform you at least 30 days in advance of the change",
+    "source_page": null,
+    "note": "정정 — 기존 4채널은 over-claim. 약관 본문에 구체 채널 미명시. Section 2의 'Our communications to you using your Account information will satisfy any requirements for legal notices' 기반 email 추론. 리스트 정렬."
+  },
+  "free_trial.offered": {
+    "expected": false,
+    "model_value": false,
+    "model_uncertainty": "confirmed",
+    "source_quote": "Evaluation and Additional Services. In some cases, we may permit you to evaluate our Services for a limited time or with limited functionality.",
+    "source_page": null,
+    "note": "전통적 'free trial' 부재. 'Evaluation' 별도 조항 존재하나 가입형 trial 아님. Claude Free tier가 별도 — 영구 무료 plan ≠ free trial."
+  },
+  "free_trial.duration_days": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": ""
+  },
+  "free_trial.auto_convert_to_paid": {
+    "expected": null,
+    "model_value": false,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": "정정 — free trial 부재로 conversion 개념 자체 없음. null이 정확."
+  },
+  "free_trial.cancel_required_before_end": {
+    "expected": null,
+    "model_value": true,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": "정정 — free trial 부재로 의미 없음. null."
+  },
+  "free_trial.payment_method_required_upfront": {
+    "expected": null,
+    "model_value": true,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": "정정 — free trial 부재. null."
+  },
+  "free_trial.notice_before_conversion_days": {
+    "expected": null,
+    "model_value": 24,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": "정정 — model이 '24 hours before next renewal' 규칙을 free trial notice로 오해석. 실제로는 cancellation deadline(시간 단위) 규칙. free trial 부재로 null."
+  },
+  "cancellation.method": {
+    "expected": "hybrid",
+    "model_value": "online",
+    "model_uncertainty": "confirmed",
+    "source_quote": "If you subscribed via our website, you may cancel your Subscription for any reason by using a method we may provide to you through our products—for example, for Claude Pro, in your customer portal—or by notifying us at support@anthropic.com. If you subscribed via an app, you'll need to cancel via the App Distributor according to the App Distributor's terms.",
+    "source_page": null,
+    "note": "정정 — 웹 가입: 고객 포털 + 이메일(support@anthropic.com) 동시 제공. 앱 가입: App Distributor. hybrid가 정확."
+  },
+  "cancellation.method_description": {
+    "expected": "웹 구독: 고객 포털 또는 support@anthropic.com / 앱 구독: App Distributor 통한 해지",
+    "model_value": "Cancel via customer portal or email support@anthropic.com for website subscriptions; cancel via App Distributor for app subscriptions.",
+    "model_uncertainty": "confirmed",
+    "source_quote": "If you subscribed via our website, you may cancel your Subscription for any reason by using a method we may provide to you through our products—for example, for Claude Pro, in your customer portal—or by notifying us at support@anthropic.com.",
+    "source_page": null,
+    "note": ""
+  },
+  "cancellation.notice_period_days": {
+    "expected": 0,
+    "model_value": 24,
+    "model_uncertainty": "confirmed",
+    "source_quote": "If you subscribed via our website, you may cancel your Subscription for any reason ... To avoid renewal and charges for the next Renewal Term, cancel your subscription at least 24 hours before the last day of the Initial Term or any Renewal Term.",
+    "source_page": null,
+    "note": "정정 — model이 24 hours를 24 days로 오해석. 실제: 별도 통지 기간 없이 언제든 해지 가능(0). 단, 다음 갱신 회피용 24시간 전 마감 규칙 별도 존재(이건 notice period가 아니라 deadline)."
+  },
+  "cancellation.penalty_present": {
+    "expected": false,
+    "model_value": false,
+    "model_uncertainty": "confirmed",
+    "source_quote": "you may cancel your Subscription for any reason",
+    "source_page": null,
+    "note": "해지 위약금 부재. 단, 환불 거부와 별개."
+  },
+  "cancellation.penalty_description": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": ""
+  },
+  "cancellation.proration_policy": {
+    "expected": "no_refund",
+    "model_value": "prorated",
+    "model_uncertainty": "confirmed",
+    "source_quote": "In the event of a cancellation, your fees will not be refunded, but your access to the Services will continue through the end of the Initial Term or any Renewal Term for which you previously paid fees.",
+    "source_page": null,
+    "note": "**중대 정정 — 'prorated'는 완전히 잘못된 라벨링**. 약관 명시: 일반 사용자 해지 시 환불 없음(Netflix 패턴). 단 예외: Anthropic이 약관 위반 외 사유로 종료 시 pro-rata 환불 + 한국/브라질/멕시코/대만 7일 청약철회는 별도 cooling_off 필드."
+  },
+  "cancellation.blackout_periods": {
+    "expected": null,
+    "model_value": [],
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": "정정 — 기존 빈 list보다 null이 정확."
+  },
+  "cancellation.cooling_off_refund_days": {
+    "expected": 7,
+    "model_value": null,
+    "model_uncertainty": "confirmed",
+    "source_quote": "Additional cancellation rights. If you are a resident of Brazil, Mexico, South Korea, or Taiwan, you have a legal right to change your mind and cancel the Subscription within 7 days of entering into the Subscription without giving a reason.",
+    "source_page": null,
+    "note": "v0.2 신설 필드 — **한국 거주자 명시적 7일 청약철회권 보유**(Section 6 ¶4). Korean consumer protection law 강행규정 준수. 글로벌 SaaS 중 보기 드문 명시적 한국 cooling-off."
+  },
+  "cancellation.cooling_off_conditions": {
+    "expected": "한국·브라질·멕시코·대만 거주자 한정 (사용 시 부분 차감)",
+    "model_value": null,
+    "model_uncertainty": "confirmed",
+    "source_quote": "If you have used the Services during the 7-day cancellation period, and wish to cancel the Subscription, you can still do so by following the process in Section (4)(a) above, but we may retain an amount which is in proportion to what has been provided until you have communicated us your withdrawal from these Terms",
+    "source_page": null,
+    "note": "v0.2 신설 필드 — 7일 내 사용 시 비례 차감 가능(Section 6 ¶4(c)). 14일 이내 환불 처리."
+  },
+  "cancellation.third_party_cancellation_required": {
+    "expected": true,
+    "model_value": null,
+    "model_uncertainty": "confirmed",
+    "source_quote": "If you subscribed via an app, you'll need to cancel via the App Distributor according to the App Distributor's terms.",
+    "source_page": null,
+    "note": "v0.2 신설 필드 — Apple App Store/Google Play 가입 시 해당 마켓 통해 해지 필수."
+  },
+  "terms_changes.notice_channels": {
+    "expected": [
+      "web_notice"
+    ],
+    "model_value": [
+      "app_push",
+      "email",
+      "in_app_banner",
+      "web_notice"
+    ],
+    "model_uncertainty": "inferred",
+    "source_quote": "If you continue to access the Services after we post the updated Terms on Anthropic's website or otherwise give you notice of Terms changes",
+    "source_page": null,
+    "note": "정정 — 'post on Anthropic's website' 명시. '또는 통지'로 추가 채널 가능성은 있으나 미명시. web_notice만 confirmed."
+  },
+  "terms_changes.notice_lead_time_days": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": "약관 본문에 사전 통지 일수 명시 없음. **공정위 시정 권고 대상 가능 — 한국 거주자에게 30일 사전 고지 부재 잠재 이슈**."
+  },
+  "terms_changes.user_consent_mechanism": {
+    "expected": "deemed_agreed",
+    "model_value": "deemed_agreed",
+    "model_uncertainty": "confirmed",
+    "source_quote": "If you continue to access the Services after we post the updated Terms on Anthropic's website or otherwise give you notice of Terms changes, then you agree to the updated Terms.",
+    "source_page": null,
+    "note": "계속 사용 = 동의 간주 (deemed_agreed)."
+  },
+  "terms_changes.user_right_to_terminate_on_change": {
+    "expected": true,
+    "model_value": false,
+    "model_uncertainty": "confirmed",
+    "source_quote": "If you do not accept the updated Terms, you must stop using our Services.",
+    "source_page": null,
+    "note": "정정 — 'must stop using' = 사용 중단 권리 보장. 별도 해지 메커니즘은 Subscription cancellation 적용. true가 정확."
+  },
+  "terms_changes.silent_acceptance_clause": {
+    "expected": true,
+    "model_value": true,
+    "model_uncertainty": "confirmed",
+    "source_quote": "If you continue to access the Services after we post the updated Terms ... then you agree to the updated Terms.",
+    "source_page": null,
+    "note": "공정위 시정 권고 대상 유형."
+  },
+  "terms_changes.price_change_explicit_consent": {
+    "expected": false,
+    "model_value": null,
+    "model_uncertainty": "confirmed",
+    "source_quote": "You agree to the increase in fees payable by you unless you cancel the Subscription, as described in the paragraph (Subscription cancellation) immediately above, before the Renewal Term to which the increase in fees will apply.",
+    "source_page": null,
+    "note": "v0.2 신설 필드 — 가격 변경 30일 통지 + 해지 안 하면 자동 동의(opt-out). 명시적 동의 불요구. Netflix/Watcha 패턴과 차이."
+  },
+  "data_usage.collected_categories": {
+    "expected": [
+      "communication_information",
+      "feedback",
+      "identity_and_contact_data",
+      "inputs_and_outputs",
+      "payment_information",
+      "technical_information"
+    ],
+    "model_value": [
+      "identity_and_contact_data",
+      "payment_information",
+      "inputs_and_outputs",
+      "technical_information",
+      "communication_information",
+      "feedback"
+    ],
+    "model_uncertainty": "confirmed",
+    "source_quote": "We collect the following categories of personal data: Personal data you provide to us directly - Identity and Contact data",
+    "source_page": null,
+    "note": "Privacy Policy 기준. 리스트 알파벳 정렬."
+  },
+  "data_usage.third_party_sharing": {
+    "expected": true,
+    "model_value": false,
+    "model_uncertainty": "confirmed",
+    "source_quote": "The Services are owned, operated, and provided by us and our affiliates, licensors, distributors, and service providers (collectively 'Providers').",
+    "source_page": null,
+    "note": "Privacy Policy 및 Terms(Section 10)에 affiliates, service providers(Providers) 등 공유 명시됨."
+  },
+  "data_usage.third_party_recipients": {
+    "expected": [
+      "affiliates",
+      "distributors",
+      "licensors",
+      "service_providers"
+    ],
+    "model_value": [],
+    "model_uncertainty": "confirmed",
+    "source_quote": "The Services are owned, operated, and provided by us and our affiliates, licensors, distributors, and service providers (collectively 'Providers').",
+    "source_page": null,
+    "note": "정정 — Section 10 명시."
+  },
+  "data_usage.third_party_purposes": {
+    "expected": [
+      "service_provision"
+    ],
+    "model_value": [],
+    "model_uncertainty": "inferred",
+    "source_quote": "",
+    "source_page": null,
+    "note": "Privacy Policy 별도 명시."
+  },
+  "data_usage.retention_period_months": {
+    "expected": "AMBIGUOUS",
+    "model_value": null,
+    "model_uncertainty": "ambiguous",
+    "source_quote": "if you allow us to use your data for model training. ... If you do not choose to provide your data for model training, you'll continue with our existing 30-day data retention period.",
+    "source_page": null,
+    "note": "**조건부 보관 기간** — 모델 학습 opt-in: 5년(60개월), opt-out: 30일(~1개월). AMBIGUOUS 또는 enum 확장 필요."
+  },
+  "data_usage.marketing_use": {
+    "expected": true,
+    "model_value": false,
+    "model_uncertainty": "confirmed",
+    "source_quote": "market additional products",
+    "source_page": null,
+    "note": "마케팅 활용 명시 (Privacy Policy 참조)."
+  },
+  "data_usage.marketing_consent": {
+    "expected": null,
+    "model_value": "opt_out_available",
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": "정정 — Privacy Policy 영역. Consumer Terms 미명시."
+  },
+  "data_usage.cross_border_transfer": {
+    "expected": true,
+    "model_value": true,
+    "model_uncertainty": "confirmed",
+    "source_quote": "When you access our website or Services, your personal data may be transferred to our servers in the US",
+    "source_page": null,
+    "note": "Privacy Policy 명시 — Anthropic은 미국 사업자, 데이터 US 서버 처리. 한국 거주자 입장에서 국외 이전."
+  },
+  "liability.service_disruption_compensation": {
+    "expected": false,
+    "model_value": false,
+    "model_uncertainty": "confirmed",
+    "source_quote": "We will not be liable for any change to or any suspension or discontinuation of the Services or your access to them.",
+    "source_page": null,
+    "note": "Section 12 — 서비스 변경/중단/종료 책임 면제. 단, 약관 위반 외 사유 종료 시 pro-rata 환불은 별도(Section 12 Termination)."
+  },
+  "liability.compensation_description": {
+    "expected": "사용자 약관 위반 외 사유로 Anthropic이 구독 종료 시 잔여 기간 pro-rata 환불 (웹 구독에 한함)",
+    "model_value": null,
+    "model_uncertainty": "confirmed",
+    "source_quote": "if you have a Subscription, we may terminate the Subscription at any time for any other reason. If we exercise this right and you purchased the subscription via our website, we will refund you, on a pro rata basis, the fees you paid for the remaining portion of your Subscription after termination.",
+    "source_page": null,
+    "note": "정정 — Section 12 Termination. 약관 위반 외 사유 종료 시 pro-rata 환불 보장."
+  },
+  "liability.damages_cap_present": {
+    "expected": true,
+    "model_value": false,
+    "model_uncertainty": "confirmed",
+    "source_quote": "THE ANTHROPIC PARTIES' TOTAL AGGREGATE LIABILITY TO YOU FOR ALL DAMAGES, LOSSES AND CAUSES OF ACTION ARISING OUT OF OR IN ANY WAY RELATED TO THE SERVICES, THE MATERIALS, THE ACTIONS, OR THESE TERMS, WHETHER IN CONTRACT, TORT (INCLUDING NEGLIGENCE) OR OTHERWISE, WILL NOT EXCEED THE GREATER OF THE AMOUNT YOU PAID TO US FOR ACCESS TO OR USE OF THE SERVICES (IF ANY) IN THE SIX MONTHS PRECEDING THE DATE SUCH DAMAGES, LOSSES, AND CAUSES OF ACTION FIRST AROSE, AND $100.",
+    "source_page": null,
+    "note": "**중대 정정 — 기존 false 완전 오류**. Section 11에 명시적 손해배상 한도 존재. true가 정확."
+  },
+  "liability.damages_cap_description": {
+    "expected": "최근 6개월 결제액 또는 $100 중 큰 금액으로 제한",
+    "model_value": "total aggregate liability ... will not exceed the greater of the amount you paid ... in the six months preceding ... and $100",
+    "model_uncertainty": "confirmed",
+    "source_quote": "WILL NOT EXCEED THE GREATER OF THE AMOUNT YOU PAID TO US FOR ACCESS TO OR USE OF THE SERVICES (IF ANY) IN THE SIX MONTHS PRECEDING ... AND $100.",
+    "source_page": null,
+    "note": "Spotify($30/12개월) 대비 무료 사용자에게 더 관대(최소 $100 보장). 한국 거주자에게 한국 약관규제법 강행규정 충돌 가능성."
+  },
+  "liability.force_majeure_scope": {
+    "expected": "예기치 못한 사유(abuse 방지, 법적 요청, 보안·운영 이슈)",
+    "model_value": null,
+    "model_uncertainty": "inferred",
+    "source_quote": "Although we will strive to provide you with reasonable advance notice if we stop offering a Service, there may be urgent situations—such as preventing abuse, responding to legal requirements, or addressing security and operability issues—where providing advance notice is not feasible.",
+    "source_page": null,
+    "note": "Section 12. 명시적 force majeure 조항은 없으나 통제 외 사유 면책 시사."
+  },
+  "liability.indirect_damages_excluded": {
+    "expected": true,
+    "model_value": false,
+    "model_uncertainty": "confirmed",
+    "source_quote": "IN NO EVENT WILL WE, OUR PROVIDERS, OR OUR OR THEIR RESPECTIVE AFFILIATES, INVESTORS, DIRECTORS, OFFICERS, EMPLOYEES, AGENTS, SUCCESSORS OR ASSIGNS (COLLECTIVELY, THE 'ANTHROPIC PARTIES'), BE LIABLE FOR ANY DIRECT, INDIRECT, PUNITIVE, INCIDENTAL, SPECIAL, CONSEQUENTIAL, EXEMPLARY, OR OTHER DAMAGES",
+    "source_page": null,
+    "note": "**중대 정정 — 기존 false 완전 오류**. Section 11 ALL CAPS로 간접손해 명시적 제외. **DIRECT 손해까지 제외하는 광범위 면책 — 한국 약관규제법상 강행규정 위반 가능성**."
+  },
+  "disputes.governing_law": {
+    "expected": "California law",
+    "model_value": "California law",
+    "model_uncertainty": "confirmed",
+    "source_quote": "Our Terms will be governed by, and construed and interpreted in accordance with, the laws of the State of California without giving effect to conflict of law principles.",
+    "source_page": null,
+    "note": "Section 13. 캘리포니아 주법 적용. 한국 거주자에게 한국 강행규정 우선 적용 가능성 별도."
+  },
+  "disputes.jurisdiction_clause": {
+    "expected": "San Francisco, California state and federal courts (exclusive)",
+    "model_value": "San Francisco, California state and federal courts",
+    "model_uncertainty": "confirmed",
+    "source_quote": "any disputes arising out of or relating to these Terms will be resolved exclusively in the state or federal courts located in San Francisco, California, and you and Anthropic submit to the personal and exclusive jurisdiction of those courts.",
+    "source_page": null,
+    "note": "Section 13. exclusive 명시."
+  },
+  "disputes.arbitration_required": {
+    "expected": false,
+    "model_value": false,
+    "model_uncertainty": "confirmed",
+    "source_quote": "any disputes arising out of or relating to these Terms will be resolved exclusively in the state or federal courts located in San Francisco, California",
+    "source_page": null,
+    "note": "**중재 조항 부재** — 법원 관할 명시. Spotify(JAMS 강제 중재)와 차이."
+  },
+  "disputes.class_action_waiver": {
+    "expected": false,
+    "model_value": false,
+    "model_uncertainty": "confirmed",
+    "source_quote": "",
+    "source_page": null,
+    "note": "약관에 명시적 집단소송 포기 조항 없음. Spotify(명시적 waiver)와 차이."
+  },
+  "account.minimum_age": {
+    "expected": 18,
+    "model_value": null,
+    "model_uncertainty": "confirmed",
+    "source_quote": "Minimum age. You must be at least 18 years old or the minimum age required to consent to use the Services in your location, whichever is higher.",
+    "source_page": null,
+    "note": "v0.2 신설 필드 — Section 2 명시. 한국 거주자도 18세 이상 (한국 정보통신망법 14세보다 높음)."
+  },
+  "account.sharing_restrictions": {
+    "expected": "personal_only",
+    "model_value": null,
+    "model_uncertainty": "confirmed",
+    "source_quote": "You may not share your Account login information, Anthropic API key, or Account credentials with anyone else. You also may not make your Account available to anyone else.",
+    "source_page": null,
+    "note": "v0.2 신설 필드 — Section 2 명시. 1인 1계정, 공유 금지."
+  },
+  "service.regional_content_restriction": {
+    "expected": true,
+    "model_value": null,
+    "model_uncertainty": "confirmed",
+    "source_quote": "You may access and use our Services only in compliance with our Terms, including ... the policy governing the countries and regions Anthropic currently supports ('Supported Regions Policy')",
+    "source_page": null,
+    "note": "v0.2 신설 필드 — Section 3. Supported Regions Policy 별도 운영. anthropic.com/supported-countries 참조."
+  },
+  "service.availability_disclaimer": {
+    "expected": true,
+    "model_value": null,
+    "model_uncertainty": "confirmed",
+    "source_quote": "We may sometimes add or remove features, increase or decrease capacity limits, offer new Services, or stop offering certain Services. ... we reserve the right to modify, suspend, or discontinue the Services or your access to the Services, in whole or in part, at any time without notice to you.",
+    "source_page": null,
+    "note": "v0.2 신설 필드 — Section 12. 통지 없이 서비스 변경/중단 가능 명시."
+  },
+  "unfair_clause_flags": {
+    "expected": [
+      "POST-01",
+      "POST-04",
+      "POST-05",
+      "면책_손배_제한",
+      "약관 일방 변경권 (사전 통지 일수 미명시)",
+      "의사표시_의제"
+    ],
+    "model_value": [
+      "면책_손배_제한",
+      "의사표시_의제"
+    ],
+    "note": "POST-04(면책/손배 제한, $100 한도 + 직접손해 제외) — 한국 약관규제법 강행규정 위반 가능성. POST-05(silent acceptance). POST-01(약관 일방 변경권 + 사전 통지 일수 미명시) — 한국 거주자에 30일 사전 고지 부재 잠재 이슈. 단, 한국 거주자 7일 청약철회권 명시는 친소비자적."
+  }
+}

@@ -1,0 +1,78 @@
+==============================================================================================================
+PER-FIELD ACCURACY (expected vs actual)
+==============================================================================================================
+Field                                                   Type   Expected               Actual                 Result
+--------------------------------------------------------------------------------------------------------------
+pricing.base_price_krw                                  int    None                   None                   · ok_null
+pricing.billing_cycle                                   enum   monthly                monthly                ✓ ok
+pricing.auto_renewal_enabled                            bool   True                   True                   ✓ ok
+pricing.auto_renewal_consent                            enum   opt_out_available      opt_in_explicit        ✗ wrong
+pricing.price_change_notice_days                        int    30                     None                   — missed
+pricing.price_change_notice_channels                    list   ['email', 'in_app_ban  None                   — missed
+free_trial.offered                                      bool   None                   True                   + over_extracted
+free_trial.duration_days                                int    None                   None                   · ok_null
+free_trial.auto_convert_to_paid                         bool   None                   True                   + over_extracted
+free_trial.cancel_required_before_end                   bool   None                   False                  + over_extracted
+free_trial.payment_method_required_upfront              bool   None                   False                  + over_extracted
+free_trial.notice_before_conversion_days                int    None                   None                   · ok_null
+cancellation.method                                     enum   online                 online                 ✓ ok
+cancellation.method_description                         str    설정 > 구독관리 (앱/웹) 또는 앱스  회원은 언제든지 탈퇴를 요청하면 즉시   ✗ wrong
+cancellation.notice_period_days                         int    0                      None                   — missed
+cancellation.penalty_present                            bool   False                  False                  ✓ ok
+cancellation.penalty_description                        str    None                                          · ok_null
+cancellation.proration_policy                           enum   no_refund              no_refund              ✓ ok
+cancellation.blackout_periods                           list   None                   []                     · ok_null
+terms_changes.notice_channels                           list   ['email', 'in_app_ban  ['app_push', 'web_not  ✗ wrong
+terms_changes.notice_lead_time_days                     int    7                      7                      ✓ ok
+terms_changes.user_consent_mechanism                    enum   silent_acceptance      deemed_agreed          ✗ wrong
+terms_changes.user_right_to_terminate_on_change         bool   True                   False                  ✗ wrong
+terms_changes.silent_acceptance_clause                  bool   True                   False                  ✗ wrong
+data_usage.collected_categories                         list   None                   None                   · ok_null
+data_usage.third_party_sharing                          bool   None                   False                  + over_extracted
+data_usage.third_party_recipients                       list   None                   None                   · ok_null
+data_usage.third_party_purposes                         list   None                   None                   · ok_null
+data_usage.retention_period_months                      int    None                   None                   · ok_null
+data_usage.marketing_use                                bool   None                   False                  + over_extracted
+data_usage.marketing_consent                            enum   None                   opt_out_available      + over_extracted
+data_usage.cross_border_transfer                        bool   None                   False                  + over_extracted
+liability.service_disruption_compensation               bool   False                  False                  ✓ ok
+liability.compensation_description                      str    디지털콘텐츠 이용자 보호지침에 따른 처  천재지변 또는 이에 준하는 불가항력,   ✗ wrong
+liability.damages_cap_present                           bool   False                  False                  ✓ ok
+liability.damages_cap_description                       str    None                   None                   · ok_null
+liability.force_majeure_scope                           str    천재지변 또는 이에 준하는 불가항력 기  천재지변 또는 이에 준하는 불가항력    ✗ wrong
+liability.indirect_damages_excluded                     bool   None                   False                  + over_extracted
+disputes.governing_law                                  str    대한민국 법률                대한민국 법률                ✓ ok
+disputes.jurisdiction_clause                            str    민사소송법상 관할법원            민사소송법 관할법원             ✗ wrong
+disputes.arbitration_required                           bool   False                  False                  ✓ ok
+disputes.class_action_waiver                            bool   False                  False                  ✓ ok
+
+==============================================================================================================
+OVERALL (42 fields)
+  ✓ ok (correct non-null):     11 (26%)
+  · ok_null (correct null):    10 (23%)
+  — missed (had answer, model said null):   3 (7%)
+  ✗ wrong (different value):   9 (21%)
+  + over_extracted (no answer, model invented):   9 (21%)
+  --- accuracy = (ok + ok_null) / total = 50% ---
+
+BY TYPE
+  int     n= 7  acc= 71.4%   ok=1 ok_null=4 wrong=0 missed=2 over=0
+  enum    n= 6  acc= 50.0%   ok=3 ok_null=0 wrong=2 missed=0 over=1
+  bool    n=16  acc= 37.5%   ok=6 ok_null=0 wrong=2 missed=0 over=8
+  list    n= 6  acc= 66.7%   ok=0 ok_null=4 wrong=1 missed=1 over=0
+  str     n= 7  acc= 42.9%   ok=1 ok_null=2 wrong=4 missed=0 over=0
+
+BY SECTION
+  pricing         n= 6  acc= 50.0%
+  free_trial      n= 6  acc= 33.3%
+  cancellation    n= 7  acc= 71.4%
+  terms_changes   n= 5  acc= 20.0%
+  data_usage      n= 8  acc= 50.0%
+  liability       n= 6  acc= 50.0%
+  disputes        n= 4  acc= 75.0%
+
+unfair_clause_flags:
+  expected: ['POST-01', 'POST-03', 'POST-04', 'POST-05', '면책/손배 제한', '약관 일방 변경권', '의사표시_의제', '환불 거부 (시청 시 청약철회 권리 소멸)']
+  actual:   ['의사표시_의제']
+  precision=1.00  recall=0.12 (strict)
+  precision=1.00  recall=0.12 (normalized: 괄호 부연 제거)

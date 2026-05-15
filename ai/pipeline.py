@@ -54,7 +54,6 @@ class AnalysisResult(BaseModel):
     grounded: bool
     timings: list[StageTiming] = Field(default_factory=list)
     usage: list[StageUsage] = Field(default_factory=list)
-    raw_text: str
 
 
 async def run_pipeline(
@@ -112,5 +111,4 @@ async def run_pipeline(
         grounded=ground.overall_grounded,
         timings=timings,
         usage=usage,
-        raw_text=parsed.markdown,
     )

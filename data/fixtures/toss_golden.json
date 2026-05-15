@@ -1,0 +1,446 @@
+{
+  "_meta": {
+    "service_name": "Toss",
+    "terms_version": "2026-06-17 (효력일)",
+    "document_source_url": "https://www.toss.im/terms",
+    "schema_version": "v0.2",
+    "labeler": "team",
+    "extraction_date": "2026-05-15",
+    "domain": "fintech_payment",
+    "instructions": "각 필드의 'expected' 값을 약관 원문 기준으로 정답으로 편집하세요. model_value/source_quote는 참고용. 정답이 약관에 없으면 null 유지, 모호하면 'AMBIGUOUS'로 기록 후 note 작성. 리스트는 정렬된 형태로 입력. enum 값은 schema/enums.py 참조.",
+    "changelog": [
+      "v0.2 (2026-05-15): Toss 첫 라벨링. 주식회사 비바리퍼블리카 전자금융거래 서비스 약관 (51조 + 부칙) 분석. **fintech 도메인 — OTT 7-section schema 부적합 명시적 표기**.",
+      "v0.2 + Tier1+2 (2026-05-15): account/service 카테고리 추가 라벨링."
+    ],
+    "schema_fit_note": "토스는 PG + 전자금융거래 + 일부 SaaS. SubscriptionTerms 기준이라 pricing.*, free_trial.*, billing_cycle 등은 의미 없음. cancellation=서비스 탈퇴(≠구독 해지). cooling_off_refund_days=null (구매 대상 없음). terms_changes/disputes/liability는 schema fit 양호.",
+    "note": "Phase B fintech probe — Toss 약관은 전자금융거래 표준 따름. 2026 공시대상기업집단 지정으로 공시 의무 추가."
+  },
+  "pricing.base_price_krw": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": "정액 가격 부재. 거래별 수수료 모델."
+  },
+  "pricing.billing_cycle": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": ""
+  },
+  "pricing.auto_renewal_enabled": {
+    "expected": null,
+    "model_value": false,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": "정정 — 정기 구독 모델 부재. false 추론 근거 부족. null이 정확."
+  },
+  "pricing.auto_renewal_consent": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": ""
+  },
+  "pricing.price_change_notice_days": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": ""
+  },
+  "pricing.price_change_notice_channels": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": ""
+  },
+  "free_trial.offered": {
+    "expected": null,
+    "model_value": false,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": "정정 — 체험 개념 부재. null이 정확. false는 의미 없음."
+  },
+  "free_trial.duration_days": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": ""
+  },
+  "free_trial.auto_convert_to_paid": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": ""
+  },
+  "free_trial.cancel_required_before_end": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": ""
+  },
+  "free_trial.payment_method_required_upfront": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": ""
+  },
+  "free_trial.notice_before_conversion_days": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": ""
+  },
+  "cancellation.method": {
+    "expected": "online",
+    "model_value": "online",
+    "model_uncertainty": "confirmed",
+    "source_quote": "회원은 언제든지 회사에 이용계약 해지의 의사를 통지함으로써 이용계약을 해지할 수 있습니다.",
+    "source_page": 1,
+    "note": "fintech의 cancellation=계약 탈퇴."
+  },
+  "cancellation.method_description": {
+    "expected": "회원이 회사에 해지 의사 통지 시 해지 (앱/웹)",
+    "model_value": "회원은 언제든지 회사에 이용계약 해지의 의사를 통지함으로써 이용계약을 해지할 수 있습니다.",
+    "model_uncertainty": "confirmed",
+    "source_quote": "회원은 언제든지 회사에 이용계약 해지의 의사를 통지함으로써 이용계약을 해지할 수 있습니다.",
+    "source_page": 1,
+    "note": ""
+  },
+  "cancellation.notice_period_days": {
+    "expected": 0,
+    "model_value": null,
+    "model_uncertainty": "inferred",
+    "source_quote": "회원은 언제든지 회사에 이용계약 해지의 의사를 통지함으로써 이용계약을 해지할 수 있습니다.",
+    "source_page": 1,
+    "note": "정정 — '언제든지' = 별도 통지 기간 없음. 0이 정확."
+  },
+  "cancellation.penalty_present": {
+    "expected": false,
+    "model_value": false,
+    "model_uncertainty": "inferred",
+    "source_quote": "회원은 언제든지 회사에 이용계약 해지의 의사를 통지함으로써 이용계약을 해지할 수 있습니다.",
+    "source_page": 1,
+    "note": ""
+  },
+  "cancellation.penalty_description": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": ""
+  },
+  "cancellation.proration_policy": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": ""
+  },
+  "cancellation.blackout_periods": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": ""
+  },
+  "cancellation.cooling_off_refund_days": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_extracted",
+    "source_quote": "",
+    "source_page": null,
+    "note": "v0.2 신설 필드 — 구매 대상 부재로 청약철회 개념 자체 없음."
+  },
+  "cancellation.cooling_off_conditions": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_extracted",
+    "source_quote": "",
+    "source_page": null,
+    "note": "v0.2 신설 필드."
+  },
+  "cancellation.third_party_cancellation_required": {
+    "expected": false,
+    "model_value": null,
+    "model_uncertainty": "inferred",
+    "source_quote": "",
+    "source_page": null,
+    "note": "v0.2 신설 필드 — 자체 앱. 앱마켓 결제 게이트웨이 없음."
+  },
+  "terms_changes.notice_channels": {
+    "expected": [
+      "app_push",
+      "email",
+      "sms",
+      "web_notice"
+    ],
+    "model_value": [
+      "app_push",
+      "web_notice",
+      "email",
+      "sms"
+    ],
+    "model_uncertainty": "confirmed",
+    "source_quote": "전자적 장치 또는 토스앱 등에 게시하고 회원에게 통지합니다.",
+    "source_page": 1,
+    "note": "리스트 알파벳 정렬. 4채널 — fintech 중 가장 광범위한 통지 채널."
+  },
+  "terms_changes.notice_lead_time_days": {
+    "expected": 30,
+    "model_value": 30,
+    "model_uncertainty": "confirmed",
+    "source_quote": "그 시행일 1개월 전에 변경되는 약관을 해당 전자금융거래를 수행하는 전자적 장치 또는 토스앱 등에 게시하고 회원에게 통지합니다.",
+    "source_page": 1,
+    "note": "전자금융거래법 표준 1개월."
+  },
+  "terms_changes.user_consent_mechanism": {
+    "expected": "deemed_agreed",
+    "model_value": "opt_out_available",
+    "model_uncertainty": "confirmed",
+    "source_quote": "회원이 약관의 변경내용에 대하여 이의를 제기하지 아니하는 경우에는 약관의 변경을 승인한 것으로 본다.",
+    "source_page": 1,
+    "note": "정정 — '이의 미제기 = 승인 간주' = deemed_agreed가 정확. opt_out_available은 해지권 보장 측면만 반영."
+  },
+  "terms_changes.user_right_to_terminate_on_change": {
+    "expected": true,
+    "model_value": true,
+    "model_uncertainty": "confirmed",
+    "source_quote": "회원이 변경에 동의하지 아니한 경우 게시 또는 통지를 받은 날로부터 변경되는 약관의 시행일 전의 영업일까지 계약을 해지할 수 있습니다.",
+    "source_page": 1,
+    "note": ""
+  },
+  "terms_changes.silent_acceptance_clause": {
+    "expected": true,
+    "model_value": true,
+    "model_uncertainty": "confirmed",
+    "source_quote": "회원이 약관의 변경내용에 대하여 이의를 제기하지 아니하는 경우에는 약관의 변경을 승인한 것으로 본다.",
+    "source_page": 1,
+    "note": "공정위 시정 권고 대상 유형."
+  },
+  "terms_changes.price_change_explicit_consent": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_extracted",
+    "source_quote": "",
+    "source_page": null,
+    "note": "v0.2 신설 필드 — 가격 변경 개념 부재."
+  },
+  "data_usage.collected_categories": {
+    "expected": [
+      "거래 기록",
+      "개인정보",
+      "위치정보"
+    ],
+    "model_value": [
+      "personal information",
+      "location information",
+      "transaction records"
+    ],
+    "model_uncertainty": "inferred",
+    "source_quote": "제19조 (개인정보의 보호 및 이용) ① 회사는 개인정보의 보호 및 처리와 관련하여 개인정보보호법, 신용정보의이용및보호에관한법률, 정보통신망이용촉진및정보보호에관한법률 및 각 그 하위 법령에 정하는 사항을 준수하며",
+    "source_page": 1,
+    "note": "model_value 영문 → 한글 정렬. 구체 카테고리는 개인정보처리방침 참조."
+  },
+  "data_usage.third_party_sharing": {
+    "expected": false,
+    "model_value": false,
+    "model_uncertainty": "confirmed",
+    "source_quote": "회사는 회원의 개인정보를 법령에 의하거나 회원의 동의를 얻지 아니하고 제3자에게 제공하거나 서비스 제공 목적 외에 사용하지 아니합니다.",
+    "source_page": 1,
+    "note": "원칙적 금지 + 법령/동의 예외만. **카카오페이/BankSalad 대비 가장 엄격한 3자 제공 정책.**"
+  },
+  "data_usage.third_party_recipients": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": "동의 기반으로만 제공."
+  },
+  "data_usage.third_party_purposes": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": ""
+  },
+  "data_usage.retention_period_months": {
+    "expected": 60,
+    "model_value": 60,
+    "model_uncertainty": "confirmed",
+    "source_quote": "아래의 정보는 5년간 보관합니다.",
+    "source_page": 18,
+    "note": "5년 = 60개월. 전자금융거래법 의무 보관 기간."
+  },
+  "data_usage.marketing_use": {
+    "expected": true,
+    "model_value": false,
+    "model_uncertainty": "confirmed",
+    "source_quote": "광고성 정보 제공 서비스",
+    "source_page": null,
+    "note": "광고성 정보 제공 서비스 명시."
+  },
+  "data_usage.marketing_consent": {
+    "expected": "opt_in_explicit",
+    "model_value": null,
+    "model_uncertainty": "inferred",
+    "source_quote": "동의를 얻지 아니하고 ... 서비스 제공 목적 외에 사용하지 아니합니다.",
+    "source_page": 1,
+    "note": "정정 — 동의 기반 옵트인 명시."
+  },
+  "data_usage.cross_border_transfer": {
+    "expected": false,
+    "model_value": false,
+    "model_uncertainty": "inferred",
+    "source_quote": "회사는 회원의 개인정보를 법령에 의하거나 회원의 동의를 얻지 아니하고 제3자에게 제공하거나 서비스 제공 목적 외에 사용하지 아니합니다.",
+    "source_page": 1,
+    "note": "한국 사업자, 국외 이전 시 별도 동의 필요."
+  },
+  "liability.service_disruption_compensation": {
+    "expected": null,
+    "model_value": false,
+    "model_uncertainty": "confirmed",
+    "source_quote": "",
+    "source_page": null,
+    "note": "정정 — 기존에 인용된 조항은 분실통지 후 부정사용 책임 관련이므로 서비스 중단 배상과 다름. null로 정정."
+  },
+  "liability.compensation_description": {
+    "expected": "회원 통지 후 제3자 부정사용 손해 배상 책임",
+    "model_value": null,
+    "model_uncertainty": "confirmed",
+    "source_quote": "회사는 회원으로부터 전항에 따른 통지를 받은 때에는 그 때부터 제3자가 그 접근매체를 사용함으로 인하여 회원에게 발생한 손해를 배상할 책임이 있습니다.",
+    "source_page": 1,
+    "note": "전자금융거래법 표준 조항."
+  },
+  "liability.damages_cap_present": {
+    "expected": null,
+    "model_value": false,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": "정정 — 약관 본문 직접 확인 필요. null이 정확."
+  },
+  "liability.damages_cap_description": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": ""
+  },
+  "liability.force_majeure_scope": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": ""
+  },
+  "liability.indirect_damages_excluded": {
+    "expected": null,
+    "model_value": false,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": "정정 — 약관 본문 미확인. null이 정확."
+  },
+  "disputes.governing_law": {
+    "expected": "대한민국 법률",
+    "model_value": null,
+    "model_uncertainty": "inferred",
+    "source_quote": "해당 분쟁의 해결은 민사소송법에 따라 관할을 가지는 법원의 판결에 따르기로 합니다.",
+    "source_page": 1,
+    "note": "정정 — 한국 사업자(비바리퍼블리카) + 민사소송법 적용 → 한국법 자명."
+  },
+  "disputes.jurisdiction_clause": {
+    "expected": "민사소송법상 관할법원",
+    "model_value": null,
+    "model_uncertainty": "confirmed",
+    "source_quote": "해당 분쟁의 해결은 민사소송법에 따라 관할을 가지는 법원의 판결에 따르기로 합니다.",
+    "source_page": 1,
+    "note": "정정 — model_value=null이지만 quote는 명백한 민사소송법 관할 명시."
+  },
+  "disputes.arbitration_required": {
+    "expected": false,
+    "model_value": false,
+    "model_uncertainty": "confirmed",
+    "source_quote": "해당 분쟁의 해결은 민사소송법에 따라 관할을 가지는 법원의 판결에 따르기로 합니다.",
+    "source_page": 1,
+    "note": "법원 판결 명시 — 중재 미적용."
+  },
+  "disputes.class_action_waiver": {
+    "expected": false,
+    "model_value": false,
+    "model_uncertainty": "inferred",
+    "source_quote": "해당 분쟁의 해결은 민사소송법에 따라 관할을 가지는 법원의 판결에 따르기로 합니다.",
+    "source_page": 1,
+    "note": ""
+  },
+  "account.minimum_age": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "inferred",
+    "source_quote": "",
+    "source_page": null,
+    "note": "v0.2 신설 필드 — 14세 미만도 법정대리인 동의 시 가능. 일괄적인 최소 연령 적용 불가."
+  },
+  "account.sharing_restrictions": {
+    "expected": "personal_only",
+    "model_value": null,
+    "model_uncertainty": "inferred",
+    "source_quote": "",
+    "source_page": null,
+    "note": "v0.2 신설 필드 — 본인 인증 기반. 결제 비밀번호 공유 금지."
+  },
+  "service.regional_content_restriction": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "inferred",
+    "source_quote": "",
+    "source_page": null,
+    "note": "v0.2 신설 필드 — 원문에 지역 제한 명시 없음."
+  },
+  "service.availability_disclaimer": {
+    "expected": true,
+    "model_value": null,
+    "model_uncertainty": "inferred",
+    "source_quote": "",
+    "source_page": null,
+    "note": "v0.2 신설 필드 — 서비스 변경/중단 가능 표준."
+  },
+  "unfair_clause_flags": {
+    "expected": [
+      "POST-05",
+      "의사표시_의제"
+    ],
+    "model_value": [
+      "의사표시_의제"
+    ],
+    "note": "POST-05(의사표시 의제). 단, 데이터 3자 제공 엄격 + 회사 귀책 손해 배상 명시 + 30일 통지 4채널 등은 fintech 중 가장 친소비자적."
+  }
+}

@@ -7,6 +7,136 @@ from datetime import datetime, timezone
 from pydantic import ValidationError
 
 from ai.prompts.extract_subscription import SYSTEM_PROMPT, USER_PROMPT_TEMPLATE
+
+# Zero-shot baseline용 minimal 시스템 프롬프트 — 사례/도메인 룰 모두 제거.
+# `MINIMAL_PROMPT=1` 환경변수 설정 시 활성화. 평가 목적 (시스템 가치 측정) 외엔 사용 안 함.
+MINIMAL_SYSTEM_PROMPT = """\
+당신은 한국 약관 분석 어시스턴트입니다.
+주어진 약관 본문에서 SubscriptionTerms JSON 스키마의 각 필드를 추출하세요.
+
+규칙:
+1. 모든 필드는 FieldValue 형식 (value, uncertainty, citation) 으로 채웁니다.
+2. value: 약관에 명시된 값. 없거나 모호하면 null.
+3. uncertainty: "confirmed" (명시) / "inferred" (유추) / "ambiguous" / "not_specified".
+4. citation: confirmed/inferred/ambiguous일 때 page + quote 제공 (quote는 본문 원문 발췌).
+5. 응답은 SubscriptionTerms JSON 객체 하나 (response_format=json_schema 강제).
+"""
+
+USE_MINIMAL_PROMPT = os.getenv("MINIMAL_PROMPT", "0") == "1"
+# AUTO_AI_DOMAIN: AI 도메인으로 감지되면 자동으로 minimal prompt로 분기.
+# Round 9 발견 — zero-shot이 우리 OTT-overfit 룰보다 AI 도메인에서 더 잘됨 (-2.9%p).
+AUTO_AI_DOMAIN = os.getenv("AUTO_AI_DOMAIN", "1") == "1"
+
+# Round 10: AI 도메인 specialized prompt — minimal base + LLM-1~6 룰만 차용.
+# Round 9의 순수 minimal (LLM 룰 0개) 한계 보완: DeepSeek/GPT가 zero-shot 못 따라간 이유는
+# 영문 boilerplate 매핑 (binding arbitration, non-refundable 등) 부재. 이걸 다시 살림.
+# OTT-overfit 룰 (한국 OTT inferred False, 사례 A-E) 은 *여전히 제외*.
+AI_SYSTEM_PROMPT = """\
+당신은 한국 약관 분석 어시스턴트입니다.
+주어진 약관 본문 (영문 또는 한국어, AI/LLM 서비스 약관일 가능성이 높음) 에서
+SubscriptionTerms JSON 스키마의 각 필드를 추출하세요.
+
+규칙:
+1. 모든 필드는 FieldValue 형식 (value, uncertainty, citation) 으로 채웁니다.
+2. value: 약관에 명시된 값. 없거나 모호하면 null.
+3. uncertainty: "confirmed" (명시) / "inferred" (유추) / "ambiguous" / "not_specified".
+4. citation: confirmed/inferred/ambiguous일 때 page + quote 제공 (quote는 본문 원문 발췌).
+5. 응답은 SubscriptionTerms JSON 객체 하나.
+
+**중요**: 한국 OTT 약관에서 흔한 "침묵=False(inferred)" 룰을 *적용하지 마세요*. AI/LLM
+약관은 영미법 개념을 *명시적으로* 사용하므로 명시 부재는 not_specified로 처리.
+
+⚠️ **LLM/AI 약관 추출 룰 (영문 boilerplate 매핑 포함)**:
+
+**(LLM-1) 외부 Pricing Page 위임**:
+- "Subscription fees are listed on our Model Pricing Page", "see [pricing page]" 같이 외부 위임이면:
+  · pricing.base_price_krw, plan_name = not_specified.
+  · pricing.billing_cycle은 본문에 "monthly"/"annually"/"매월" 명시되면 추출, 없으면 not_specified.
+
+**(LLM-2) 학습 데이터 활용**:
+- "Inputs and Outputs may be used to improve/train our models", "사용자 입력 학습 활용" 등 명시되면:
+  · data_usage.marketing_use = True, "confirmed" (모델 학습은 2차 활용 범주).
+  · 옵트아웃 명시 ("unless you opt out", "별도 동의 거부 가능") → data_usage.marketing_consent = "opt_out_available".
+  · unfair_clause_flags 에 "AI 학습 데이터 활용" 추가 (한국어 키워드 필수).
+
+**(LLM-3) 한국 거주자 7일 환불권 (Claude consumer §6 패턴)**:
+- "Users in [..., South Korea, ...] have 7-day cancellation rights with full refunds" 명시되면:
+  · cancellation.notice_period_days = 7, "inferred".
+  · cancellation.proration_policy = "prorated", "confirmed".
+  · cancellation.method_description에 "한국 거주자: 7일 이내 전액 환불 가능" 명시.
+
+**(LLM-4) 영구 무료 tier — trial 아님**:
+- "Free tier", "무료 사용자", "기본 무료 plan"이 *영구 무료*로 등장하면:
+  · free_trial.offered = False, "confirmed".
+  · 다른 free_trial 필드 = not_specified (False/0 절대 금지).
+
+**(LLM-5) 시간 단위 변환 — days 필드에 hours 직입력 금지**:
+- "24 hours before renewal", "24-hour cancellation window":
+  · days 필드에는 반올림 day 단위만 (24h → 1).
+  · 정확한 시간은 method_description 또는 citation.quote에 명시.
+  · **절대 24를 days 필드에 직접 입력하지 말 것**.
+
+**(LLM-6) 영문 boilerplate → 한국 schema 매핑**:
+- "IN NO EVENT WILL [COMPANY] BE LIABLE FOR ANY INDIRECT/INCIDENTAL/SPECIAL/CONSEQUENTIAL DAMAGES"
+  → liability.indirect_damages_excluded = True, "confirmed".
+- "Total aggregate liability ... capped at greater of fees paid in N months or $X"
+  → liability.damages_cap_present = True; damages_cap_description에 영문 그대로;
+    unfair_clause_flags에 "면책_손배_제한" 추가.
+- "All payments are non-refundable except as required by law" / "No refunds":
+  → cancellation.proration_policy = "no_refund", "confirmed".
+- "Subscriptions auto-renew" / "automatically renews"
+  → pricing.auto_renewal_enabled = True, "confirmed".
+- "binding arbitration" / "individual arbitration only" / "must be resolved through arbitration"
+  → disputes.arbitration_required = True; unfair_clause_flags에 "강제 중재" 추가.
+- "waive ... class action" / "no class actions" / "individual basis only"
+  → disputes.class_action_waiver = True; unfair_clause_flags에 "집단소송 포기" 추가.
+- "California law / Sweden law / PRC law governs"
+  → disputes.governing_law에 *영문 표기 그대로*; 한국법 외 외국법이면
+    unfair_clause_flags에 "준거법 외국법" 추가.
+- "[City], [State] state and federal courts" → disputes.jurisdiction_clause에 영문 그대로.
+- **citation.quote는 영문 원문 그대로 (한국어 paraphrase 금지)**.
+"""
+
+USE_AI_SPECIALIZED = os.getenv("AI_SPECIALIZED", "1") == "1"  # Round 10 default on
+
+# AI 도메인 keyword: service_name 또는 본문에 존재 시 AI로 판정.
+_AI_NAME_KEYWORDS = {
+    "claude", "anthropic", "gpt", "openai", "chatgpt",
+    "gemini", "google ai", "bard",
+    "deepseek", "upstage", "solar",
+    "perplexity", "mistral", "llama", "midjourney",
+}
+_AI_TEXT_KEYWORDS = (
+    "Generative AI", "Large Language Model", "model training",
+    "AI 어시스턴트", "Inputs and Outputs", "사용자 입력 학습",
+    "training data", "AI 학습 데이터", "프롬프트", "Prompts",
+)
+
+
+def _is_ai_domain(service_name: str, parsed_markdown: str | None = None) -> bool:
+    """AI 도메인 자동 감지 — service_name keyword 우선, 본문 fallback."""
+    name = (service_name or "").lower()
+    if any(kw in name for kw in _AI_NAME_KEYWORDS):
+        return True
+    if parsed_markdown:
+        # 본문에 AI 키워드 2개 이상 등장 시 AI로 판정 (단순 언급 거름)
+        hit = sum(1 for kw in _AI_TEXT_KEYWORDS if kw in parsed_markdown)
+        if hit >= 2:
+            return True
+    return False
+
+
+def _select_system_prompt(service_name: str, parsed_markdown: str | None = None) -> str:
+    """시스템 프롬프트 분기 — MINIMAL_PROMPT > AI 자동 분기 > 기본.
+
+    AI 분기 prompt: AI_SPECIALIZED=1 (Round 10 default)일 때 LLM-1~6 룰 포함된
+    AI_SYSTEM_PROMPT 사용, 0이면 LLM 룰 없는 순수 MINIMAL_SYSTEM_PROMPT (Round 9).
+    """
+    if USE_MINIMAL_PROMPT:
+        return MINIMAL_SYSTEM_PROMPT
+    if AUTO_AI_DOMAIN and _is_ai_domain(service_name, parsed_markdown):
+        return AI_SYSTEM_PROMPT if USE_AI_SPECIALIZED else MINIMAL_SYSTEM_PROMPT
+    return SYSTEM_PROMPT
 from ai.schemas.common import Citation, FieldValue
 from ai.schemas.subscription import SubscriptionTerms
 from ai.services.parse import ParsedElement
@@ -134,7 +264,7 @@ async def extract_subscription(
     payload = {
         "model": MODEL,
         "messages": [
-            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "system", "content": _select_system_prompt(service_name, parsed_markdown)},
             {
                 "role": "user",
                 "content": USER_PROMPT_TEMPLATE.format(
