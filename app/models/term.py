@@ -20,6 +20,9 @@ class Term(Base):
         SAEnum(TermDomain, name="term_domain", create_type=False),
         nullable=False
     )
+    # 1단계 domain 안의 sub-category — 도메인별 권장값은 ai_sub_category 모듈 참고.
+    # 자유 텍스트 (DB 레벨 enum 강제 안 함) — 새 sub-category 추가 시 마이그레이션 불필요.
+    sub_category: Mapped[str | None] = mapped_column(Text, nullable=True)
     status: Mapped[TermStatus] = mapped_column(
         SAEnum(TermStatus, name="term_status", create_type=False),
         default=TermStatus.ACTIVE

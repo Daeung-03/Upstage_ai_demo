@@ -63,6 +63,34 @@ async def summarize_version_diff(
             service_name=service_name,
         )
 
+
+async def user_impacted_diff(
+    *,
+    old_text: str,
+    new_text: str,
+    service_name: str,
+    old_clauses: list[str],
+    new_clauses: list[str],
+    user_context: dict | None,
+) -> "ai_diff.UserImpactedDiffResult":
+    """약관 변경의 *개별 사용자 영향* 까지 분석. semantic diff + LLM 1회.
+
+    한 UpstageClient 세션 안에서 (a) compute_semantic_diff (embedding) 와
+    (b) summarize_version_diff_for_user (chat completions) 를 순차 호출.
+    """
+    async with UpstageClient(_ai_settings()) as client:
+        semantic = await ai_diff.compute_semantic_diff(
+            client, old_clauses=old_clauses, new_clauses=new_clauses,
+        )
+        return await ai_diff.summarize_version_diff_for_user(
+            client,
+            old_text=old_text,
+            new_text=new_text,
+            service_name=service_name,
+            user_context=user_context,
+            semantic=semantic,
+        )
+
 async def chat_with_ai(
     query: str,
     term_ids: list[str],

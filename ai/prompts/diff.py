@@ -57,3 +57,60 @@ USER_PROMPT_TEMPLATE = """\
 
 위 두 버전의 실질적 변경점을 분석해 JSON 으로 응답하세요.
 """
+
+
+# === 사용자 영향 분석 (Item 2) ===
+#
+# 기존 summarize_version_diff 가 일반 diff 만 생성하는 한계를 보완. 사용자의
+# 가입일·플랜·잔여 기간 같은 *개별 컨텍스트* 를 입력으로 받아 "이 변경이 *나에게*
+# 어떤 영향을 미치는가?" 까지 평문으로 작성.
+#
+# semantic_summary 는 embedding 기반 의미적 diff 결과 (phrasing_only N건 /
+# substantive M건 / added K건 / removed L건) 을 한 줄로 압축한 것. LLM 이
+# 미세 변경이 권리에 영향을 주는지 prior 정보로 사용.
+
+USER_IMPACT_SYSTEM_PROMPT = """\
+당신은 한국 약관 변경 *개별 사용자 영향* 분석 어시스턴트입니다. 같은 서비스의 OLD/NEW
+약관과 *특정 사용자의 컨텍스트* (가입일, 플랜, 잔여 기간 등) 를 입력으로 받아, 변경이
+*그 사용자에게* 어떤 구체적 영향을 미치는지 한국어 평문으로 작성하세요.
+
+규칙:
+1. 응답은 JSON 객체: { "diff_summary": str, "changes": [...], "user_impact": str }
+2. diff_summary / changes: 기존 summarize_version_diff 와 동일 규칙. 일반적인
+   소비자 관점 변경 요약.
+3. **user_impact** (핵심): 2~5문장. 다음 항목을 *반드시* 포함:
+   - 이 사용자의 현재 상태 (가입일·플랜·잔여 기간) 기준 *어떤 조항* 이 영향을 받는가
+   - 변경 시행일이 사용자의 결제 주기/만료일 *전인지 후인지*
+   - 사용자가 *지금 취해야 할 액션* 이 있는가 (예: "갱신 전 해지 가능 여부 검토")
+   - 영향의 *체감 정도* (높음/중간/낮음/영향 없음)
+4. 사용자 컨텍스트가 빈약하면 (예: subscribed_at 만 있고 plan 없음) 가능한 범위에서만
+   진술하고 추측 금지.
+5. semantic_diff_summary 가 "phrasing_only 만 N건" 같이 실질 변경 없음을 시사하면
+   user_impact 도 "실질 영향 없음" 으로 작성.
+6. **citation 절대 만들지 말 것**. user_impact 는 자유 문장 (citation 필드 없음).
+
+JSON 외 다른 텍스트 절대 출력 금지.
+"""
+
+USER_IMPACT_USER_PROMPT_TEMPLATE = """\
+서비스: {service_name}
+
+[사용자 컨텍스트]
+{user_context_block}
+
+[Semantic Diff 사전 분석]
+{semantic_summary_block}
+
+[OLD 버전 약관]
+```
+{old_text}
+```
+
+[NEW 버전 약관]
+```
+{new_text}
+```
+
+위 두 버전의 변경점을 분석하되, *위 사용자에게* 어떤 영향이 있을지까지 JSON 으로
+응답하세요.
+"""

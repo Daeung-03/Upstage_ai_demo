@@ -114,6 +114,7 @@ async def process_upload(
     file_bytes: bytes,
     file_url: str,
     domain: str = "ETC",
+    sub_category: str | None = None,
 ) -> tuple[Term, TermVersion]:
 
     # 1. AI 파이프라인 (단일 호출로 통합)
@@ -135,6 +136,7 @@ async def process_upload(
         user_id=user_id,
         service_name=service_name,
         domain=domain.upper(),
+        sub_category=sub_category,
         file_url=file_url,
         subscribed_at=subscribed_at,
     )
@@ -304,6 +306,7 @@ async def get_terms(
     user_id: uuid.UUID,
     domain: Optional[str] = None,
     status: Optional[str] = None,
+    sub_category: Optional[str] = None,
 ):
     q = (
         select(Term)
@@ -314,6 +317,8 @@ async def get_terms(
         q = q.where(Term.domain == domain)
     if status:
         q = q.where(Term.status == status)
+    if sub_category:
+        q = q.where(Term.sub_category == sub_category)
     result = await db.execute(q)
     return result.scalars().all()
 
@@ -374,6 +379,139 @@ async def search_chunks(
             "chunk_id": r.id,
             "chunk_index": r.chunk_index,
             "content": r.content,
+            "score": float(r.score),
+        }
+        for r in rows
+    ]
+
+
+async def compute_user_impacted_diff(
+    db: AsyncSession,
+    term_id: uuid.UUID,
+    user_id: uuid.UUID,
+    plan: str | None = None,
+    custom_notes: str | None = None,
+) -> dict:
+    """약관의 최신 2개 버전을 비교해 *현재 사용자에게의 영향* 까지 분석.
+
+    절차:
+      1. term 의 최신 2버전 raw_text 로드 (없으면 ValueError).
+      2. raw_text 를 \\n\\n 으로 split 해 조항 단위로 만든 후 compute_semantic_diff
+         로 (phrasing_only / substantive / added / removed) 분류.
+      3. Term.subscribed_at + (선택) plan + custom_notes 를 user_context dict 로
+         묶어 summarize_version_diff_for_user 호출 (LLM 1회).
+      4. UserImpactedDiffResult.model_dump() 반환.
+
+    호출자가 user_id 가 term owner 인지 확인할 책임.
+    """
+    from sqlalchemy import select as sa_select
+
+    # owner 검증 + Term 조회
+    term = await db.get(Term, term_id)
+    if term is None or term.user_id != user_id:
+        raise ValueError("term not found or not owned by user")
+
+    # 최신 2버전
+    rows = (await db.execute(
+        sa_select(TermVersion)
+        .where(TermVersion.term_id == term_id)
+        .order_by(TermVersion.version.desc())
+        .limit(2)
+    )).scalars().all()
+    if len(rows) < 2:
+        raise ValueError("term has fewer than 2 versions; nothing to compare")
+    new_v, old_v = rows[0], rows[1]
+
+    def _split_clauses(text: str) -> list[str]:
+        """raw_text 를 빈 줄 기준 split — Document Parse markdown 의 조항 구분 기준."""
+        return [c.strip() for c in (text or "").split("\n\n") if c.strip()]
+
+    old_clauses = _split_clauses(old_v.raw_text or "")
+    new_clauses = _split_clauses(new_v.raw_text or "")
+
+    user_context: dict = {}
+    if term.subscribed_at:
+        user_context["subscribed_at"] = term.subscribed_at.isoformat()
+    if plan:
+        user_context["plan"] = plan
+    if custom_notes:
+        user_context["custom_notes"] = custom_notes
+
+    result = await ai_client.user_impacted_diff(
+        old_text=old_v.raw_text or "",
+        new_text=new_v.raw_text or "",
+        service_name=term.service_name,
+        old_clauses=old_clauses,
+        new_clauses=new_clauses,
+        user_context=user_context or None,
+    )
+    return {
+        "term_id": str(term_id),
+        "service_name": term.service_name,
+        "old_version": old_v.version,
+        "new_version": new_v.version,
+        **result.model_dump(),
+    }
+
+
+async def search_chunks_for_user(
+    db: AsyncSession,
+    user_id: uuid.UUID,
+    query: str,
+    top_k: int = 5,
+    domain_filter: list[str] | None = None,
+) -> list[dict]:
+    """사용자가 가입한 *모든* 약관 chunk 중 query 와 의미가 가장 가까운 top_k 반환.
+
+    `search_chunks` 와 달리 (a) term_id 가 아니라 user_id 기준 cross-term, (b)
+    응답에 어느 term 에서 왔는지 (service_name, domain) 까지 포함. UI 가
+    "이 답은 X 약관 (보험) 에서 나왔습니다" 보여줄 수 있게.
+
+    domain_filter 가 주어지면 (예: ["INSURANCE", "FINANCE"]) 그 도메인만 검색.
+    기획안 2-3 "메인 페이지 통합 검색" 시나리오: "이번 병원 진료비에 청구 가능한
+    혜택?" → 사용자가 가입한 보험·렌탈·통신·OTT 약관 전체를 한 번에 cross-search.
+    """
+    from sqlalchemy import text as sa_text
+
+    query_vec = await ai_client.embed_query(query)
+
+    base_sql = """
+        SELECT
+          tc.id              AS chunk_id,
+          tc.content         AS content,
+          tc.chunk_index     AS chunk_index,
+          tc.term_id         AS term_id,
+          t.service_name     AS service_name,
+          t.domain           AS domain,
+          1 - (tc.embedding <=> CAST(:vec AS halfvec)) AS score
+        FROM term_chunks tc
+        JOIN terms t ON t.id = tc.term_id
+        WHERE t.user_id = :user_id
+          {domain_clause}
+        ORDER BY tc.embedding <=> CAST(:vec AS halfvec)
+        LIMIT :top_k
+    """
+    params: dict = {
+        "vec": str(query_vec),
+        "user_id": str(user_id),
+        "top_k": top_k,
+    }
+    if domain_filter:
+        sql = base_sql.format(domain_clause="AND t.domain = ANY(:domains)")
+        params["domains"] = [d.upper() for d in domain_filter]
+    else:
+        sql = base_sql.format(domain_clause="")
+
+    rows = (await db.execute(sa_text(sql), params)).fetchall()
+
+    return [
+        {
+            "chunk_id": r.chunk_id,
+            "chunk_index": r.chunk_index,
+            "content": r.content,
+            "term_id": r.term_id,
+            "service_name": r.service_name,
+            "domain": str(r.domain),
             "score": float(r.score),
         }
         for r in rows

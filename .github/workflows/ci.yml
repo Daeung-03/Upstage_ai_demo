@@ -49,5 +49,10 @@ jobs:
             tests/unit/test_services_extract.py \
             tests/unit/test_services_extract_domains.py \
             tests/unit/test_services_ground.py \
+            tests/unit/test_services_semantic_diff.py \
+            tests/unit/test_services_user_impact_diff.py \
+            tests/unit/test_sub_category.py \
             tests/unit/test_term_service_clauses.py \
+            tests/unit/test_term_service_search.py \
+            tests/unit/test_term_service_user_search.py \
             -v
