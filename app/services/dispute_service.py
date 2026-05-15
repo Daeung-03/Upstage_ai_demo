@@ -10,6 +10,7 @@ from __future__ import annotations
 import uuid
 from typing import TypedDict
 
+from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -302,3 +303,132 @@ async def find_similar_disputes(
         top_k=top_k,
         min_score=min_score,
     )
+
+
+# ── 라우터 진입점 (라우터는 ORM 모를 필요 없게 dict 로 변환) ─────
+
+
+async def find_disputes_for_clause(
+    db: AsyncSession,
+    *,
+    clause_id: uuid.UUID,
+    top_k: int = DEFAULT_TOP_K,
+) -> dict | None:
+    """단일 TermClause → top-K 매칭. clause 없으면 None."""
+    from app.models.term import TermClause, TermVersion, Term
+
+    clause = await db.get(TermClause, clause_id)
+    if clause is None:
+        return None
+    # clause → version → term 으로 거슬러 올라가 도메인 컨텍스트 확보
+    version = await db.get(TermVersion, clause.version_id)
+    term = await db.get(Term, version.term_id) if version else None
+
+    query_text = "\n".join(filter(None, [
+        clause.title or "",
+        clause.plain_text or "",
+        clause.original_text or "",
+    ])).strip()
+
+    # KeyClause.pain_point_id 는 TermClause 컬럼에 없음 — cosine + flag/domain
+    # boost 만 활용. term-level unfair_flags 는 별도 저장 안 돼있어 빈 리스트.
+    matches = await find_similar_disputes(
+        db,
+        query_text=query_text,
+        clause_pain_point=None,
+        term_unfair_flags=[],
+        term_domain=(term.domain.value if term and term.domain else "ALL"),
+        top_k=top_k,
+    )
+    return {
+        "clause_id": clause_id,
+        "clause_title": clause.title,
+        "matches": [
+            {
+                "case_id": m.id, "title": m.title, "summary": m.summary,
+                "outcome": m.outcome, "source": m.source,
+                "source_url": m.source_url, "score": m.score,
+                "matched_signals": m.matched_signals,
+            }
+            for m in matches
+        ],
+    }
+
+
+async def find_disputes_for_term(
+    db: AsyncSession,
+    *,
+    term_id: uuid.UUID,
+    top_k: int = DEFAULT_TOP_K,
+) -> dict | None:
+    """약관의 latest version 의 모든 TermClause × top-K. term 없으면 None."""
+    from app.models.term import TermVersion, Term
+    from sqlalchemy.orm import selectinload
+
+    result = await db.execute(
+        select(Term)
+        .options(selectinload(Term.versions).selectinload(TermVersion.clauses))
+        .where(Term.id == term_id)
+    )
+    term = result.scalar_one_or_none()
+    if term is None:
+        return None
+
+    latest = next((v for v in term.versions if v.is_latest), None)
+    if latest is None:
+        return {"term_id": term_id, "clauses": []}
+
+    out_clauses: list[dict] = []
+    for clause in latest.clauses:
+        sub = await find_disputes_for_clause(db, clause_id=clause.id, top_k=top_k)
+        if sub:
+            out_clauses.append(sub)
+    return {"term_id": term_id, "clauses": out_clauses}
+
+
+async def list_dispute_cases(
+    db: AsyncSession,
+    *,
+    limit: int = 20,
+    offset: int = 0,
+) -> dict:
+    """관리/디버깅용 사례 목록."""
+    total_q = await db.execute(select(DisputeCase))
+    total = len(total_q.scalars().all())
+
+    page_q = await db.execute(
+        select(DisputeCase).order_by(DisputeCase.created_at.desc())
+        .limit(limit).offset(offset)
+    )
+    items = page_q.scalars().all()
+    return {
+        "items": [
+            {
+                "id": c.id, "title": c.title, "summary": c.summary,
+                "outcome": c.outcome, "source": c.source,
+                "source_url": c.source_url,
+                "pain_point_ids": list(c.pain_point_ids or []),
+                "unfair_flags": list(c.unfair_flags or []),
+                "domain": c.domain,
+            }
+            for c in items
+        ],
+        "total": total,
+    }
+
+
+async def get_dispute_case(
+    db: AsyncSession,
+    case_id: uuid.UUID,
+) -> dict | None:
+    obj = await db.get(DisputeCase, case_id)
+    if obj is None:
+        return None
+    return {
+        "id": obj.id, "title": obj.title, "summary": obj.summary,
+        "outcome": obj.outcome, "source": obj.source,
+        "source_url": obj.source_url,
+        "pain_point_ids": list(obj.pain_point_ids or []),
+        "unfair_flags": list(obj.unfair_flags or []),
+        "domain": obj.domain,
+    }
