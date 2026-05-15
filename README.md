@@ -23,54 +23,63 @@
 
 ---
 
-## 📊 성능 평가 — Trimmed Mean (10 runs × 15 fixture × N=2)
+## 📊 성능 평가 — Trimmed Mean (12 JSON, 15 fixture, 311 measurements)
 
-**측정 방법론**: Hackathon 환경에서 Solar API 의 backend 부하 변동으로 동일 config 도 ±5~10%p 까지 진동 (README 본문 하단 counter-intuitive 발견 #3). 단일 run 으로 winner 판정은 통계적으로 위험. 따라서 동일 config (`BC + prompt #1, N=2 medium`, summarize=high, ground=medium) 의 **10번 전(全) fixture 실행 결과를 모아 fixture 별 trimmed mean 으로 집계** (min/max 1개씩 제외 후 평균, "drop1" policy).
+**측정 방법론**: Hackathon 환경에서 Solar API 의 backend 부하 변동으로 동일 config 도 ±5~10%p 까지 진동 (README 본문 하단 counter-intuitive 발견 #3). 단일 run 으로 winner 판정은 통계적으로 위험. 따라서 동일 config (`BC + prompt #1, N=2 medium`, summarize=high, ground=medium) 의 **12번 전(全) fixture 실행 결과를 모아 fixture 별 trimmed mean 으로 집계** (min/max 1개씩 제외 후 평균, "drop1" policy).
 
-집계 대상: 2026-05-15 01:45 ~ 18:00 사이 10개 `data/experiments/all_fixtures_*.json` × 15 fixture × N=2 inner runs = **236 개별 measurement**.
+집계 대상: 2026-05-15 01:45 ~ 23:47 사이 12개 `data/experiments/all_fixtures_*.json` × 15 fixture × N=2 inner runs = **311 개별 measurement**. fixture 당 평균 21회 측정 (최소 15, 최대 24). 시간대 분포가 다양해 backend 부하 변동까지 자연 평균됨.
 
 ### 🏆 전체 평균 (per-fixture trimmed mean 의 산술평균)
 
 | 메트릭 | 값 |
 |---|---|
-| **Strict avg (trimmed)** | **57.3%** |
-| **Semantic avg (trimmed)** | **63.6%** |
-| Latency avg / fixture | ~565s |
-| Tokens avg / fixture | ~150K |
+| **Strict avg (trimmed)** | **57.1%** |
+| **Semantic avg (trimmed)** | **63.3%** |
+| Latency avg / fixture | ~509s |
+| Tokens avg / fixture | ~145K |
 
 ### 도메인별 trimmed mean (strict / semantic)
 
 | 도메인 | n fixture | Strict trim | Semantic trim | 비고 |
 |---|---|---|---|---|
-| **OTT (7)** | 7 | **59.7%** | **66.9%** | netflix 72.9·spotify 63.5·wavve 63.6·disney_plus 60.1·tving 57.0·watcha 52.4·coupang_play 48.5 |
-| **Fintech (3)** | 3 | **64.3%** | **70.6%** | kakaopay 68.6·toss 66.0·banksalad 58.3 (전체 도메인 최고) |
-| **AI 영문 (2)** | 2 | **53.5%** | **57.3%** | gpt 55.3·deepseek 51.6 |
-| **AI 한국어 (3)** | 3 | **47.0%** | **53.1%** | claude 55.1·upstage 45.9·gemini 39.9 ⚠️ |
+| **Fintech (3)** | 3 | **63.9%** | **70.1%** | kakaopay 68.1·toss 65.3·banksalad 58.3 (전체 도메인 최고) |
+| **OTT (7)** | 7 | **59.0%** | **66.1%** | netflix 71.9·spotify 64.5·wavve 62.0·disney_plus 59.2·tving 57.3·watcha 51.2·coupang_play 47.2 |
+| **AI 영문 (2)** | 2 | **54.8%** | **58.3%** | gpt 56.3·deepseek 53.2 |
+| **AI 한국어 (3)** | 3 | **47.5%** | **53.1%** | claude 56.0·upstage 46.3·gemini 40.3 ⚠️ |
 
-### Per-fixture (상위/하위)
+### Per-fixture 전체 (n=raw measurements / std 는 trimmed 부분)
 
-| Fixture | n | Strict trim | std | range (전 measurement) | Semantic trim |
+| Fixture | n | Strict trim | std | range (전체) | Semantic trim |
 |---|---|---|---|---|---|
-| 🟢 netflix | 18 | 72.9% | ±5.0 | 59-80 | 78.1% |
-| 🟢 kakaopay | 11 | 68.6% | ±4.3 | 61-76 | 74.1% |
-| 🟢 toss | 10 | 66.0% | ±2.1 | 59-71 | 68.9% |
-| ... | ... | ... | ... | ... | ... |
-| 🔴 coupang_play | 19 | 48.5% | ±4.8 | 40-61 | 54.4% |
-| 🔴 upstage | 15 | 45.9% | ±6.1 | 35-57 | 49.5% |
-| 🔴 gemini | 12 | 39.9% | ±4.0 | 33-50 | 44.2% |
+| 🟢 netflix | 23 | **71.9%** | ±5.8 | 57-80 | 77.2% |
+| 🟢 kakaopay | 16 | **68.1%** | ±4.0 | 61-76 | 73.3% |
+| 🟢 toss | 15 | **65.3%** | ±2.7 | 59-71 | 68.1% |
+| spotify | 24 | 64.5% | ±5.1 | 52-78 | 75.0% |
+| wavve | 24 | 62.0% | ±4.8 | 50-71 | 68.0% |
+| disney_plus | 24 | 59.2% | ±4.3 | 47-69 | 70.4% |
+| banksalad | 16 | 58.3% | ±3.0 | 54-64 | 68.9% |
+| tving | 24 | 57.3% | ±4.0 | 45-66 | 61.6% |
+| gpt | 20 | 56.3% | ±3.2 | 50-61 | 59.5% |
+| claude | 20 | 56.0% | ±3.4 | 42-64 | 65.1% |
+| deepseek | 20 | 53.2% | ±6.3 | 42-66 | 57.0% |
+| 🔴 watcha | 24 | 51.2% | ±4.4 | 35-64 | 57.0% |
+| 🔴 coupang_play | 24 | 47.2% | ±5.6 | 35-61 | 53.5% |
+| 🔴 upstage | 20 | 46.3% | ±5.3 | 35-57 | 49.8% |
+| 🔴 gemini | 17 | 40.3% | ±5.0 | 33-50 | 44.5% |
 
-전체 per-fixture 표는 [`data/experiments/trimmed_mean_drop1_20260515_222419.md`](data/experiments/trimmed_mean_drop1_20260515_222419.md).
+전체 표 + raw measurements: [`data/experiments/trimmed_mean_drop1_20260515_234743.md`](data/experiments/trimmed_mean_drop1_20260515_234743.md).
 
 ### 관찰
 
-- **단일 winner 보고치 (이전 README): 55.3% strict / 60.5% sem 은 자연 분산의 한쪽 꼬리**. 실제 trimmed mean 은 +2.0/+3.1%p 더 높음.
-- **사용자 관찰 검증** ("Solar Pro 3 한국어 LLM 인데 한국어 AI 점수 낮음"): 한국 OTT (netflix) 72.9% vs 한국 AI (upstage/gemini) 39.9~45.9%. **언어가 아닌 스키마-도메인 fit** 이 진짜 변수. AI 약관에 필요한 필드 (training data 사용, output IP, prompt 학습 옵트아웃) 가 `SubscriptionTerms` 7섹션 안에 없음.
-- **Fintech 가 OTT 보다 도메인 평균이 높음** (64.3 vs 59.7%) — 사례 F (EFTA §9) 룰 효과 + fintech 약관이 한국 강행규정 따라 구조가 일관됨.
+- **단일 winner 보고치 (이전 README): 55.3% strict / 60.5% sem 은 자연 분산의 한쪽 꼬리**. 실제 trimmed mean 은 +1.8/+2.8%p 더 높음.
+- **추가 75 measurements 가 baseline 을 ±0.4%p 안에서만 변동시킴** (10 JSON → 12 JSON: strict 57.25 → 57.14). **baseline 의 robustness 확인됨** — 더 이상 단일 run 의 노이즈에 좌우되지 않는 통계적 기반.
+- **사용자 관찰 검증** ("Solar Pro 3 한국어 LLM 인데 한국어 AI 점수 낮음"): 한국 OTT (netflix) 71.9% vs 한국 AI (upstage 46.3 / gemini 40.3). **언어가 아닌 스키마-도메인 fit** 이 진짜 변수. AI 약관에 필요한 필드 (training data 사용, output IP, prompt 학습 옵트아웃) 가 `SubscriptionTerms` 7섹션 안에 없음.
+- **Fintech 가 OTT 보다 도메인 평균이 높음** (63.9 vs 59.0%) — 사례 F (EFTA §9) 룰 효과 + fintech 약관이 한국 강행규정 따라 구조가 일관됨.
 
 ### 측정 출처
 
 - Trimmed mean 산출: [`scripts/aggregate_trimmed_mean.py`](scripts/aggregate_trimmed_mean.py).
-- 원시 데이터: `data/experiments/all_fixtures_2026051*.json` (10개).
+- 원시 데이터: `data/experiments/all_fixtures_2026051*.json` (12개).
 - Trim policy: `drop1` (각 fixture 의 measurement 에서 min 1 + max 1 제외 후 평균). `--trim p10` / `p20` 옵션도 사용 가능.
 
 > 누적 실험 트래커·채택 룰·백로그: [`ai/EXPERIMENTS.md`](ai/EXPERIMENTS.md). 새 실험에서 전 fixture 평균 strict가 +2%p 이상 좋아질 때 위 표가 갱신됩니다.

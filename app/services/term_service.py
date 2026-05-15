@@ -240,6 +240,9 @@ async def process_version_update(
         .limit(1)
     )
     prev_version = prev_q.scalar_one_or_none()
+    # bulk update 가 prev_version 인스턴스를 expire 시킬 가능성 (SQLAlchemy 2.x async
+    # synchronize_session 동작) 차단. raw_text 를 미리 로컬에 떼두고 이후엔 로컬만 참조.
+    prev_raw_text: str | None = prev_version.raw_text if prev_version is not None else None
 
     await db.execute(
         update(TermVersion)
@@ -274,15 +277,20 @@ async def process_version_update(
         term_obj.subscribed_at if term_obj else None,
     )
 
-    # 버전 변경점 요약 — 이전 버전이 있고 본문이 동일하지 않을 때만 LLM 호출.
-    # 동일 본문이면 의미상 "변경 없음" 이 자명하므로 토큰 낭비 회피.
+    # 버전 변경점 요약 — 이전 버전이 있으면 무조건 LLM 호출.
+    # 약관 업데이트는 운영자가 의도적으로 트리거하는 이벤트라 항상 비교 의미가 있음.
+    # 본문이 완전히 동일하면 LLM 이 "주요 변경 사항 없음" 으로 응답하도록 prompt 화 돼있음
+    # (ai/prompts/diff.py:13-14). token cost 는 제약이 아니라 가드 제거 (CLAUDE.md 정책).
+    # 부가 효과: VLM 파싱 비결정성으로 같은 PDF 도 markdown 이 미세하게 달라 가드가
+    # 일관성 없게 발동되던 문제도 해소.
     diff_summary: str | None = None
     user_impact: str | None = None
-    if prev_version is not None and (prev_version.raw_text or "") != raw_text:
+    if prev_version is not None:
+        prev_text = prev_raw_text or ""
         if include_user_impact:
             # user-impact diff 한 번에 일반 diff + 개별 영향 자유문 모두 얻음.
             # semantic diff (embedding) + LLM 1회.
-            old_clauses = _split_clauses(prev_version.raw_text or "")
+            old_clauses = _split_clauses(prev_text)
             new_clauses = _split_clauses(raw_text)
             user_context: dict = {}
             if term_obj and term_obj.subscribed_at:
@@ -292,7 +300,7 @@ async def process_version_update(
             if user_custom_notes:
                 user_context["custom_notes"] = user_custom_notes
             ui_result = await ai_client.user_impacted_diff(
-                old_text=prev_version.raw_text or "",
+                old_text=prev_text,
                 new_text=raw_text,
                 service_name=service_name,
                 old_clauses=old_clauses,
@@ -303,7 +311,7 @@ async def process_version_update(
             user_impact = ui_result.user_impact
         else:
             diff_result = await ai_client.summarize_version_diff(
-                old_text=prev_version.raw_text or "",
+                old_text=prev_text,
                 new_text=raw_text,
                 service_name=service_name,
             )

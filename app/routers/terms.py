@@ -196,7 +196,8 @@ async def get_term(
     summary="약관 신버전 업로드 + diff (선택적으로 user-impact 자동 생성)",
     description=(
         "기존 term 에 새 버전을 추가하고 이전 버전과의 변경점 요약을 생성. "
-        "신버전이 prev_version 과 동일 본문이면 LLM 호출 생략 (diff_summary=null).\n\n"
+        "이전 버전이 있으면 본문 동일 여부와 무관하게 diff_summary 를 항상 생성 "
+        "(완전 동일이면 LLM 이 \"주요 변경 사항 없음\" 으로 응답).\n\n"
         "**`include_user_impact` Form 플래그**\n"
         "- `false` (기본): 기존 흐름 — Solar Pro 3 일반 diff_summary 1회 호출. 응답의 "
         "`user_impact` 는 null.\n"
