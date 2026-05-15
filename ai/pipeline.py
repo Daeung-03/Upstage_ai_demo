@@ -17,10 +17,6 @@ from ai.services.extract import (
     extract_insurance_with_voting,
     extract_subscription_with_voting,
 )
-<<<<<<< HEAD
-
-=======
->>>>>>> 5e3f1e8 (fix: future를 맨 상단으로)
 from ai.services.ground import check_groundedness
 from ai.services.parse import parse_document
 from ai.services.summarize import KeyClause, summarize_risks
