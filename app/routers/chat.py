@@ -16,7 +16,7 @@ from app.schemas.chat import (
 )
 from app.services import chat_service
 
-router = APIRouter(tags=["chat"])
+router = APIRouter()
 
 
 @router.post("", response_model=ChatResponse)

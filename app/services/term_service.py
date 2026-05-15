@@ -109,12 +109,8 @@ def _parse_result_to_clauses(result) -> list[dict]:
     return out
 
 def _get_raw_text(result) -> str:
-    """SubscriptionTerms에서 raw_text 추출. 필드명 다르면 여기만 수정."""
-    terms = result.terms
-    for attr in ("raw_text", "text", "content", "full_text"):
-        if hasattr(terms, attr):
-            return getattr(terms, attr) or ""
-    return ""
+    """AnalysisResult에서 markdown (raw_text) 추출."""
+    return getattr(result, "markdown", "") or result.terms.model_dump_json()
 
 def _get_domain(result) -> str:
     """AnalysisResult에서 domain 추출."""

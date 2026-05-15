@@ -96,6 +96,7 @@ class TermClause(Base):
     # dispute_reasoning: 첫 /v1/terms/{id}/disputes 조회 시 LLM 으로 생성하여 저장
     # (lazy cache). disputes_signature 가 최신과 다르면 무효화하고 재생성.
     dispute_reasoning: Mapped[str | None] = mapped_column(Text, nullable=True)
+    dispute_user_action: Mapped[str | None] = mapped_column(Text, nullable=True)
     disputes_signature: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
