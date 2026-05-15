@@ -4,9 +4,10 @@ from typing import Optional
 from datetime import date
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update
+from sqlalchemy import delete, select, update
 from app.models.term import Term, TermVersion, TermChunk, TermClause
 from app.models.calendar import CalendarEvent
+from app.models.chat import ChatSession
 from app.models.enums import ClauseType, EventType
 from app.models.vendors import canonical_vendor_slug, vendor_domain
 from app.services import ai_client
@@ -446,6 +447,37 @@ async def process_version_update(
     await db.flush()
     await db.refresh(new_version)
     return new_version, user_impact
+
+
+# ── delete_term ───────────────────────────────────────────
+async def delete_term(
+    db: AsyncSession,
+    term_id: uuid.UUID,
+    user_id: uuid.UUID,
+) -> bool:
+    """Term + 모든 child row 삭제. 본인 소유 term 만.
+
+    Cascade: TermVersion / TermChunk / TermClause / CalendarEvent / Notification
+    은 FK 의 `ondelete=CASCADE` 로 DB 가 자동 정리. ChatSession 만 `term_id` 가
+    nullable + ondelete 없음 → 명시적으로 NULL out (대화 내역은 보존, 어느 term
+    과 연관됐는지 정보만 끊김).
+
+    반환: 실제 삭제됐으면 True, 존재하지 않거나 다른 user 소유면 False.
+    """
+    found = await db.execute(
+        select(Term.id).where(Term.id == term_id, Term.user_id == user_id)
+    )
+    if found.scalar_one_or_none() is None:
+        return False
+
+    await db.execute(
+        update(ChatSession)
+        .where(ChatSession.term_id == term_id)
+        .values(term_id=None)
+    )
+    await db.execute(delete(Term).where(Term.id == term_id))
+    await db.commit()
+    return True
 
 
 # ── 아래는 기존 코드 그대로 ──────────────────────────────
