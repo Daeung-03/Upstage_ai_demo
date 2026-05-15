@@ -93,12 +93,18 @@ async def upsert_dispute_cases(
     for raw in cases:
         norm = _normalize_input(raw)
         if norm["external_id"]:
-            # PostgreSQL ON CONFLICT (external_id) DO UPDATE
+            # PostgreSQL ON CONFLICT (external_id) WHERE external_id IS NOT NULL DO UPDATE
+            #
+            # 마이그레이션 0002 의 unique index 가 `WHERE external_id IS NOT NULL`
+            # 부분 인덱스라, ON CONFLICT spec 에도 동일 WHERE 절을 줘야 매칭됨.
+            # 안 그러면 InvalidColumnReferenceError ("no unique or exclusion constraint
+            # matching the ON CONFLICT specification").
             stmt = (
                 insert(DisputeCase)
                 .values(**norm)
                 .on_conflict_do_update(
                     index_elements=[DisputeCase.external_id],
+                    index_where=DisputeCase.external_id.is_not(None),
                     set_={
                         "title": norm["title"],
                         "summary": norm["summary"],
