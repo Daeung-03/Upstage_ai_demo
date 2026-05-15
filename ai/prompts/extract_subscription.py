@@ -259,11 +259,52 @@ SYSTEM_PROMPT = """\
 - disputes.class_action_waiver = True, "confirmed".
 - unfair_clause_flags 에 **"강제 중재"**, **"집단소송 포기"**, **"준거법 외국법"** 3개 모두 추가.
 
+# === v1.1.0 추가 사례 (account / service_availability / cancellation v1.1 / terms_changes v1.1) ===
+
+## 사례 M — 가입 최소 연령 (account.minimum_age)
+입력 발췌: "본 서비스는 만 14세 이상만 가입할 수 있습니다." / "Only persons 19+ may use this service."
+판정:
+- account.minimum_age = 14 (또는 19), "confirmed", citation.quote 본문 발췌.
+
+## 사례 N — 계정 공유 제한 (account.sharing_restrictions)
+입력 발췌:
+- "본 서비스는 본인만 이용할 수 있으며, 타인과 공유할 수 없습니다." → "personal_only", "confirmed".
+- "동일 가구 내 가족 간에 공유할 수 있으며, 외부 인원과 공유 시 약관 위반..." → "household_only", "confirmed" (Netflix Korea 패턴).
+- "최대 4인까지 동시 이용 가능, 동일/외부 가구 모두 허용" → "specified_others".
+- 본문에 공유 제한 *명시* 없으면 → not_specified (인퍼런스 금지).
+
+## 사례 O — 서비스 가용성 (service_availability.*)
+입력 발췌 1: "회사는 시스템 점검, 정전 등의 사유로 서비스를 일시 중단할 수 있습니다."
+- service_availability.availability_disclaimer = True, "confirmed".
+
+입력 발췌 2: "본 콘텐츠는 지역(국가)에 따라 이용 불가하거나 제공 범위가 다를 수 있습니다."
+- service_availability.regional_content_restriction = True, "confirmed".
+
+## 사례 P — 앱마켓 통한 해지 (cancellation.third_party_cancellation_required)
+입력 발췌: "앱스토어/구글플레이를 통해 결제한 경우, 해지는 각 마켓의 정책에 따라 직접 신청해야 합니다."
+판정:
+- cancellation.third_party_cancellation_required = True, "confirmed".
+- cancellation.method_description 에 해당 사실 추가 명시.
+
+## 사례 Q — 청약철회 (cancellation.cooling_off_*)
+입력 발췌: "회원은 결제일로부터 7일 이내, 이용 내역이 없는 경우에 한해 전액 환불받을 수 있습니다."
+판정:
+- cancellation.cooling_off_refund_days = 7, "confirmed" (한국 전자상거래법 표준).
+- cancellation.cooling_off_conditions = "이용 내역 없음", "confirmed".
+- 본문에 7일 명시 없는 한국 OTT → cooling_off_refund_days = 7, "inferred" (한국 전자상거래법 §17 표준).
+
+## 사례 R — 가격 변경 별도 동의 (terms_changes.price_change_explicit_consent)
+입력 발췌: "구독료 변경은 회원의 별도 동의를 거쳐야 하며, 동의 없이는 기존 요금이 유지됩니다."
+판정:
+- terms_changes.price_change_explicit_consent = True, "confirmed".
+
+본문에 단순 "약관 변경 시 통지" 만 있고 가격 변경 별도 절차 명시 없으면 → not_specified.
+
 위 사례는 판단 기준 예시일 뿐, 출력에 포함하지 말 것. 본문은 user 메시지로 별도 제공됩니다.
 """
 
 USER_PROMPT_TEMPLATE = """\
-다음 약관 본문을 분석해 SubscriptionTerms JSON을 생성하세요. 시스템 메시지의 사례 A/B/C/D/E/F/G/H/I/J/K/L 판정 기준을 적용하세요.
+다음 약관 본문을 분석해 SubscriptionTerms JSON을 생성하세요. 시스템 메시지의 사례 A/B/C/D/E/F/G/H/I/J/K/L (legacy) + M/N/O/P/Q/R (v1.1.0: account / service_availability / cancellation 청약철회 / terms_changes 명시동의) 판정 기준을 적용하세요.
 
 **작업 흐름**:
 1. 먼저 본문 첫 1~2조항을 보고 **도메인을 판정** (OTT/Fintech/LLM/기타) — 시스템 프롬프트의 "도메인 인식" 룰 참고.

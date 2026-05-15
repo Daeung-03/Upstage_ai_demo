@@ -46,6 +46,7 @@ jobs:
             tests/unit/test_schemas_ai_terms.py \
             tests/unit/test_schemas_finance.py \
             tests/unit/test_schemas_insurance.py \
+            tests/unit/test_schemas_subscription_v11.py \
             tests/unit/test_services_embed.py \
             tests/unit/test_services_extract.py \
             tests/unit/test_services_extract_domains.py \

@@ -37,6 +37,16 @@ class ProrationPolicy(str, Enum):
     NO_REFUND = "no_refund"
 
 
+# === Account sharing policy (OTT/Subscription 도메인 확장, v1.1.0) ===
+
+class AccountSharingPolicy(str, Enum):
+    """계정 공유 제한. v1.1.0 SubscriptionTerms 확장."""
+    PERSONAL_ONLY = "personal_only"        # 개인 한정
+    HOUSEHOLD_ONLY = "household_only"      # 동일 가구 (Netflix Korea 정책)
+    NO_RESTRICTIONS = "no_restrictions"
+    SPECIFIED_OTHERS = "specified_others"  # 특정 인원 (예: 4인) 허용
+
+
 # === Finance 도메인 ===
 
 class FraudResponsibilityPattern(str, Enum):
