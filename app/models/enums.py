@@ -5,6 +5,7 @@ class TermDomain(str, enum.Enum):
     OTT = "OTT"
     INSURANCE = "INSURANCE"
     APP = "APP"
+    AI = "AI"
     MEDICAL = "MEDICAL"
     TELECOM = "TELECOM"
     ETC = "ETC"
