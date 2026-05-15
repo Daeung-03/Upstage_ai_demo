@@ -107,6 +107,7 @@ async def _ingest_one(
     base_url: str,
     pair: VersionPair,
     do_delete: bool,
+    user_impact: bool,
 ) -> dict:
     """한 서비스의 과거→현재 버전 시퀀스 처리. 결과 dict 반환."""
     past = FIXTURE_DIR / pair["past_file"]
@@ -132,22 +133,22 @@ async def _ingest_one(
             }
             up_files = {"file": (past.name, past.read_bytes(), "text/html")}
             up = await client.post(
-                f"{base_url}/terms/upload", data=up_data, files=up_files, timeout=600.0
+                f"{base_url}/terms/upload", data=up_data, files=up_files, timeout=1000.0
             )
             if up.status_code != 201:
                 return {"key": pair["key"], "ok": False,
                         "error": f"upload {up.status_code}: {up.text[:300]}"}
             term_id = up.json()["id"]
 
-            # 2) v_current → POST /terms/{id}/update (diff + user_impact 생성)
+            # 2) v_current → POST /terms/{id}/update (diff 생성)
             upd_data = {
                 "effective_date": pair["current_effective"],
-                "include_user_impact": "true",
+                "include_user_impact": "true" if user_impact else "false",
             }
             upd_files = {"file": (cur.name, cur.read_bytes(), "text/html")}
             upd = await client.post(
                 f"{base_url}/terms/{term_id}/update",
-                data=upd_data, files=upd_files, timeout=600.0,
+                data=upd_data, files=upd_files, timeout=1000.0,
             )
             if upd.status_code != 201:
                 return {"key": pair["key"], "ok": False, "term_id": term_id,
@@ -181,6 +182,8 @@ async def main() -> int:
                         help="콤마 구분 key 만 처리 (예: banksalad,netflix)")
     parser.add_argument("--no-delete", action="store_true",
                         help="기존 동일 service_name term 삭제 단계 건너뜀")
+    parser.add_argument("--user-impact", action="store_true",
+                        help="/update 시 include_user_impact=true (개별 사용자 영향 자유문 생성)")
     args = parser.parse_args()
 
     base_url = args.base_url.rstrip("/")
@@ -203,7 +206,7 @@ async def main() -> int:
     results: list[dict] = []
     async with httpx.AsyncClient() as client:
         tasks = [
-            _ingest_one(client, sem, base_url, p, not args.no_delete)
+            _ingest_one(client, sem, base_url, p, not args.no_delete, args.user_impact)
             for p in targets
         ]
         for coro in asyncio.as_completed(tasks):

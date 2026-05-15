@@ -10,7 +10,7 @@ import math
 import os
 from typing import Literal
 
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, Field, ValidationError, field_validator
 
 from ai.prompts.diff import (
     SYSTEM_PROMPT,
@@ -26,6 +26,14 @@ MODEL = "solar-pro3"
 DIFF_REASONING_EFFORT = os.getenv("DIFF_REASONING_EFFORT", "high")
 
 
+_CATEGORY_VALUES = {
+    "pricing", "free_trial", "cancellation", "terms_changes",
+    "data_usage", "liability", "disputes", "other",
+}
+_DIRECTION_VALUES = {"more_consumer_friendly", "less_consumer_friendly", "neutral"}
+_RISK_VALUES = {"high", "medium", "low"}
+
+
 class DiffChange(BaseModel):
     category: Literal[
         "pricing", "free_trial", "cancellation", "terms_changes",
@@ -36,6 +44,24 @@ class DiffChange(BaseModel):
     ]
     description: str
     risk_level: Literal["high", "medium", "low"]
+
+    # LLM 이 enum 밖 값을 환각하는 경우 (예: category="account") 호출 전체를
+    # 422 로 떨구지 않고 안전값으로 coerce. json_object 응답이라 API 레벨 enum
+    # 강제가 없어 발생. 알 수 없는 값은 가장 보수적인 fallback 으로.
+    @field_validator("category", mode="before")
+    @classmethod
+    def _coerce_category(cls, v: object) -> object:
+        return v if v in _CATEGORY_VALUES else "other"
+
+    @field_validator("direction", mode="before")
+    @classmethod
+    def _coerce_direction(cls, v: object) -> object:
+        return v if v in _DIRECTION_VALUES else "neutral"
+
+    @field_validator("risk_level", mode="before")
+    @classmethod
+    def _coerce_risk(cls, v: object) -> object:
+        return v if v in _RISK_VALUES else "medium"
 
 
 class DiffResult(BaseModel):
