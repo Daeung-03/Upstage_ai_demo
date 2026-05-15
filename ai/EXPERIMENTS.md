@@ -82,6 +82,7 @@
 - [ ] `N=3 medium`을 전 fixture 스윕에 다시 돌려서 N=2와 직접 비교 (Netflix single fixture에서는 N=2가 이김; 전 도메인으로 일반화되는지 확인)
 - [ ] 도메인별 prompt few-shot (특히 upstage/gemini/coupang_play 같은 저점 fixture)
 - [ ] `summarize=high` ↔ `summarize=medium` ablation — 최종 사용자가 보는 텍스트의 품질 차이가 정량 점수에 잡히는지
+- [ ] **Finance / Insurance 도메인 평가** — 스키마 정의 완료 (`ai/schemas/finance.py`, `ai/schemas/insurance.py`), voting 폴리모픽 동작 확인. 다음 단계: (1) `ai/prompts/extract_finance.py`·`extract_insurance.py` 프롬프트, (2) `extract.py` 에 도메인 라우팅, (3) `data/fixtures/{toss,kakaopay,banksalad}_golden.json` 을 v0.3 finance 스키마로 재라벨, (4) insurance fixture 1-2건 추가, (5) BC + voting N=2 평가.
 
 ---
 

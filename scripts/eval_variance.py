@@ -32,11 +32,12 @@ SECTION_NAMES = (
 )
 
 
-async def one_run(idx: int) -> dict:
+async def one_run(idx: int, api_key: str) -> dict:
     settings = Settings()
     print(f"[run {idx}] starting...", flush=True)
     t0 = time.perf_counter()
-    async with UpstageClient(settings) as client:
+    # 평가 스크립트는 eval 키만 사용 (key #1 은 서비스 dev 전용).
+    async with UpstageClient(settings, api_key=api_key) as client:
         result = await run_pipeline(
             client,
             file_bytes=FIXTURE.read_bytes(),
@@ -53,11 +54,20 @@ async def main():
     if not FIXTURE.exists():
         print(f"ERROR: fixture missing at {FIXTURE}")
         sys.exit(1)
+    eval_keys = Settings().eval_api_keys
+    if not eval_keys:
+        print(
+            "ERROR: no eval API keys configured. eval_variance.py 는 "
+            "UPSTAGE_API_KEY_2/3/4 중 최소 한 개 필요 (key #1 은 서비스 dev 전용).",
+            file=sys.stderr,
+        )
+        sys.exit(1)
     print(f"Running {N_RUNS} SEQUENTIAL pipeline calls against Netflix terms (rate limit avoidance)...")
     t0 = time.perf_counter()
     results = []
     for i in range(N_RUNS):
-        results.append(await one_run(i + 1))
+        # N_RUNS sequential 이라 한 키만 써도 충분 (rate limit 회피가 목적이라 직렬).
+        results.append(await one_run(i + 1, eval_keys[0]))
     elapsed = time.perf_counter() - t0
     print(f"\nAll {N_RUNS} runs complete in {elapsed:.1f}s (wall clock, sequential)\n")
 
