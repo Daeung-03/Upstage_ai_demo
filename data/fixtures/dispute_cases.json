@@ -1,0 +1,211 @@
+[
+  {
+    "external_id": "한소원-2023-OTT-001",
+    "title": "넷플릭스 자동결제 환불 거부 — 한국소비자원 조정 사례",
+    "summary": "소비자가 14일 무료체험 종료 후 자동 결제된 9,900원 환불을 요청했으나 약관상 '시청 시 청약철회 권리 소멸' 문구를 근거로 거절. 한국소비자원이 전자상거래법 청약철회권 우선 적용 판단.",
+    "outcome": "전액 환불 + 결제 즉시 알림 미고지 시정 권고",
+    "source": "한국소비자원",
+    "source_url": null,
+    "pain_point_ids": ["POST-03", "PRE-03"],
+    "unfair_flags": ["refund_denial", "POST-03"],
+    "domain": "OTT"
+  },
+  {
+    "external_id": "공정위-2024-OTT-002",
+    "title": "왓챠 해지 절차 복잡화 — 공정거래위원회 시정명령",
+    "summary": "약관상 해지가 '고객센터 통화 요청 → 본인확인 → 사유 면담' 3단계 + 영업시간 한정. 공정위 다크패턴 가이드라인 위반으로 시정명령.",
+    "outcome": "해지 버튼 마이페이지 1-클릭 변경 + 영업시간 외 가능",
+    "source": "공정거래위원회",
+    "source_url": null,
+    "pain_point_ids": ["POST-02"],
+    "unfair_flags": ["complex_cancellation", "POST-02"],
+    "domain": "OTT"
+  },
+  {
+    "external_id": "한소원-2023-OTT-003",
+    "title": "디즈니플러스 약관 일방 변경 — 가격 인상 통지 미흡",
+    "summary": "디즈니플러스가 월 9,900원 → 13,900원 인상하며 이메일 1회 + 앱 푸시 1회만 고지. 다수 가입자가 변경 사실 인지 못 한 채 결제됨.",
+    "outcome": "30일 추가 유예 + 인상 전 가격 유지 옵션 제공",
+    "source": "한국소비자원",
+    "source_url": null,
+    "pain_point_ids": ["MID-01", "POST-01"],
+    "unfair_flags": ["unilateral_change", "POST-01"],
+    "domain": "OTT"
+  },
+  {
+    "external_id": "언론-2024-OTT-004",
+    "title": "쿠팡 플레이 무료체험 → 자동 유료전환 미통지 분쟁",
+    "summary": "쿠팡 와우 멤버십 가입 시 쿠팡 플레이 30일 무료. 종료 시점 통지 없이 자동 유료 전환. 다수 소비자 카드사 차지백 신청.",
+    "outcome": "종료 7일 전 통지 의무화 (자율 시정)",
+    "source": "언론",
+    "source_url": null,
+    "pain_point_ids": ["PRE-03"],
+    "unfair_flags": [],
+    "domain": "OTT"
+  },
+  {
+    "external_id": "한소원-2023-OTT-005",
+    "title": "티빙 약관 변경 — 무응답 동의 의제 조항 분쟁",
+    "summary": "티빙이 약관 변경 통지 후 '14일 내 의사표시 없으면 동의로 간주' 조항으로 일방 변경. 소비자가 인지 못 한 상태에서 신규 약관 적용.",
+    "outcome": "의사표시 의제 조항 삭제 + 명시적 동의 절차 도입",
+    "source": "한국소비자원",
+    "source_url": null,
+    "pain_point_ids": ["MID-02"],
+    "unfair_flags": ["의사표시_의제", "POST-05"],
+    "domain": "OTT"
+  },
+  {
+    "external_id": "공정위-2024-OTT-006",
+    "title": "웨이브 환불 제한 — 잔여기간 일할 계산 거부",
+    "summary": "월 구독 중도 해지 시 잔여일에 대한 환불 없이 결제일 기준 전액 소진. 비례 환불(pro-rata) 거부 약관 조항.",
+    "outcome": "전자상거래법상 일할 환불 의무 명시 시정",
+    "source": "공정거래위원회",
+    "source_url": null,
+    "pain_point_ids": ["POST-03"],
+    "unfair_flags": ["no_refund", "POST-03"],
+    "domain": "OTT"
+  },
+  {
+    "external_id": "언론-2024-OTT-007",
+    "title": "스포티파이 한국 강제 중재 조항 분쟁",
+    "summary": "스포티파이 약관상 분쟁 발생 시 미국 캘리포니아주 법원·중재 강제. 한국 거주 소비자에게 외국법·외국 법정 강제는 한국 강행규정 위반 소지.",
+    "outcome": "한국 소비자에 한해 한국 법원 관할 추가 (병기 조항)",
+    "source": "언론",
+    "source_url": null,
+    "pain_point_ids": ["POST-05"],
+    "unfair_flags": ["arbitration_class_waiver", "POST-05", "준거법 외국법"],
+    "domain": "OTT"
+  },
+  {
+    "external_id": "한소원-2023-OTT-008",
+    "title": "OTT 면책 광범위 — 서비스 장애 보상 거부",
+    "summary": "다중 OTT 사업자가 '서비스 장애로 인한 일체의 손해에 대해 책임지지 않음' 조항으로 보상 거부. 24시간 이상 장애 발생 시에도 환불 미제공.",
+    "outcome": "장애 시간 비례 환불 + 면책 범위 약관규제법상 합리적 범위로 축소",
+    "source": "한국소비자원",
+    "source_url": null,
+    "pain_point_ids": ["POST-04"],
+    "unfair_flags": ["liability_cap", "POST-04"],
+    "domain": "OTT"
+  },
+  {
+    "external_id": "한소원-2024-FIN-001",
+    "title": "카카오페이 자동결제 등록 — 다크패턴 동의 분쟁",
+    "summary": "정기결제 가입 시 약관 동의 화면에 '자동결제 동의' 체크박스가 기본 선택. 소비자가 인지 못한 채 자동결제 등록.",
+    "outcome": "opt-in 명시적 동의로 변경 + 미인지 가입 환불",
+    "source": "한국소비자원",
+    "source_url": null,
+    "pain_point_ids": ["PRE-03", "PRE-04"],
+    "unfair_flags": [],
+    "domain": "FINANCE"
+  },
+  {
+    "external_id": "공정위-2024-FIN-002",
+    "title": "토스 약관 변경 — 개인정보 제3자 제공 동의 의제",
+    "summary": "약관 개정 통지에 '14일 내 의사표시 없으면 동의' 조항으로 마케팅 활용 동의 자동 갱신. 명시적 동의 누락.",
+    "outcome": "개인정보보호법상 별도 동의 절차로 분리",
+    "source": "공정거래위원회",
+    "source_url": null,
+    "pain_point_ids": ["MID-02", "PRE-04"],
+    "unfair_flags": ["의사표시_의제", "POST-05"],
+    "domain": "FINANCE"
+  },
+  {
+    "external_id": "한소원-2023-FIN-003",
+    "title": "은행 자동이체 해지 절차 복잡화",
+    "summary": "은행 앱 자동이체 등록은 1-tap, 해지는 영업점 방문 또는 ARS 본인확인 필요. 다크패턴 가이드라인 저촉.",
+    "outcome": "앱 내 1-tap 해지 도입",
+    "source": "한국소비자원",
+    "source_url": null,
+    "pain_point_ids": ["POST-02"],
+    "unfair_flags": ["complex_cancellation", "POST-02"],
+    "domain": "FINANCE"
+  },
+  {
+    "external_id": "언론-2024-FIN-004",
+    "title": "보험 자동갱신 조항 — 갱신 시점 통지 미흡",
+    "summary": "1년 만기 보험이 통지 없이 자동 갱신, 다음 해 보험료 인상분 일괄 청구. 약관상 갱신 30일 전 통지 의무가 있으나 형식적 이메일만 발송.",
+    "outcome": "이메일 + SMS + 앱 푸시 다중 채널 의무화",
+    "source": "언론",
+    "source_url": null,
+    "pain_point_ids": ["MID-01"],
+    "unfair_flags": [],
+    "domain": "FINANCE"
+  },
+  {
+    "external_id": "한소원-2024-FIN-005",
+    "title": "암호화폐 거래소 면책 광범위 — 해킹 손해 책임 회피",
+    "summary": "거래소 약관상 해킹 발생 시 '운영상 불가항력' 으로 면책. 실제 보안 조치 미흡으로 발생한 손해도 면책 적용.",
+    "outcome": "고의·중과실 손해는 보상 책임 명시",
+    "source": "한국소비자원",
+    "source_url": null,
+    "pain_point_ids": ["POST-04"],
+    "unfair_flags": ["liability_cap", "POST-04"],
+    "domain": "FINANCE"
+  },
+  {
+    "external_id": "AI-2024-001",
+    "title": "AI 챗봇 학습 데이터 활용 — 옵트아웃 불가 조항",
+    "summary": "글로벌 AI 서비스 약관상 사용자 입력이 자동 학습 데이터로 활용. 한국 사용자 대상 옵트아웃 기능 미제공.",
+    "outcome": "한국 사용자에 한해 학습 활용 옵트아웃 토글 제공",
+    "source": "언론",
+    "source_url": null,
+    "pain_point_ids": ["PRE-04"],
+    "unfair_flags": ["AI 학습 데이터 활용", "ai_training_data"],
+    "domain": "AI"
+  },
+  {
+    "external_id": "AI-2024-002",
+    "title": "AI 출력 IP 귀속 — 유료 사용자 출력물 회사 보유 분쟁",
+    "summary": "AI 서비스 약관상 사용자가 생성한 출력물의 IP 가 회사에 귀속. 유료 사용자 항의로 약관 개정.",
+    "outcome": "유료 플랜 한해 출력물 IP 사용자 귀속으로 변경",
+    "source": "언론",
+    "source_url": null,
+    "pain_point_ids": ["PRE-02"],
+    "unfair_flags": [],
+    "domain": "AI"
+  },
+  {
+    "external_id": "AI-2024-003",
+    "title": "AI 서비스 면책 광범위 — 잘못된 답변 책임 회피",
+    "summary": "AI 답변의 부정확성 손해에 대해 '정보 제공 용도' 명목으로 광범위 면책. 의료·법률 자문 인용 후 손해 발생 사례.",
+    "outcome": "AI 출력 신뢰성 한도 명시 + 의료/법률 답변 사용 시 경고",
+    "source": "한국소비자원",
+    "source_url": null,
+    "pain_point_ids": ["POST-04"],
+    "unfair_flags": ["liability_cap", "POST-04"],
+    "domain": "AI"
+  },
+  {
+    "external_id": "공정위-2023-ALL-001",
+    "title": "약관규제법 위반 — 사업자 일방 책임 면제 조항 무효",
+    "summary": "공정거래위원회가 다수 사업자의 '본 서비스로 인한 일체의 손해에 대해 책임지지 않음' 조항을 약관규제법 제7조 위반으로 무효 판단.",
+    "outcome": "면책 조항 일괄 시정 — 고의·중과실은 책임 명시",
+    "source": "공정거래위원회",
+    "source_url": null,
+    "pain_point_ids": ["POST-04"],
+    "unfair_flags": ["liability_cap", "POST-04"],
+    "domain": "ALL"
+  },
+  {
+    "external_id": "한소원-2023-ALL-002",
+    "title": "전자상거래법 청약철회권 vs '디지털 콘텐츠 사용 시 권리 소멸'",
+    "summary": "여러 사업자가 '디지털 콘텐츠 사용 시 청약철회권 소멸' 조항으로 환불 거부. 전자상거래법 17조 청약철회권은 강행규정 — 미사용분에 한해 환불 의무.",
+    "outcome": "미사용분 (재생/다운로드 안 한 콘텐츠) 환불 의무 명시",
+    "source": "한국소비자원",
+    "source_url": null,
+    "pain_point_ids": ["POST-03"],
+    "unfair_flags": ["refund_denial", "POST-03"],
+    "domain": "ALL"
+  },
+  {
+    "external_id": "공정위-2024-ALL-003",
+    "title": "약관 변경 통지 채널 — 이메일 단일 채널 충분성 분쟁",
+    "summary": "사업자가 약관 변경을 이메일 1회 발송으로 끝내는 사례 다수. 공정위 가이드라인 — 중요 변경은 앱 푸시 + 이메일 + 로그인 시 모달 등 다중 채널 필요.",
+    "outcome": "중요 변경 다중 채널 통지 의무화 가이드라인 발표",
+    "source": "공정거래위원회",
+    "source_url": null,
+    "pain_point_ids": ["MID-01"],
+    "unfair_flags": ["unilateral_change", "POST-01"],
+    "domain": "ALL"
+  }
+]
