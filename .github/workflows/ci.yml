@@ -55,4 +55,5 @@ jobs:
             tests/unit/test_term_service_clauses.py \
             tests/unit/test_term_service_search.py \
             tests/unit/test_term_service_user_search.py \
+            tests/unit/test_tune_semantic_diff.py \
             -v
