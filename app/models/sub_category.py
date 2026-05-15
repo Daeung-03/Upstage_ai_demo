@@ -33,8 +33,11 @@ RECOMMENDED_SUB_CATEGORIES: dict[TermDomain, list[str]] = {
         "원격진료", "건강검진", "병원 예약/접수",
     ],
     TermDomain.APP: [
-        "SaaS", "AI 어시스턴트", "유틸리티/생산성",
-        "게임", "소셜/커뮤니티",
+        "SaaS", "유틸리티/생산성", "게임", "소셜/커뮤니티",
+        "음악/오디오 스트리밍",
+    ],
+    TermDomain.AI: [
+        "범용 AI 어시스턴트", "코딩 보조", "이미지/영상 생성", "특화 모델",
     ],
     TermDomain.ETC: [],
 }
