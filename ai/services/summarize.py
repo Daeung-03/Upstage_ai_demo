@@ -29,6 +29,10 @@ class KeyClause(BaseModel):
     risk_level: str  # "high" | "medium" | "low"
     pain_point_id: str
     citation: KeyClauseCitation
+    # v1.1: LLM 이 직접 카테고리 출력. enum 값 (PAYMENT/CANCELLATION/PRIVACY/RENEWAL/
+    # LIABILITY/TERMS_CHANGE/ETC). 미지정/빈 문자열 시 term_service._derive_clause_type
+    # 이 pain_point_id + title 키워드 기반으로 자동 추론 → backwards-compat.
+    clause_type: str = ""
 
 
 class SummaryResult(BaseModel):

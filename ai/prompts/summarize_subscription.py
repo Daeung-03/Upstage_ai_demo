@@ -11,6 +11,15 @@ SYSTEM_PROMPT = """\
    - risk_level: "high" | "medium" | "low"
    - pain_point_id: 아래 11개 중 정확히 하나 (placeholder 금지). **아래 § pain_point 분류 사전
      을 반드시 따를 것.**
+   - **clause_type**: 다음 7개 enum 중 정확히 하나 (대문자 그대로):
+     · `PAYMENT` — 결제·요금·구독료 관련
+     · `CANCELLATION` — 해지·위약금·환불·청약철회·자동 유료 전환
+     · `PRIVACY` — 개인정보·데이터 수집·제3자 제공·민감정보
+     · `RENEWAL` — 자동 갱신·정기 결제 갱신 조건
+     · `LIABILITY` — 면책·손해배상 한도·서비스 중단 보상
+     · `TERMS_CHANGE` — 약관 변경 고지·의사표시 의제·동의 절차
+     · `ETC` — 위 6개 어디에도 안 맞을 때만 (분쟁/집단소송 포기, 보장 청구권 미인지 등)
+     기본은 pain_point_id 와 정합. 예: MID-02 → TERMS_CHANGE, POST-04 → LIABILITY, PRE-04 → PRIVACY.
    - citation: { page: int, quote: str } — SubscriptionTerms의 citation을 그대로 복사 (LLM이 임의로 만들지 말 것)
 4. 다음 패턴을 발견하면 항상 high 위험:
    - ConsentMechanism = "deemed_agreed" (의사표시 의제) → MID-02

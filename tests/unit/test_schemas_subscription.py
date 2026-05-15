@@ -109,7 +109,7 @@ def test_full_subscription_terms_roundtrip():
     restored = SubscriptionTerms.model_validate_json(data)
     assert restored.service_name == "TestStream"
     assert "의사표시_의제" in restored.unfair_clause_flags
-    assert restored.schema_version == "1.0.0"
+    assert restored.schema_version == "1.1.0"
 
 
 def test_schema_json_schema_generated():
