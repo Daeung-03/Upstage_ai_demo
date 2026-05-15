@@ -1,6 +1,7 @@
 # app/services/ai_client.py
 from ai.pipeline import run_pipeline
 from ai.services import embed as ai_embed
+from ai.services import diff as ai_diff
 from ai.services.upstage import UpstageClient
 from ai.services.settings import Settings as AISettings
 from app.config import get_settings
@@ -41,6 +42,19 @@ async def embed_query(text: str) -> list[float]:
     """검색 질의용 임베딩 (embedding-query, 4096-d)."""
     async with UpstageClient(_ai_settings()) as client:
         return await ai_embed.embed_query(client, text)
+
+
+async def summarize_version_diff(
+    old_text: str, new_text: str, service_name: str = ""
+) -> "ai_diff.DiffResult":
+    """버전 간 변경점 요약 — `process_version_update` 에서 호출."""
+    async with UpstageClient(_ai_settings()) as client:
+        return await ai_diff.summarize_version_diff(
+            client,
+            old_text=old_text,
+            new_text=new_text,
+            service_name=service_name,
+        )
 
 
 async def extract_dates(text: str) -> list[dict]:

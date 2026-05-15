@@ -198,6 +198,16 @@ async def process_version_update(
     file_url: str,
 ) -> TermVersion:
 
+    # 이전 latest 버전을 미리 끌어와 diff_summary 비교 base 로 사용.
+    # 같은 트랜잭션에서 is_latest=False 로 업데이트하기 *전에* 조회해야 일관됨.
+    prev_q = await db.execute(
+        select(TermVersion)
+        .where(TermVersion.term_id == term_id, TermVersion.is_latest == True)  # noqa: E712
+        .order_by(TermVersion.version.desc())
+        .limit(1)
+    )
+    prev_version = prev_q.scalar_one_or_none()
+
     await db.execute(
         update(TermVersion)
         .where(TermVersion.term_id == term_id)
@@ -214,10 +224,11 @@ async def process_version_update(
 
     # AI 파이프라인
     term_obj = await db.get(Term, term_id)
+    service_name = term_obj.service_name if term_obj else ""
     result = await ai_client.run_full_pipeline(
         file_bytes=file_bytes,
         filename=file_url.split("/")[-1],
-        service_name=term_obj.service_name if term_obj else "",
+        service_name=service_name,
     )
 
     raw_text = _get_raw_text(result)
@@ -226,12 +237,23 @@ async def process_version_update(
     vectors  = await ai_client.embed_chunks(chunks)
     dates    = await ai_client.extract_dates(raw_text)
 
+    # 버전 변경점 요약 — 이전 버전이 있고 본문이 동일하지 않을 때만 LLM 호출.
+    # 동일 본문이면 의미상 "변경 없음" 이 자명하므로 토큰 낭비 회피.
+    diff_summary: str | None = None
+    if prev_version is not None and (prev_version.raw_text or "") != raw_text:
+        diff_result = await ai_client.summarize_version_diff(
+            old_text=prev_version.raw_text or "",
+            new_text=raw_text,
+            service_name=service_name,
+        )
+        diff_summary = diff_result.diff_summary
+
     new_version = TermVersion(
         term_id=term_id,
         version=last_version + 1,
         raw_text=raw_text,
         summary=result.summary,
-        diff_summary=None,  # TODO: AI팀 diff 연결 시 채움
+        diff_summary=diff_summary,
         is_latest=True,
     )
     db.add(new_version)
