@@ -36,3 +36,22 @@ async def embed_chunks(chunks: list[str]) -> list[list[float]]:
 async def extract_dates(text: str) -> list[dict]:
     # TODO: AI팀 R2 구현 완료 시 교체
     return []
+
+async def chat_with_ai(
+    query: str,
+    term_ids: list[str],
+    history: list[dict],
+) -> dict:
+    """
+    R3 chat stub — AI팀 구현 완료 시 교체
+    from ai.pipeline import chat  으로 교체 예정
+    """
+    try:
+        from ai.pipeline import chat  # AI팀 구현 후 활성화
+        return await chat(query=query, term_ids=term_ids, history=history)
+    except ImportError:
+        # --- STUB ---
+        return {
+            "answer": f"[STUB] '{query}'에 대한 답변입니다. AI팀 구현 후 교체됩니다.",
+            "sources": [],
+        }
