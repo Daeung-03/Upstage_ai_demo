@@ -117,6 +117,8 @@ async def get_term(
                         title=c.title,
                         original_text=c.original_text,
                         plain_text=c.plain_text,
+                        page=c.page,
+                        bbox=c.bbox,
                     )
                     for c in v.clauses
                 ],
