@@ -7,6 +7,7 @@ from app.models.user import User  # noqa
 from app.models.term import Term, TermVersion, TermChunk, TermClause  # noqa
 from app.models.calendar import CalendarEvent, Notification  # noqa
 from app.models.chat import ChatSession, ChatMessage  # noqa
+from app.models.dispute import DisputeCase  # noqa
 
 from app.routers import terms, chat, calendar, notifications
 
