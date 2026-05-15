@@ -1,0 +1,235 @@
+{
+  "_meta": {
+    "service_name": "<채워주세요>",
+    "service_provider": "<발행 사업자>",
+    "schema_version": "v0.3-finance",
+    "domain": "finance",
+    "labeler": "TBD",
+    "extraction_date": "YYYY-MM-DD",
+    "document_source_url": "<약관 원본 URL>",
+    "instructions": "각 필드의 'expected' 값을 약관 원문 기준 정답으로 채우세요. enum 값은 ai/schemas/enums.py 참조 — FraudResponsibilityPattern, DepositProtectionStatus, NoticeChannel, ConsentMechanism 등.",
+    "note": "scripts/build_finance_golden_template.py 로 자동 생성된 빈 템플릿."
+  },
+  "fees.has_transaction_fees": {
+    "expected": null,
+    "_source_quote": "",
+    "_source_page": null,
+    "note": ""
+  },
+  "fees.transaction_fees_description": {
+    "expected": null,
+    "_source_quote": "",
+    "_source_page": null,
+    "note": ""
+  },
+  "fees.fee_change_notice_days": {
+    "expected": null,
+    "_source_quote": "",
+    "_source_page": null,
+    "note": ""
+  },
+  "fees.fee_change_notice_channels": {
+    "expected": null,
+    "_source_quote": "",
+    "_source_page": null,
+    "note": ""
+  },
+  "transaction_limits.per_transaction_limit_krw": {
+    "expected": null,
+    "_source_quote": "",
+    "_source_page": null,
+    "note": ""
+  },
+  "transaction_limits.daily_limit_krw": {
+    "expected": null,
+    "_source_quote": "",
+    "_source_page": null,
+    "note": ""
+  },
+  "transaction_limits.monthly_limit_krw": {
+    "expected": null,
+    "_source_quote": "",
+    "_source_page": null,
+    "note": ""
+  },
+  "transaction_limits.limits_description": {
+    "expected": null,
+    "_source_quote": "",
+    "_source_page": null,
+    "note": ""
+  },
+  "liability_allocation.responsibility_pattern": {
+    "expected": null,
+    "_source_quote": "",
+    "_source_page": null,
+    "note": ""
+  },
+  "liability_allocation.user_burden_description": {
+    "expected": null,
+    "_source_quote": "",
+    "_source_page": null,
+    "note": ""
+  },
+  "liability_allocation.company_compensation_scope": {
+    "expected": null,
+    "_source_quote": "",
+    "_source_page": null,
+    "note": ""
+  },
+  "liability_allocation.user_notification_deadline_hours": {
+    "expected": null,
+    "_source_quote": "",
+    "_source_page": null,
+    "note": ""
+  },
+  "liability_allocation.company_response_deadline_days": {
+    "expected": null,
+    "_source_quote": "",
+    "_source_page": null,
+    "note": ""
+  },
+  "deposit_protection.status": {
+    "expected": null,
+    "_source_quote": "",
+    "_source_page": null,
+    "note": ""
+  },
+  "deposit_protection.description": {
+    "expected": null,
+    "_source_quote": "",
+    "_source_page": null,
+    "note": ""
+  },
+  "deposit_protection.coverage_limit_krw": {
+    "expected": null,
+    "_source_quote": "",
+    "_source_page": null,
+    "note": ""
+  },
+  "account_termination.method": {
+    "expected": null,
+    "_source_quote": "",
+    "_source_page": null,
+    "note": ""
+  },
+  "account_termination.method_description": {
+    "expected": null,
+    "_source_quote": "",
+    "_source_page": null,
+    "note": ""
+  },
+  "account_termination.dormancy_period_months": {
+    "expected": null,
+    "_source_quote": "",
+    "_source_page": null,
+    "note": ""
+  },
+  "account_termination.balance_handling_description": {
+    "expected": null,
+    "_source_quote": "",
+    "_source_page": null,
+    "note": ""
+  },
+  "terms_changes.notice_channels": {
+    "expected": null,
+    "_source_quote": "",
+    "_source_page": null,
+    "note": ""
+  },
+  "terms_changes.notice_lead_time_days": {
+    "expected": null,
+    "_source_quote": "",
+    "_source_page": null,
+    "note": ""
+  },
+  "terms_changes.user_consent_mechanism": {
+    "expected": null,
+    "_source_quote": "",
+    "_source_page": null,
+    "note": ""
+  },
+  "terms_changes.user_right_to_terminate_on_change": {
+    "expected": null,
+    "_source_quote": "",
+    "_source_page": null,
+    "note": ""
+  },
+  "terms_changes.silent_acceptance_clause": {
+    "expected": null,
+    "_source_quote": "",
+    "_source_page": null,
+    "note": ""
+  },
+  "data_usage.privacy_policy_externally_delegated": {
+    "expected": null,
+    "_source_quote": "",
+    "_source_page": null,
+    "note": ""
+  },
+  "data_usage.collected_categories": {
+    "expected": null,
+    "_source_quote": "",
+    "_source_page": null,
+    "note": ""
+  },
+  "data_usage.third_party_sharing": {
+    "expected": null,
+    "_source_quote": "",
+    "_source_page": null,
+    "note": ""
+  },
+  "data_usage.third_party_recipients": {
+    "expected": null,
+    "_source_quote": "",
+    "_source_page": null,
+    "note": ""
+  },
+  "data_usage.cross_border_transfer": {
+    "expected": null,
+    "_source_quote": "",
+    "_source_page": null,
+    "note": ""
+  },
+  "data_usage.marketing_use": {
+    "expected": null,
+    "_source_quote": "",
+    "_source_page": null,
+    "note": ""
+  },
+  "data_usage.marketing_consent": {
+    "expected": null,
+    "_source_quote": "",
+    "_source_page": null,
+    "note": ""
+  },
+  "disputes.governing_law": {
+    "expected": null,
+    "_source_quote": "",
+    "_source_page": null,
+    "note": ""
+  },
+  "disputes.jurisdiction_clause": {
+    "expected": null,
+    "_source_quote": "",
+    "_source_page": null,
+    "note": ""
+  },
+  "disputes.financial_supervisor_complaint_channel": {
+    "expected": null,
+    "_source_quote": "",
+    "_source_page": null,
+    "note": ""
+  },
+  "disputes.complaint_channel_description": {
+    "expected": null,
+    "_source_quote": "",
+    "_source_page": null,
+    "note": ""
+  },
+  "unfair_clause_flags": {
+    "expected": [],
+    "_source_quote": "",
+    "_source_page": null,
+    "note": ""
+  }
+}

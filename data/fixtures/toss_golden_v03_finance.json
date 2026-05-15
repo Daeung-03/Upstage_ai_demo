@@ -1,0 +1,224 @@
+{
+  "_meta": {
+    "service_name": "Toss",
+    "service_provider": null,
+    "schema_version": "v0.3-finance",
+    "domain": "finance",
+    "labeler": "remap from v0.2 (scripts/remap_fintech_golden_v03.py)",
+    "extraction_date": "2026-05-15",
+    "source_v02_path": "toss_golden.json",
+    "remap_changelog": [
+      "v0.3 (2026-05-15): OTT-shaped v0.2 → FinanceTerms 좌표계 자동 변환. 호환 필드는 expected 보존, 신규 finance-only 필드는 expected=null. liability_allocation.responsibility_pattern 은 §9 패턴 inferred."
+    ],
+    "note": "Phase B fintech probe — Toss 약관은 전자금융거래 표준 따름. 2026 공시대상기업집단 지정으로 공시 의무 추가."
+  },
+  "terms_changes.notice_channels": {
+    "expected": [
+      "app_push",
+      "email",
+      "sms",
+      "web_notice"
+    ],
+    "_remap_source": "terms_changes.notice_channels",
+    "_source_quote": "전자적 장치 또는 토스앱 등에 게시하고 회원에게 통지합니다.",
+    "_source_page": 1,
+    "_remap_note": "OTT v0.2 라벨 그대로 — 의미 동일"
+  },
+  "terms_changes.notice_lead_time_days": {
+    "expected": 30,
+    "_remap_source": "terms_changes.notice_lead_time_days",
+    "_source_quote": "그 시행일 1개월 전에 변경되는 약관을 해당 전자금융거래를 수행하는 전자적 장치 또는 토스앱 등에 게시하고 회원에게 통지합니다.",
+    "_source_page": 1,
+    "_remap_note": "OTT v0.2 라벨 그대로 — 의미 동일"
+  },
+  "terms_changes.user_consent_mechanism": {
+    "expected": "deemed_agreed",
+    "_remap_source": "terms_changes.user_consent_mechanism",
+    "_source_quote": "회원이 약관의 변경내용에 대하여 이의를 제기하지 아니하는 경우에는 약관의 변경을 승인한 것으로 본다.",
+    "_source_page": 1,
+    "_remap_note": "OTT v0.2 라벨 그대로 — 의미 동일"
+  },
+  "terms_changes.user_right_to_terminate_on_change": {
+    "expected": true,
+    "_remap_source": "terms_changes.user_right_to_terminate_on_change",
+    "_source_quote": "회원이 변경에 동의하지 아니한 경우 게시 또는 통지를 받은 날로부터 변경되는 약관의 시행일 전의 영업일까지 계약을 해지할 수 있습니다.",
+    "_source_page": 1,
+    "_remap_note": "OTT v0.2 라벨 그대로 — 의미 동일"
+  },
+  "terms_changes.silent_acceptance_clause": {
+    "expected": true,
+    "_remap_source": "terms_changes.silent_acceptance_clause",
+    "_source_quote": "회원이 약관의 변경내용에 대하여 이의를 제기하지 아니하는 경우에는 약관의 변경을 승인한 것으로 본다.",
+    "_source_page": 1,
+    "_remap_note": "OTT v0.2 라벨 그대로 — 의미 동일"
+  },
+  "data_usage.collected_categories": {
+    "expected": [
+      "거래 기록",
+      "개인정보",
+      "위치정보"
+    ],
+    "_remap_source": "data_usage.collected_categories",
+    "_source_quote": "제19조 (개인정보의 보호 및 이용) ① 회사는 개인정보의 보호 및 처리와 관련하여 개인정보보호법, 신용정보의이용및보호에관한법률, 정보통신망이용촉진및정보보호에관한법률 및 각 그 하위 법령에 정하는 사항을 준수하며",
+    "_source_page": 1,
+    "_remap_note": "OTT v0.2 라벨 그대로 — 의미 동일"
+  },
+  "data_usage.third_party_sharing": {
+    "expected": false,
+    "_remap_source": "data_usage.third_party_sharing",
+    "_source_quote": "회사는 회원의 개인정보를 법령에 의하거나 회원의 동의를 얻지 아니하고 제3자에게 제공하거나 서비스 제공 목적 외에 사용하지 아니합니다.",
+    "_source_page": 1,
+    "_remap_note": "OTT v0.2 라벨 그대로 — 의미 동일"
+  },
+  "data_usage.third_party_recipients": {
+    "expected": null,
+    "_remap_source": "data_usage.third_party_recipients",
+    "_source_quote": "",
+    "_source_page": null,
+    "_remap_note": "OTT v0.2 라벨 그대로 — 의미 동일"
+  },
+  "data_usage.marketing_use": {
+    "expected": true,
+    "_remap_source": "data_usage.marketing_use",
+    "_source_quote": "광고성 정보 제공 서비스",
+    "_source_page": null,
+    "_remap_note": "OTT v0.2 라벨 그대로 — 의미 동일"
+  },
+  "data_usage.marketing_consent": {
+    "expected": "opt_in_explicit",
+    "_remap_source": "data_usage.marketing_consent",
+    "_source_quote": "동의를 얻지 아니하고 ... 서비스 제공 목적 외에 사용하지 아니합니다.",
+    "_source_page": 1,
+    "_remap_note": "OTT v0.2 라벨 그대로 — 의미 동일"
+  },
+  "data_usage.cross_border_transfer": {
+    "expected": false,
+    "_remap_source": "data_usage.cross_border_transfer",
+    "_source_quote": "회사는 회원의 개인정보를 법령에 의하거나 회원의 동의를 얻지 아니하고 제3자에게 제공하거나 서비스 제공 목적 외에 사용하지 아니합니다.",
+    "_source_page": 1,
+    "_remap_note": "OTT v0.2 라벨 그대로 — 의미 동일"
+  },
+  "disputes.governing_law": {
+    "expected": "대한민국 법률",
+    "_remap_source": "disputes.governing_law",
+    "_source_quote": "해당 분쟁의 해결은 민사소송법에 따라 관할을 가지는 법원의 판결에 따르기로 합니다.",
+    "_source_page": 1,
+    "_remap_note": "OTT v0.2 라벨 그대로 — 의미 동일"
+  },
+  "disputes.jurisdiction_clause": {
+    "expected": "민사소송법상 관할법원",
+    "_remap_source": "disputes.jurisdiction_clause",
+    "_source_quote": "해당 분쟁의 해결은 민사소송법에 따라 관할을 가지는 법원의 판결에 따르기로 합니다.",
+    "_source_page": 1,
+    "_remap_note": "OTT v0.2 라벨 그대로 — 의미 동일"
+  },
+  "unfair_clause_flags": {
+    "expected": [
+      "POST-05",
+      "의사표시_의제"
+    ],
+    "_remap_source": "unfair_clause_flags (unchanged)"
+  },
+  "account_termination.method": {
+    "expected": "online",
+    "_remap_source": "cancellation.method",
+    "_source_quote": "회원은 언제든지 회사에 이용계약 해지의 의사를 통지함으로써 이용계약을 해지할 수 있습니다.",
+    "_source_page": 1,
+    "_remap_note": "OTT v0.2 라벨 그대로 — 의미 동일"
+  },
+  "account_termination.method_description": {
+    "expected": "회원이 회사에 해지 의사 통지 시 해지 (앱/웹)",
+    "_remap_source": "cancellation.method_description",
+    "_source_quote": "회원은 언제든지 회사에 이용계약 해지의 의사를 통지함으로써 이용계약을 해지할 수 있습니다.",
+    "_source_page": 1,
+    "_remap_note": "OTT v0.2 라벨 그대로 — 의미 동일"
+  },
+  "liability_allocation.responsibility_pattern": {
+    "expected": "user_gross_negligence_only",
+    "_remap_note": "OTT liability.compensation_description='회원 통지 후 제3자 부정사용 손해 배상 책임' 에서 inferred — 한국 전자금융거래법 §9 표준 패턴",
+    "_source_quote": "회사는 회원으로부터 전항에 따른 통지를 받은 때에는 그 때부터 제3자가 그 접근매체를 사용함으로 인하여 회원에게 발생한 손해를 배상할 책임이 있습니다.",
+    "_source_page": 1
+  },
+  "liability_allocation.company_compensation_scope": {
+    "expected": "회원 통지 후 제3자 부정사용 손해 배상 책임",
+    "_remap_source": "liability.compensation_description",
+    "_source_quote": "회사는 회원으로부터 전항에 따른 통지를 받은 때에는 그 때부터 제3자가 그 접근매체를 사용함으로 인하여 회원에게 발생한 손해를 배상할 책임이 있습니다.",
+    "_source_page": 1
+  },
+  "fees.has_transaction_fees": {
+    "expected": null,
+    "_remap_note": "v0.4 라벨 추가 예정 — finance 도메인 신규 필드"
+  },
+  "fees.transaction_fees_description": {
+    "expected": null,
+    "_remap_note": "v0.4 라벨 추가 예정 — finance 도메인 신규 필드"
+  },
+  "fees.fee_change_notice_days": {
+    "expected": null,
+    "_remap_note": "v0.4 라벨 추가 예정 — finance 도메인 신규 필드"
+  },
+  "fees.fee_change_notice_channels": {
+    "expected": null,
+    "_remap_note": "v0.4 라벨 추가 예정 — finance 도메인 신규 필드"
+  },
+  "transaction_limits.per_transaction_limit_krw": {
+    "expected": null,
+    "_remap_note": "v0.4 라벨 추가 예정 — finance 도메인 신규 필드"
+  },
+  "transaction_limits.daily_limit_krw": {
+    "expected": null,
+    "_remap_note": "v0.4 라벨 추가 예정 — finance 도메인 신규 필드"
+  },
+  "transaction_limits.monthly_limit_krw": {
+    "expected": null,
+    "_remap_note": "v0.4 라벨 추가 예정 — finance 도메인 신규 필드"
+  },
+  "transaction_limits.limits_description": {
+    "expected": null,
+    "_remap_note": "v0.4 라벨 추가 예정 — finance 도메인 신규 필드"
+  },
+  "liability_allocation.user_burden_description": {
+    "expected": null,
+    "_remap_note": "v0.4 라벨 추가 예정 — finance 도메인 신규 필드"
+  },
+  "liability_allocation.user_notification_deadline_hours": {
+    "expected": null,
+    "_remap_note": "v0.4 라벨 추가 예정 — finance 도메인 신규 필드"
+  },
+  "liability_allocation.company_response_deadline_days": {
+    "expected": null,
+    "_remap_note": "v0.4 라벨 추가 예정 — finance 도메인 신규 필드"
+  },
+  "deposit_protection.status": {
+    "expected": null,
+    "_remap_note": "v0.4 라벨 추가 예정 — finance 도메인 신규 필드"
+  },
+  "deposit_protection.description": {
+    "expected": null,
+    "_remap_note": "v0.4 라벨 추가 예정 — finance 도메인 신규 필드"
+  },
+  "deposit_protection.coverage_limit_krw": {
+    "expected": null,
+    "_remap_note": "v0.4 라벨 추가 예정 — finance 도메인 신규 필드"
+  },
+  "account_termination.dormancy_period_months": {
+    "expected": null,
+    "_remap_note": "v0.4 라벨 추가 예정 — finance 도메인 신규 필드"
+  },
+  "account_termination.balance_handling_description": {
+    "expected": null,
+    "_remap_note": "v0.4 라벨 추가 예정 — finance 도메인 신규 필드"
+  },
+  "data_usage.privacy_policy_externally_delegated": {
+    "expected": null,
+    "_remap_note": "v0.4 라벨 추가 예정 — finance 도메인 신규 필드"
+  },
+  "disputes.financial_supervisor_complaint_channel": {
+    "expected": null,
+    "_remap_note": "v0.4 라벨 추가 예정 — finance 도메인 신규 필드"
+  },
+  "disputes.complaint_channel_description": {
+    "expected": null,
+    "_remap_note": "v0.4 라벨 추가 예정 — finance 도메인 신규 필드"
+  }
+}

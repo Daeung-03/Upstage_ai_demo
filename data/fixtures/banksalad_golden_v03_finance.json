@@ -1,0 +1,225 @@
+{
+  "_meta": {
+    "service_name": "BankSalad",
+    "service_provider": null,
+    "schema_version": "v0.3-finance",
+    "domain": "finance",
+    "labeler": "remap from v0.2 (scripts/remap_fintech_golden_v03.py)",
+    "extraction_date": "2026-05-15",
+    "source_v02_path": "banksalad_golden.json",
+    "remap_changelog": [
+      "v0.3 (2026-05-15): OTT-shaped v0.2 → FinanceTerms 좌표계 자동 변환. 호환 필드는 expected 보존, 신규 finance-only 필드는 expected=null. liability_allocation.responsibility_pattern 은 §9 패턴 inferred."
+    ],
+    "note": "뱅크샐러드는 PFM(개인자산관리) 중심 + 송금 서비스 추가. 서비스 자체는 무료. 모델 probe 결과 'pricing.base_price_krw=0' 강제 채움 패턴 확인 — 라벨링 시 schema fit 비판적 검증 필요."
+  },
+  "terms_changes.notice_channels": {
+    "expected": [
+      "in_app_banner"
+    ],
+    "_remap_source": "terms_changes.notice_channels",
+    "_source_quote": "회사는 변경되는 내용과 변경일자를 서비스 내에 공지하며",
+    "_source_page": 1,
+    "_remap_note": "OTT v0.2 라벨 그대로 — 의미 동일"
+  },
+  "terms_changes.notice_lead_time_days": {
+    "expected": 30,
+    "_remap_source": "terms_changes.notice_lead_time_days",
+    "_source_quote": "변경일 30일 전에 이용자에게 알려",
+    "_source_page": 1,
+    "_remap_note": "OTT v0.2 라벨 그대로 — 의미 동일"
+  },
+  "terms_changes.user_consent_mechanism": {
+    "expected": "deemed_agreed",
+    "_remap_source": "terms_changes.user_consent_mechanism",
+    "_source_quote": "동의한 것으로 본다.",
+    "_source_page": 1,
+    "_remap_note": "OTT v0.2 라벨 그대로 — 의미 동일"
+  },
+  "terms_changes.user_right_to_terminate_on_change": {
+    "expected": true,
+    "_remap_source": "terms_changes.user_right_to_terminate_on_change",
+    "_source_quote": "변경된 약관 내용에 동의하지 않으시는 경우 서비스 이용을 중단하셔야 하며",
+    "_source_page": 1,
+    "_remap_note": "OTT v0.2 라벨 그대로 — 의미 동일"
+  },
+  "terms_changes.silent_acceptance_clause": {
+    "expected": true,
+    "_remap_source": "terms_changes.silent_acceptance_clause",
+    "_source_quote": "동의한 것으로 본다.",
+    "_source_page": 1,
+    "_remap_note": "OTT v0.2 라벨 그대로 — 의미 동일"
+  },
+  "data_usage.collected_categories": {
+    "expected": [
+      "개인신용정보",
+      "건강정보",
+      "금융정보",
+      "행정정보"
+    ],
+    "_remap_source": "data_usage.collected_categories",
+    "_source_quote": "마이데이터 API를 바탕으로 금융기관에 흩어져 있는 자신의 다양한 개인신용정보를 통합조회하고 관리할 수 있는 마이데이터 서비스를 이용할 수 있습니다.",
+    "_source_page": 1,
+    "_remap_note": "OTT v0.2 라벨 그대로 — 의미 동일"
+  },
+  "data_usage.third_party_sharing": {
+    "expected": true,
+    "_remap_source": "data_usage.third_party_sharing",
+    "_source_quote": "제3자 서비스와 상품 등",
+    "_source_page": 1,
+    "_remap_note": "OTT v0.2 라벨 그대로 — 의미 동일"
+  },
+  "data_usage.third_party_recipients": {
+    "expected": [
+      "금융기관",
+      "신용정보회사",
+      "제3자 서비스 제공자",
+      "제휴사"
+    ],
+    "_remap_source": "data_usage.third_party_recipients",
+    "_source_quote": "제3자 서비스와 상품 등",
+    "_source_page": 1,
+    "_remap_note": "OTT v0.2 라벨 그대로 — 의미 동일"
+  },
+  "data_usage.marketing_use": {
+    "expected": "AMBIGUOUS",
+    "_remap_source": "data_usage.marketing_use",
+    "_source_quote": "제3자 서비스나 상품 등의 제공자는 제3자이며, 관련 법령이나 본 약관에서 달리 정하지 않는 이상 회사는 이에 대한 책임을 지지 않습니다.",
+    "_source_page": 1,
+    "_remap_note": "OTT v0.2 라벨 그대로 — 의미 동일"
+  },
+  "data_usage.marketing_consent": {
+    "expected": null,
+    "_remap_source": "data_usage.marketing_consent",
+    "_source_quote": "",
+    "_source_page": null,
+    "_remap_note": "OTT v0.2 라벨 그대로 — 의미 동일"
+  },
+  "data_usage.cross_border_transfer": {
+    "expected": null,
+    "_remap_source": "data_usage.cross_border_transfer",
+    "_source_quote": "",
+    "_source_page": null,
+    "_remap_note": "OTT v0.2 라벨 그대로 — 의미 동일"
+  },
+  "disputes.governing_law": {
+    "expected": "대한민국 법령",
+    "_remap_source": "disputes.governing_law",
+    "_source_quote": "본 약관의 해석은 대한민국 법령에 따르며",
+    "_source_page": 1,
+    "_remap_note": "OTT v0.2 라벨 그대로 — 의미 동일"
+  },
+  "disputes.jurisdiction_clause": {
+    "expected": "민사소송법상 관할법원",
+    "_remap_source": "disputes.jurisdiction_clause",
+    "_source_quote": "본 약관 및 서비스와 관련된 모든 분쟁에 관한 관할은 민사소송법에서 정한 바에 따릅니다.",
+    "_source_page": 1,
+    "_remap_note": "OTT v0.2 라벨 그대로 — 의미 동일"
+  },
+  "unfair_clause_flags": {
+    "expected": [
+      "POST-04",
+      "POST-05",
+      "면책/손배 제한",
+      "의사표시_의제"
+    ],
+    "_remap_source": "unfair_clause_flags (unchanged)"
+  },
+  "account_termination.method": {
+    "expected": "online",
+    "_remap_source": "cancellation.method",
+    "_source_quote": "전자금융거래 서비스 이용에 관한 해지는 웹사이트 또는 모바일 어플리케이션에서 회사가 제공하는 방법(전자금융거래 서비스 이용 탈퇴 메뉴)에 따릅니다.",
+    "_source_page": 1,
+    "_remap_note": "OTT v0.2 라벨 그대로 — 의미 동일"
+  },
+  "account_termination.method_description": {
+    "expected": "웹/앱 전자금융거래 서비스 이용 탈퇴 메뉴",
+    "_remap_source": "cancellation.method_description",
+    "_source_quote": "전자금융거래 서비스 이용에 관한 해지는 웹사이트 또는 모바일 어플리케이션에서 회사가 제공하는 방법(전자금융거래 서비스 이용 탈퇴 메뉴)에 따릅니다.",
+    "_source_page": 1,
+    "_remap_note": "OTT v0.2 라벨 그대로 — 의미 동일"
+  },
+  "fees.has_transaction_fees": {
+    "expected": null,
+    "_remap_note": "v0.4 라벨 추가 예정 — finance 도메인 신규 필드"
+  },
+  "fees.transaction_fees_description": {
+    "expected": null,
+    "_remap_note": "v0.4 라벨 추가 예정 — finance 도메인 신규 필드"
+  },
+  "fees.fee_change_notice_days": {
+    "expected": null,
+    "_remap_note": "v0.4 라벨 추가 예정 — finance 도메인 신규 필드"
+  },
+  "fees.fee_change_notice_channels": {
+    "expected": null,
+    "_remap_note": "v0.4 라벨 추가 예정 — finance 도메인 신규 필드"
+  },
+  "transaction_limits.per_transaction_limit_krw": {
+    "expected": null,
+    "_remap_note": "v0.4 라벨 추가 예정 — finance 도메인 신규 필드"
+  },
+  "transaction_limits.daily_limit_krw": {
+    "expected": null,
+    "_remap_note": "v0.4 라벨 추가 예정 — finance 도메인 신규 필드"
+  },
+  "transaction_limits.monthly_limit_krw": {
+    "expected": null,
+    "_remap_note": "v0.4 라벨 추가 예정 — finance 도메인 신규 필드"
+  },
+  "transaction_limits.limits_description": {
+    "expected": null,
+    "_remap_note": "v0.4 라벨 추가 예정 — finance 도메인 신규 필드"
+  },
+  "liability_allocation.responsibility_pattern": {
+    "expected": null,
+    "_remap_note": "v0.4 라벨 추가 예정 — finance 도메인 신규 필드"
+  },
+  "liability_allocation.user_burden_description": {
+    "expected": null,
+    "_remap_note": "v0.4 라벨 추가 예정 — finance 도메인 신규 필드"
+  },
+  "liability_allocation.company_compensation_scope": {
+    "expected": null,
+    "_remap_note": "v0.4 라벨 추가 예정 — finance 도메인 신규 필드"
+  },
+  "liability_allocation.user_notification_deadline_hours": {
+    "expected": null,
+    "_remap_note": "v0.4 라벨 추가 예정 — finance 도메인 신규 필드"
+  },
+  "liability_allocation.company_response_deadline_days": {
+    "expected": null,
+    "_remap_note": "v0.4 라벨 추가 예정 — finance 도메인 신규 필드"
+  },
+  "deposit_protection.status": {
+    "expected": null,
+    "_remap_note": "v0.4 라벨 추가 예정 — finance 도메인 신규 필드"
+  },
+  "deposit_protection.description": {
+    "expected": null,
+    "_remap_note": "v0.4 라벨 추가 예정 — finance 도메인 신규 필드"
+  },
+  "deposit_protection.coverage_limit_krw": {
+    "expected": null,
+    "_remap_note": "v0.4 라벨 추가 예정 — finance 도메인 신규 필드"
+  },
+  "account_termination.dormancy_period_months": {
+    "expected": null,
+    "_remap_note": "v0.4 라벨 추가 예정 — finance 도메인 신규 필드"
+  },
+  "account_termination.balance_handling_description": {
+    "expected": null,
+    "_remap_note": "v0.4 라벨 추가 예정 — finance 도메인 신규 필드"
+  },
+  "data_usage.privacy_policy_externally_delegated": {
+    "expected": null,
+    "_remap_note": "v0.4 라벨 추가 예정 — finance 도메인 신규 필드"
+  },
+  "disputes.financial_supervisor_complaint_channel": {
+    "expected": null,
+    "_remap_note": "v0.4 라벨 추가 예정 — finance 도메인 신규 필드"
+  },
+  "disputes.complaint_channel_description": {
+    "expected": null,
+    "_remap_note": "v0.4 라벨 추가 예정 — finance 도메인 신규 필드"
+  }
+}
