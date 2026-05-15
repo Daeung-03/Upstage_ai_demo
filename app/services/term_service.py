@@ -131,6 +131,7 @@ async def process_upload(
     file_url: str,
     domain: str = "ETC",
     sub_category: str | None = None,
+    effective_date: date | None = None,
 ) -> tuple[Term, TermVersion]:
 
     # 1. AI 파이프라인 (단일 호출로 통합)
@@ -166,6 +167,7 @@ async def process_upload(
         raw_text=raw_text,
         summary=result.summary,
         is_latest=True,
+        effective_date=effective_date,
     )
     db.add(version)
     await db.flush()
@@ -220,6 +222,7 @@ async def process_version_update(
     include_user_impact: bool = False,
     user_plan: str | None = None,
     user_custom_notes: str | None = None,
+    effective_date: date | None = None,
 ) -> tuple[TermVersion, str | None]:
     """약관 신버전 업로드 처리.
 
@@ -324,6 +327,7 @@ async def process_version_update(
         summary=result.summary,
         diff_summary=diff_summary,
         is_latest=True,
+        effective_date=effective_date,
     )
     db.add(new_version)
     await db.flush()
