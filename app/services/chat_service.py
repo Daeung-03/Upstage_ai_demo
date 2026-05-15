@@ -86,6 +86,7 @@ async def send_message(
         query=message,
         term_ids=term_ids,
         history=history,
+        db=db,
     )
     answer: str = ai_result.get("answer", "")
     sources: list[str] = ai_result.get("sources", [])

@@ -2,9 +2,12 @@ from __future__ import annotations
 
 import logging
 import time
+import json
 from typing import Any
 
 from pydantic import BaseModel, Field
+
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from ai.schemas.subscription import SubscriptionTerms
 from ai.services.extract import extract_subscription_with_voting
@@ -112,3 +115,95 @@ async def run_pipeline(
         timings=timings,
         usage=usage,
     )
+
+
+# ── Chat Pipeline ───────────────────────────────────────
+async def chat(
+    client: UpstageClient,
+    *,
+    query: str,
+    term_ids: list[str],
+    history: list[dict],
+    db: AsyncSession,
+) -> dict:
+    try:
+        # 1. 질문 임베딩
+        embed_resp = await client.post_json(
+            "embeddings",
+            json={
+                "model": "solar-embedding-1-large-query",
+                "input": [query],
+            },
+        )
+        query_vector: list[float] = embed_resp["data"][0]["embedding"]
+        vec_str = "[" + ",".join(str(v) for v in query_vector) + "]"
+
+        # 2. pgvector top-5 검색
+        from sqlalchemy import text
+        sql = text("""
+            SELECT id::text, content,
+                   embedding <=> CAST(:vec AS halfvec(4096)) AS distance
+            FROM term_chunks
+            WHERE (:no_filter OR term_id = ANY(CAST(:term_ids AS uuid[])))
+            ORDER BY distance ASC
+            LIMIT 5
+        """)
+        result = await db.execute(sql, {
+            "vec": vec_str,
+            "term_ids": term_ids,
+            "no_filter": len(term_ids) == 0,
+        })
+        chunks = result.fetchall()
+
+        # 3. context 조립
+        context = "\n\n".join(
+            f"[{i+1}] {row.content}" for i, row in enumerate(chunks)
+        )
+        source_ids = [row.id for row in chunks]
+
+        # 4. Solar Pro 3 답변 생성
+        messages = [
+            {
+                "role": "system",
+                "content": (
+                    "당신은 약관 분석 전문가입니다. "
+                    "주어진 약관 내용만 참고하여 답변하세요.\n\n"
+                    f"[약관 내용]\n{context}"
+                ),
+            },
+            *history,
+            {"role": "user", "content": query},
+        ]
+        chat_resp = await client.post_json(
+            "chat/completions",
+            json={
+                "model": "solar-pro3",
+                "messages": messages,
+            },
+        )
+        answer: str = chat_resp["choices"][0]["message"]["content"]
+
+        # 5. Groundedness Check (인라인)
+        try:
+            ground_payload = {
+                "model": "solar-pro3",
+                "messages": [
+                    {"role": "system", "content": "You are a groundedness checker. Reply JSON {\"grounded\": bool, \"score\": float}."},
+                    {"role": "user", "content": f"context:\n{context}\n\nanswer:\n{answer}"},
+                ],
+                "response_format": {"type": "json_object"},
+                "temperature": 0,
+            }
+            ground_resp = await client.post_json("chat/completions", json=ground_payload)
+            import json
+            ground_data = json.loads(ground_resp["choices"][0]["message"]["content"])
+            if not (ground_data.get("grounded") is True and float(ground_data.get("score", 0)) >= 0.6):
+                answer += "\n\n⚠️ 일부 내용은 약관 원문에서 확인이 필요할 수 있습니다."
+        except Exception:
+            pass  # groundedness 실패해도 답변 반환
+
+        return {"answer": answer, "sources": source_ids}
+
+    except Exception:
+        logger.exception("chat pipeline failed")
+        return {"answer": "답변을 생성할 수 없습니다.", "sources": []}

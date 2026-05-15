@@ -8,10 +8,14 @@ class Settings(BaseSettings):
     upstage_api_key_2: str | None = None
     upstage_api_key_3: str | None = None
     upstage_api_key_4: str | None = None
-    upstage_base_url: str = "https://api.upstage.ai/v1"
+    upstage_base_url: str = "https://api.upstage.ai/v1/"
     log_level: str = "INFO"
 
-    model_config = SettingsConfigDict(env_file=".env", case_sensitive=False)
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        case_sensitive=False,
+        extra="ignore",          # .env에 정의되지 않은 필드 무시 (예: app settings)
+    )
 
     @property
     def api_keys(self) -> list[str]:
