@@ -85,7 +85,8 @@ def test_domain_all_matches_any_term_domain():
 
 
 def test_threshold_cut_drops_below_min_score():
-    # base 0.5 + 어떤 boost 도 없으면 0.65 미달
+    # base 0.5 + 어떤 boost 도 없을 때, explicit 한 high 임계값 (0.65) 면 drop.
+    # default 값은 데이터 분포에 따라 변할 수 있어 명시적 인자로 임계값 동작 검증.
     rows = [_row(cosine_distance=0.5, domain="OTHER")]
     out = _apply_boosts_and_filter(
         rows,
@@ -93,7 +94,7 @@ def test_threshold_cut_drops_below_min_score():
         term_unfair_flags=[],
         term_domain="OTT",
         top_k=5,
-        min_score=DEFAULT_MIN_SCORE,
+        min_score=0.65,
     )
     assert out == []
 
@@ -130,7 +131,7 @@ def test_results_sorted_by_score_descending():
 
 
 def test_no_signals_no_boosts_no_match():
-    # 모든 boost 0, base 0.6 → 0.65 미달
+    # 모든 boost 0, base 0.6 → high 임계값(0.65) 미달 (explicit).
     rows = [_row(cosine_distance=0.4, domain="OTHER")]
     out = _apply_boosts_and_filter(
         rows,
@@ -138,6 +139,6 @@ def test_no_signals_no_boosts_no_match():
         term_unfair_flags=[],
         term_domain="OTT",
         top_k=5,
-        min_score=DEFAULT_MIN_SCORE,
+        min_score=0.65,
     )
     assert out == []
