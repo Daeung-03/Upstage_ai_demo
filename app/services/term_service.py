@@ -342,13 +342,25 @@ async def search_chunks(
     query: str,
     top_k: int = 5,
 ) -> list[dict]:
+    """term 의 청크 중 query 와 의미적으로 가장 유사한 top_k 개 반환.
+
+    응답 shape 은 `ChunkResult` 스키마와 정합:
+      - chunk_id: UUID (term_chunks.id)
+      - chunk_index: int (해당 term 내 청크 순번)
+      - content: str (청크 본문)
+      - score: float (cosine similarity, 1.0 = 동일, 0 = 무관, < 0 = 반대)
+
+    pgvector 의 `<=>` 는 cosine *distance* (0 = 동일, 2 = 정반대) 라 1 에서 빼서
+    similarity 로 노출. UI 토스트에 "정확도 87%" 식으로 표시 가능.
+    """
     from sqlalchemy import text as sa_text
 
     query_vec = await ai_client.embed_query(query)
 
     rows = (await db.execute(
         sa_text("""
-            SELECT id, content, chunk_index
+            SELECT id, content, chunk_index,
+                   1 - (embedding <=> CAST(:vec AS halfvec)) AS score
             FROM term_chunks
             WHERE term_id = :term_id
             ORDER BY embedding <=> CAST(:vec AS halfvec)
@@ -358,6 +370,11 @@ async def search_chunks(
     )).fetchall()
 
     return [
-        {"id": str(r.id), "content": r.content, "chunk_index": r.chunk_index}
+        {
+            "chunk_id": r.id,
+            "chunk_index": r.chunk_index,
+            "content": r.content,
+            "score": float(r.score),
+        }
         for r in rows
     ]
