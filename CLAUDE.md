@@ -4,20 +4,32 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Optimization priorities (사용자 명시)
 
-When tuning config / prompts / architecture for the extraction pipeline:
+**Applies to all services in this repo that the user is implementing — extraction
+pipeline, embedding, calendar/date extraction, summary/diff, page-bbox enrichment,
+etc. — EXCEPT the chatbot (which has its own latency tradeoff; see below).**
 
-1. **Performance (accuracy on user-labeled golden) — top priority.** Pursue any
-   change that improves measured strict / semantic accuracy.
+1. **Performance (accuracy / quality of output) — top priority.** Pursue any
+   change that improves measured accuracy or output fidelity.
 2. **Latency / wall-clock time — secondary.** Faster is better if accuracy is
    unchanged; trade time for accuracy when in doubt.
 3. **Token / API cost — not a constraint.** Do **not** sacrifice accuracy or
    reasonable latency to save tokens. Solar Pro 3 `reasoning_effort=high`,
-   `N=5` voting, multiple verification calls — all on the table if they help.
-   Do not propose "cheaper" alternatives unless they are accuracy/time-equivalent.
+   `N=5` voting, multiple verification calls, larger embedding batches with
+   re-tries — all on the table if they help. Do not propose "cheaper"
+   alternatives unless they are accuracy/time-equivalent. **Do not warn the
+   user about token cost** before running experiments / verifications; just
+   run them.
 
 Concretely: do not gate experiments on token budget. When presenting trade-offs,
 lead with accuracy delta, then time delta. Token usage is reported for visibility
 only.
+
+### Chatbot exception
+The chatbot service (`app/services/chat_service.py`, `chat_with_ai`) has a
+latency-vs-accuracy tradeoff: user is waiting on a live response, so reasonable
+latency is required. Token cost is still not a constraint, but multi-pass
+voting / `reasoning_effort=high` chains that take 30s+ are off the table for
+chatbot specifically.
 
 ## Project
 
