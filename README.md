@@ -4,15 +4,21 @@
 
 ```
 입력 (PDF/HTML 약관)
-  ↓ ai/pipeline.py
+  ↓ ai/pipeline.py  ← domain="subscription"|"finance"|"insurance" 분기
   ├─ Document Parse / HTML 직접 추출
-  ├─ Solar Pro 3 × N=5 voting (도메인-aware 분기) ← Round 11: 영문/한국어 자동 분기
+  ├─ Solar Pro 3 × N=2~5 voting (도메인-aware 분기) ← Round 11: 영문/한국어 자동 분기
   ├─ Solar Pro 3 위험 조항 요약
   └─ Solar Pro 3 groundedness 검증
-출력 → DB 저장 → FastAPI (POST /v1/terms/analyze)
-                  → 사용자 챗봇 (GPT-style 대화로 약관 질의)
-                  → 캘린더 (자동갱신·환불 마감 등 일자 추출)
-                  → 알림 (위험 조항 푸시)
+출력 → DB 저장 (PostgreSQL + pgvector halfvec(4096))
+   → FastAPI (포트 8000)
+      ├─ POST /terms/upload         업로드 + 풀 파이프라인 + DB 저장
+      ├─ GET  /terms                목록 / GET /terms/{id} 상세
+      ├─ POST /terms/{id}/search    의미 검색 (cosine similarity)
+      ├─ POST /terms/{id}/update    버전 업데이트 + diff_summary
+      ├─ POST /chat                 약관 RAG 챗봇
+      ├─ GET  /calendar             자동갱신·해지 마감 캘린더
+      ├─ GET  /notifications        위험 조항/버전 변경 푸시
+      └─ /v1/disputes, /v1/terms/{id}/disputes  유사 분쟁 사례 매칭
 ```
 
 ---
@@ -103,22 +109,36 @@ ai/
 
 ```
 app/
-├── main.py               # FastAPI 앱 + exception handlers
+├── main.py                    # FastAPI 앱 + 글로벌 exception handlers (502/422 매핑)
 ├── routers/
-│   ├── terms.py          # POST /v1/terms/analyze (멀티파트 업로드)
-│   ├── chat.py           # 사용자 챗봇 (약관 질의)
-│   ├── calendar.py       # 자동갱신·환불 마감 자동 추출
-│   └── notifications.py  # 위험 조항 푸시 알림
+│   ├── terms.py               # POST /terms/upload, GET /terms, /search, /update
+│   ├── chat.py                # POST /chat (약관 질의 RAG)
+│   ├── calendar.py            # GET /calendar?user_id&month
+│   ├── notifications.py       # GET / PATCH /read-all / PATCH /{id}/read / DELETE
+│   └── disputes.py            # /v1/disputes, /v1/terms/{id}/disputes (유사 사례)
 ├── services/
-│   ├── term_service.py
-│   ├── chat_service.py   # GPT-style 대화 (latency-aware)
-│   ├── calendar_service.py
-│   └── ai_client.py
-├── models/               # SQLAlchemy ORM (PostgreSQL + pgvector)
+│   ├── term_service.py        # 업로드 처리, 청크 임베딩 검색, page/bbox 매핑
+│   ├── chat_service.py        # GPT-style 대화 (latency-aware)
+│   ├── calendar_service.py    # compute_calendar_events (결정론적, LLM 미사용)
+│   ├── notification_service.py
+│   ├── dispute_service.py     # 분쟁 사례 upsert + find_similar_disputes
+│   └── ai_client.py           # ai/* 와 server 사이 thin wrapper, key 분리
+├── models/                    # SQLAlchemy ORM (PostgreSQL + pgvector halfvec)
+│   └── dispute.py             # DisputeCase 테이블
+├── schemas/                   # API 응답 Pydantic 스키마
 └── config.py
 ```
 
-**latency tradeoff**: `chat_service.py`만 별도 — 사용자 live response 대기 중이라 N=1 + medium reasoning 사용. 나머지는 accuracy 우선.
+**Latency tradeoff**: `chat_service.py`만 별도 — 사용자 live response 대기 중이라 N=1 + medium reasoning 사용. 나머지(추출/요약/diff/임베딩/분쟁 매칭)는 accuracy 우선.
+
+**Upstage API 키 분리** (`.env` 의 `UPSTAGE_API_KEY` + `_2/3/4`):
+- **Key #1**: 서비스 dev / FastAPI app / `single_run.py` 전용. `Settings.service_api_key`.
+- **Key #2/3/4**: 평가 스크립트 (`parallel_run`, `run_all_fixtures`, `eval_variance`) 전용. `Settings.eval_api_keys`. 빈 리스트면 평가 스크립트가 exit 1 (key #1 으로 폴백 금지).
+
+**글로벌 exception handlers** (`app/main.py`) — 클라이언트가 분류 가능한 응답:
+- `UpstreamResponseError` / `httpx.HTTPStatusError` → 502 `{error: "upstream_error", detail}`
+- `SchemaValidationError` / `DiffSchemaError` → 422 `{error: "validation_error", detail}`
+- 일반 `ValueError` → 500 (코드 버그)
 
 ---
 
@@ -166,7 +186,15 @@ uv pip install sentence-transformers
 ### DB 마이그레이션
 
 ```bash
-psql -f migrations/0001_termclause_page_bbox.sql $DATABASE_URL
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/0001_termclause_page_bbox.sql
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/0002_dispute_cases.sql
+```
+
+또는 Supabase SQL Editor 에 파일 내용 그대로 붙여넣고 실행. 적용 후 분쟁 사례 시드:
+
+```bash
+PYTHONPATH=. python scripts/index_dispute_cases.py
+# → data/fixtures/dispute_cases.json (19건) upsert + embedding-passage 인덱싱
 ```
 
 ### 단일 분석 (CLI)
@@ -243,6 +271,22 @@ result = await run_full_pipeline(file_bytes, filename, service_name, domain="fin
 - 새 약관용 빈 템플릿: [`scripts/build_finance_golden_template.py`](scripts/build_finance_golden_template.py), [`scripts/build_insurance_golden_template.py`](scripts/build_insurance_golden_template.py)
 
 **현재 상태**: 스키마 + voting + 프롬프트 + 라우팅 + golden 자동 remap (fintech 3건) + insurance 템플릿까지 완료. 실 약관 fixture 추가 + 도메인별 정확도 평가는 deadline 후 진행 ([`ai/EXPERIMENTS.md`](ai/EXPERIMENTS.md) 백로그).
+
+---
+
+## ⚖️ 유사 분쟁 사례 매칭
+
+업로드된 약관의 위험 조항(`KeyClause`)에 대해 **과거 한국소비자원·법원 분쟁 사례 중 의미적으로 유사한 케이스**를 매칭해 보여주는 시스템.
+
+- 데이터: [`data/fixtures/dispute_cases.json`](data/fixtures/dispute_cases.json) — OTT 8 + Fintech 5 + AI/LLM 3 + ALL 3 = 19건. 각 case = `{title, summary, outcome, source, pain_point_ids, unfair_flags, domain}`.
+- 임베딩: title + summary + outcome 결합 텍스트를 Upstage `embedding-passage` 로 4096-d halfvec 저장.
+- 매칭 함수: [`dispute_service.find_similar_disputes`](app/services/dispute_service.py) — cosine similarity + **pain_point/unfair_flag/domain 일치 boost**.
+- 라우터: [`app/routers/disputes.py`](app/routers/disputes.py)
+  - `POST /v1/disputes` — 임의 텍스트로 유사 사례 검색
+  - `GET  /v1/terms/{term_id}/disputes` — 해당 약관의 각 KeyClause 마다 매칭된 유사 사례 묶음
+- ANN 인덱스 부재 사유: pgvector HNSW/IVFFlat 둘 다 4000-d 한계 → halfvec(4096) 미지원. 19~수백 row 규모는 linear cosine scan 으로 1ms 미만, 수만 row 이상 시 차원 축소 필요 (`migrations/README.md` 참조).
+- 적재 스크립트: `PYTHONPATH=. python scripts/index_dispute_cases.py` (idempotent — `external_id` 기준 upsert).
+- e2e 검증: [`tests/integration/test_disputes_e2e.py`](tests/integration/test_disputes_e2e.py) (실 DB + Upstage 호출).
 
 ---
 
