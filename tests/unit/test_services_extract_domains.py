@@ -235,3 +235,123 @@ async def test_extract_insurance_with_voting_two_runs(
     # 두 run 이 동일하므로 voted 결과도 동일
     assert terms.coverage.insurance_type.value == "실손의료보험"
     assert len(httpx_mock.get_requests()) == 2
+
+
+# === AI 도메인 ===
+
+from ai.schemas.ai_terms import AITerms
+from ai.services.extract import extract_ai_terms, extract_ai_terms_with_voting
+
+
+@pytest.fixture
+def fake_ai_payload():
+    return {
+        "schema_version": "0.1.0",
+        "domain": "ai",
+        "service_name": "Claude",
+        "service_provider": "Anthropic",
+        "extraction_date": "2026-05-16",
+        "service_tier": {
+            "free_tier_offered": {"value": True, "uncertainty": "confirmed",
+                                   "citation": {"page": 1, "quote": "Claude Free is permanently free"}},
+            **_ns(["free_tier_description", "paid_tier_offered"]),
+            "pricing_externally_delegated": {"value": True, "uncertainty": "confirmed",
+                                              "citation": {"page": 2, "quote": "see Model Pricing Page"}},
+            **_ns(["base_price_description", "billing_cycle", "auto_renewal_enabled"]),
+        },
+        "training_data_use": {
+            "input_used_for_training": {"value": "opt_out_available", "uncertainty": "confirmed",
+                                         "citation": {"page": 7, "quote": "Inputs may be used... unless you opt out"}},
+            **_ns(["output_used_for_training", "training_use_description"]),
+            "opt_out_available": {"value": True, "uncertainty": "confirmed",
+                                   "citation": {"page": 7, "quote": "opt out via privacy settings"}},
+            **_ns(["opt_out_mechanism_description"]),
+        },
+        "output_and_ip": {
+            "output_ip_ownership": {"value": "user", "uncertainty": "confirmed",
+                                     "citation": {"page": 8, "quote": "You retain ownership of Output"}},
+            **_ns(["output_use_restrictions", "user_verification_obligation", "accuracy_disclaimer"]),
+        },
+        "usage_limits": _ns([
+            "rate_limit_described", "rate_limit_description",
+            "quota_described", "api_key_management_described",
+            "api_key_security_user_burden",
+        ]),
+        "prohibited_use": _ns([
+            "illegal_content_prohibited", "harmful_content_prohibited",
+            "high_risk_use_prohibited", "prohibited_use_categories",
+        ]),
+        "export_and_regional": _ns([
+            "export_control_clause", "restricted_regions", "governing_law_foreign",
+        ]),
+        "cancellation": _ns([
+            "cancellation_method", "cancellation_description",
+            "korea_residents_7day_refund", "non_refundable_clause",
+            "refund_policy_description",
+        ]),
+        "terms_changes": _ns([
+            "notice_channels", "notice_lead_time_days", "user_consent_mechanism",
+            "user_right_to_terminate_on_change", "silent_acceptance_clause",
+        ]),
+        "data_usage": _ns([
+            "privacy_policy_externally_delegated", "collected_categories",
+            "third_party_sharing", "cross_border_transfer",
+            "marketing_use", "marketing_consent",
+        ]),
+        "liability": _ns([
+            "indirect_damages_excluded", "damages_cap_present", "damages_cap_description",
+            "service_disruption_compensation", "compensation_description",
+        ]),
+        "disputes": _ns([
+            "governing_law", "jurisdiction_clause",
+            "arbitration_required", "class_action_waiver",
+        ]),
+        "unfair_clause_flags": ["AI 학습 데이터 활용"],
+    }
+
+
+async def test_extract_ai_terms_validates(httpx_mock, settings, fake_ai_payload):
+    httpx_mock.add_response(
+        url=f"{settings.upstage_base_url}/chat/completions",
+        json={"choices": [{"message": {"content": json.dumps(fake_ai_payload)}}]},
+    )
+    elements = [
+        ParsedElement(id=1, page=7, category="paragraph",
+                       text="Inputs may be used... unless you opt out", bbox=(0.1, 0.2, 0.5, 0.25)),
+    ]
+    async with UpstageClient(settings) as client:
+        terms = await extract_ai_terms(
+            client,
+            parsed_markdown="(AI 약관 markdown)",
+            parsed_elements=elements,
+            service_name="Claude",
+            service_provider="Anthropic",
+        )
+    assert isinstance(terms, AITerms)
+    assert terms.service_tier.free_tier_offered.value is True
+    assert terms.training_data_use.opt_out_available.value is True
+    # bbox enrich 검증
+    assert terms.training_data_use.input_used_for_training.citation.bbox == (0.1, 0.2, 0.5, 0.25)
+
+
+async def test_extract_ai_terms_with_voting_n2(httpx_mock, settings, fake_ai_payload):
+    httpx_mock.add_response(
+        url=f"{settings.upstage_base_url}/chat/completions",
+        json={"choices": [{"message": {"content": json.dumps(fake_ai_payload)}}]},
+    )
+    httpx_mock.add_response(
+        url=f"{settings.upstage_base_url}/chat/completions",
+        json={"choices": [{"message": {"content": json.dumps(fake_ai_payload)}}]},
+    )
+    async with UpstageClient(settings) as client:
+        terms = await extract_ai_terms_with_voting(
+            client,
+            parsed_markdown="(AI 약관 markdown)",
+            parsed_elements=[],
+            service_name="Claude",
+            service_provider="Anthropic",
+            n=2,
+        )
+    assert isinstance(terms, AITerms)
+    assert "AI 학습 데이터 활용" in terms.unfair_clause_flags
+    assert len(httpx_mock.get_requests()) == 2

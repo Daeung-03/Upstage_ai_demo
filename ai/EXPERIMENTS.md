@@ -52,6 +52,7 @@
 
 | Date | Scope | Config | Strict | Semantic | Latency (s) | Tokens | Grounded | Detail |
 |---|---|---|---|---|---|---|---|---|
+| **2026-05-16 01:05** | **R9 vs R11 비교 (AI 5 fixture × 5 runs = 25 measurements)** | **AI_SPECIALIZED=0** vs R11 default | AI 평균 49.9 vs 50.4 | AI 평균 54.9 vs 55.2 | ~62min wall | — | — | [all_fixtures_20260516_010552.md](../data/experiments/all_fixtures_20260516_010552.md) — **R11 narrative noise floor 안임을 데이터로 확정. Δ -0.6%p (영문 -1.1%p, 한국어 -0.2%p)** |
 | **2026-05-15 23:47** | **15 fixtures, 12 runs trimmed mean (311 measurements)** | **BC + prompt #1, N=2 medium** | **57.1% trim** | **63.3% trim** | ~509 | ~145K | — | [trimmed_mean_drop1_20260515_234743.md](../data/experiments/trimmed_mean_drop1_20260515_234743.md) — 최종 |
 | 2026-05-15 22:24 | 15 fixtures, 10 runs (236 measurements) | BC + prompt #1, N=2 medium | 57.3% trim | 63.6% trim | ~565 | ~150K | — | [trimmed_mean_drop1_20260515_222419.md](../data/experiments/trimmed_mean_drop1_20260515_222419.md) — A1/A2 추가 전 |
 | 2026-05-15 | 12 fixtures × 2 runs (single shot) | BC + prompt #1, N=2 medium | 55.3% avg | 60.5% avg | ~800 | ~198K | 12.5% | [all_fixtures_20260515_180018.md](../data/experiments/all_fixtures_20260515_180018.md) — *trimmed mean 의 1 sample 에 해당, 별도 winner 아님* |
@@ -96,6 +97,7 @@
 - [ ] `summarize=high` ↔ `summarize=medium` ablation — 최종 사용자가 보는 텍스트의 품질 차이가 정량 점수에 잡히는지
 - [x] ~~**Finance / Insurance 도메인 분리** — 스키마 / 프롬프트 / extract 라우팅 / pipeline domain 인자 / golden remap·템플릿 도구까지 완료 (2026-05-15). README "도메인 확장" 섹션 참조.~~
 - [ ] **Finance/Insurance 정확도 평가** (deadline 후): (1) `data/fixtures/{toss,kakaopay,banksalad}_golden_v03_finance.json` 의 finance-전용 신규 필드 (`fees.*`, `transaction_limits.*`, `deposit_protection.*`, `liability_allocation.user_notification_deadline_hours` 등) 인간 라벨링, (2) 실 insurance 약관 fixture 1-2건 확보 (예: 표준약관 / 공개 PDF) → `scripts/build_insurance_golden_template.py` 로 라벨링 시작, (3) `scripts/run_all_fixtures.py` 에 domain 인자 지원 + finance/insurance 도메인 별도 round 실험, (4) BC + voting N=2 baseline 측정 후 OTT-only 결과와 비교.
+- [ ] **AI 도메인 (AITerms) 정확도 평가** (deadline 후): R9 vs R11 비교 결과 prompt 차원 ±1.1%p noise (2026-05-16). AI 전용 schema 분리만으로 fixture 별 strict 점수 회복 가능성. (1) claude/gpt/gemini/deepseek/upstage golden 을 AITerms 좌표계로 remap 스크립트 (finance v0.3 remap 패턴 동일), (2) `run_all_fixtures.py` 에서 AI fixture 만 `domain="ai"` 라우팅, (3) AITerms baseline 측정 → SubscriptionTerms baseline (현재 47.5%) 대비 효과 측정.
 
 ---
 
