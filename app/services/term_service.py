@@ -86,6 +86,14 @@ def _parse_result_to_clauses(result) -> list[dict]:
     for c in result.key_clauses:
         cit_page = getattr(c.citation, "page", None)
         matched_page, matched_bbox = _match_bbox(c.citation.quote, lookup)
+        # risk_level / pain_point_id 는 KeyClause 가 직접 갖는 1급 시그널 — 분쟁 사례
+        # 매칭 boost 와 reasoning 생성 입력에 필수. 정규화: 소문자/대문자 통일.
+        risk_level = getattr(c, "risk_level", None)
+        if isinstance(risk_level, str):
+            risk_level = risk_level.lower()  # "high"/"medium"/"low" 형태로
+        pain_point_id = getattr(c, "pain_point_id", None)
+        if isinstance(pain_point_id, str):
+            pain_point_id = pain_point_id.upper() or None  # "POST-01" 형태로
         out.append({
             "clause_type": "ETC",               # KeyClause에 clause_type 없음 → 전부 ETC
             "title": c.title,
@@ -95,6 +103,8 @@ def _parse_result_to_clauses(result) -> list[dict]:
             "page": cit_page if cit_page is not None else matched_page,
             # bbox: KeyClauseCitation 엔 bbox 가 없으므로 매칭된 field citation 만 사용.
             "bbox": matched_bbox,
+            "risk_level": risk_level,
+            "pain_point_id": pain_point_id,
         })
     return out
 
@@ -184,6 +194,8 @@ async def process_upload(
             plain_text=c.get("plain_text"),
             page=c.get("page"),
             bbox=c.get("bbox"),
+            risk_level=c.get("risk_level"),
+            pain_point_id=c.get("pain_point_id"),
         ))
 
     # 6. CalendarEvents
@@ -330,6 +342,8 @@ async def process_version_update(
             plain_text=c.get("plain_text"),
             page=c.get("page"),
             bbox=c.get("bbox"),
+            risk_level=c.get("risk_level"),
+            pain_point_id=c.get("pain_point_id"),
         ))
 
     for d in dates:

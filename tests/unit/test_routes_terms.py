@@ -48,6 +48,7 @@ def _fake_term_version():
         id=term_id,
         service_name="Netflix",
         domain="OTT",
+        sub_category=None,
         status="ACTIVE",
         created_at=datetime(2026, 5, 15, tzinfo=timezone.utc),
         subscribed_at=date(2026, 5, 1),
@@ -63,11 +64,11 @@ def test_upload_endpoint_happy_path(monkeypatch, client):
     """process_upload 결과를 TermUploadResponse 로 매핑."""
     captured = {}
 
-    async def fake_upload(*, db, user_id, service_name, subscribed_at,
-                          file_bytes, file_url, domain):
-        captured["service_name"] = service_name
-        captured["domain"] = domain
-        captured["filename"] = file_url.split("/")[-1]
+    async def fake_upload(**kwargs):
+        # 라우터가 신규 인자(예: sub_category) 추가해도 테스트는 그대로 통과하도록 **kwargs.
+        captured["service_name"] = kwargs.get("service_name")
+        captured["domain"] = kwargs.get("domain")
+        captured["filename"] = kwargs.get("file_url", "").split("/")[-1]
         return _fake_term_version()
 
     monkeypatch.setattr(term_service, "process_upload", fake_upload)
