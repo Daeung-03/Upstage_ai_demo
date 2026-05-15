@@ -193,3 +193,79 @@ def test_vote_subscription_terms_single_run_returns_input():
 def test_vote_subscription_terms_empty_raises():
     with pytest.raises(ValueError, match="empty"):
         vote_subscription_terms([])
+
+
+# ============ 폴리모픽 vote_terms — Finance/Insurance ============
+
+
+def test_vote_terms_works_on_finance_terms():
+    """FinanceTerms 3개를 폴리모픽 vote_terms 로 합치고 sub-model 별 majority 확인."""
+    from ai.schemas.enums import (
+        DepositProtectionStatus, FraudResponsibilityPattern,
+    )
+    from ai.services.voting import vote_terms
+    from tests.unit.test_schemas_finance import _build_finance_terms
+
+    a = _build_finance_terms()
+    b = _build_finance_terms()
+    c = _build_finance_terms()
+    # b 만 다른 책임분배 패턴 → 다수결은 a/c 의 USER_GROSS_NEGLIGENCE_ONLY
+    b.liability_allocation.responsibility_pattern = _fv(
+        FraudResponsibilityPattern.COMPANY_UNLIMITED
+    )
+    # c 의 deposit_protection.status 를 다르게 바꿔도 a/b 가 동일하면 a/b 가 이김
+    c.deposit_protection.status = _fv(DepositProtectionStatus.PROTECTED)
+    # flag union 동작 확인
+    a.unfair_clause_flags = ["의사표시_의제"]
+    b.unfair_clause_flags = ["면책_손배_제한"]
+    c.unfair_clause_flags = ["의사표시_의제"]
+
+    voted = vote_terms([a, b, c])
+
+    assert (
+        voted.liability_allocation.responsibility_pattern.value
+        == FraudResponsibilityPattern.USER_GROSS_NEGLIGENCE_ONLY
+    )
+    assert (
+        voted.deposit_protection.status.value
+        == DepositProtectionStatus.SEPARATELY_DEPOSITED  # a/b 다수
+    )
+    assert set(voted.unfair_clause_flags) == {"의사표시_의제", "면책_손배_제한"}
+
+
+def test_vote_terms_works_on_insurance_terms():
+    from ai.schemas.enums import RefundFormula
+    from ai.services.voting import vote_terms
+    from tests.unit.test_schemas_insurance import _build_insurance_terms
+
+    a = _build_insurance_terms()
+    b = _build_insurance_terms()
+    c = _build_insurance_terms()
+    # 2 vs 1 분기
+    b.cancellation_refund.refund_formula = _fv(RefundFormula.PROPORTIONAL)
+    c.coverage.total_coverage_limit_krw = _fv(30_000_000)
+
+    voted = vote_terms([a, b, c])
+
+    # refund_formula: a/c = SURRENDER_VALUE_TABLE 다수
+    assert (
+        voted.cancellation_refund.refund_formula.value
+        == RefundFormula.SURRENDER_VALUE_TABLE
+    )
+    # total_coverage_limit_krw: a/b = 50M 다수
+    assert voted.coverage.total_coverage_limit_krw.value == 50_000_000
+
+
+def test_vote_terms_preserves_metadata_scalars():
+    """root model 의 str/None 스칼라 메타데이터는 첫 번째 결과 그대로 보존."""
+    from ai.services.voting import vote_terms
+    from tests.unit.test_schemas_finance import _build_finance_terms
+
+    a = _build_finance_terms(service_name="Toss")
+    b = _build_finance_terms(service_name="Toss")
+    # 다른 service_name 으로 바꿔도 base 의 값 유지 (메타데이터는 voting 대상 아님)
+    b.service_name = "DIFFERENT"
+
+    voted = vote_terms([a, b])
+    assert voted.service_name == "Toss"
+    assert voted.extraction_date == "2026-05-15"

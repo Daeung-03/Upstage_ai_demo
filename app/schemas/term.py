@@ -37,6 +37,8 @@ class ClauseDetail(BaseModel):
     title: Optional[str]
     original_text: str
     plain_text: Optional[str]
+    page: Optional[int] = None
+    bbox: Optional[list[float]] = None
 
 class TermVersionDetail(BaseModel):
     id: UUID

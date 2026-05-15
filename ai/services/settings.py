@@ -11,19 +11,31 @@ class Settings(BaseSettings):
     upstage_base_url: str = "https://api.upstage.ai/v1/"
     log_level: str = "INFO"
 
-    model_config = SettingsConfigDict(
-        env_file=".env",
-        case_sensitive=False,
-        extra="ignore",          # .env에 정의되지 않은 필드 무시 (예: app settings)
-    )
+    # extra="ignore": .env 가 app 측 DATABASE_URL 등과 공유되더라도 AI Settings 부팅을
+    # 막지 않도록. AI Settings 는 Upstage 관련 변수만 검증.
+    model_config = SettingsConfigDict(env_file=".env", case_sensitive=False, extra="ignore")
 
     @property
-    def api_keys(self) -> list[str]:
-        keys = [self.upstage_api_key]
-        for extra in (self.upstage_api_key_2, self.upstage_api_key_3, self.upstage_api_key_4):
-            if extra:
-                keys.append(extra)
-        return keys
+    def service_api_key(self) -> str:
+        """서비스 dev / FastAPI app / single_run 전용. 항상 key #1.
+
+        평가 스크립트(parallel_run, run_all_fixtures, eval_variance) 가 이 키를
+        사용하면 dev 중인 서비스 호출과 quota / rate limit 이 겹친다. 그래서
+        분리: key #1 은 서비스만, key 2/3/4 는 평가용.
+        """
+        return self.upstage_api_key
+
+    @property
+    def eval_api_keys(self) -> list[str]:
+        """평가 / 벤치마크 스크립트 전용. key #2/3/4 중 설정된 것만.
+
+        비어있으면 호출자가 명시적으로 에러 처리해야 한다 (silent fallback 금지 —
+        key #1 으로 빠지면 분리 정책이 무의미해짐).
+        """
+        return [
+            k for k in (self.upstage_api_key_2, self.upstage_api_key_3, self.upstage_api_key_4)
+            if k
+        ]
 
 
 @lru_cache

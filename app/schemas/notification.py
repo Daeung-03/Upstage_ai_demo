@@ -18,3 +18,8 @@ class NotificationResponse(BaseModel):
 class NotificationListResponse(BaseModel):
     notifications: list[NotificationResponse]
     unread_count:  int
+
+
+class MarkAllReadResponse(BaseModel):
+    """`PATCH /notifications/read-all` 응답 — 새로 READ 가 된 개수."""
+    updated: int

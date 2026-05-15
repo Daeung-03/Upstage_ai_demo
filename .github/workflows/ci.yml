@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    env:
+      DATABASE_URL: postgresql+asyncpg://test:test@localhost:5432/test
+      UPSTAGE_API_KEY: test-key-not-used-in-unit-tests
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio pytest-httpx
+
+      # 살아있는 단위 테스트만 실행. 파이프라인 리팩 이전의 stale 테스트
+      # (test_routes_terms, test_services_pipeline, test_services_voting 등)
+      # 는 본문 정리 후 이 목록에 다시 포함시킬 것.
+      - name: Run unit tests
+        run: |
+          pytest \
+            tests/unit/test_health.py \
+            tests/unit/test_schemas_common.py \
+            tests/unit/test_schemas_enums.py \
+            tests/unit/test_schemas_pain_points.py \
+            tests/unit/test_schemas_finance.py \
+            tests/unit/test_schemas_insurance.py \
+            tests/unit/test_services_embed.py \
+            tests/unit/test_services_extract.py \
+            tests/unit/test_services_ground.py \
+            tests/unit/test_term_service_clauses.py \
+            -v

@@ -170,7 +170,14 @@ async def main():
     per_key_concurrency = int(sys.argv[2]) if len(sys.argv) > 2 else 3
 
     settings = Settings()
-    api_keys = settings.api_keys
+    api_keys = settings.eval_api_keys
+    if not api_keys:
+        print(
+            "ERROR: no eval API keys configured. 평가 스크립트는 UPSTAGE_API_KEY_2/3/4 "
+            "중 최소 한 개 필요 (key #1 은 서비스 dev 전용).",
+            file=sys.stderr,
+        )
+        sys.exit(1)
     n_keys = len(api_keys)
 
     # 라운드로빈 분배 — fixture별 latency 차이를 키 간에 분산
