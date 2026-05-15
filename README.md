@@ -213,6 +213,21 @@ PYTHONPATH=. uvicorn app.main:app --reload
 
 ---
 
+## 🏦 도메인 확장 (Finance / Insurance) — 스키마 정의 완료
+
+OTT/구독 외 도메인용 추출 스키마를 별도 정의해 두었습니다 — 기존 `SubscriptionTerms` 7-section 구조가 fit 하지 않는 도메인을 위한 스키마 분리입니다 (`data/fixtures/toss_golden.json` 의 `schema_fit_note`: *"pricing.*, free_trial.* 등은 의미 없음"* 명시).
+
+| 도메인 | 스키마 | 주요 섹션 |
+|---|---|---|
+| 전자금융/결제/송금 | [`ai/schemas/finance.py`](ai/schemas/finance.py) — `FinanceTerms` | Fees · TransactionLimits · LiabilityAllocation (EFTA §9) · DepositProtection · AccountTermination · TermsChanges · DataUsage · Disputes |
+| 보험 (실손/생명/손해 등) | [`ai/schemas/insurance.py`](ai/schemas/insurance.py) — `InsuranceTerms` | Coverage · Exclusions · Premium · Claims · CancellationRefund · Renewal · TermsChanges · DataUsage · Disputes |
+
+`ai/services/voting.py` 는 schema-polymorphic 으로 리팩되어 위 두 도메인 + 기존 OTT 스키마에 모두 동작합니다 (`vote_terms(terms_list)`). 단위 테스트는 `tests/unit/test_schemas_{finance,insurance}.py`, `test_services_voting.py::test_vote_terms_works_on_*` 에 포함.
+
+**현재 상태**: 데이터 계약(스키마) + 집계 로직(voting) 까지 완료. 도메인별 prompt 튜닝 / extract 라우팅 / golden 평가는 [`ai/EXPERIMENTS.md`](ai/EXPERIMENTS.md) 백로그에 follow-up 으로 등재.
+
+---
+
 ## 📚 관련 문서
 
 - [`ai/EXPERIMENTS.md`](ai/EXPERIMENTS.md) — 실험 트래커 (현재 베스트 케이스 + 누적 로그 + 채택 룰 + 다음 실험 백로그)

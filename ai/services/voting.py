@@ -1,25 +1,32 @@
 """다회 extract 결과를 필드별로 majority voting 집계.
 
-N=3 ensemble의 핵심 로직. 각 필드에 대해 N개의 FieldValue 중 가장 자주 나타난
-non-null 값을 선택. null/not_specified만 있으면 그대로 null 유지.
+도메인-폴리모픽 구현 — `SubscriptionTerms`/`FinanceTerms`/`InsuranceTerms` 등
+모든 도메인 스키마에 동작한다. 동작 조건:
 
-자유 텍스트 필드(description 등)는 본질적으로 paraphrase variance가 있으므로
-같은 의미라도 다른 값으로 카운트됨 — 그래서 voting 효과는 enum/bool/int 필드에서
-가장 크고, 자유 텍스트는 사실상 첫 비-null 값을 그대로 씀.
+- root model 의 sub-model 필드 (`pricing`, `coverage` 등) 는 `FieldValue` 필드로
+  채워져 있다.
+- root model 에 `unfair_clause_flags: list[str]` 가 있으면 N 회 결과를 union.
+- 그 외 scalar/str 메타데이터 (`service_name`, `extraction_date` 등) 는 첫 번째
+  결과 그대로 보존.
+
+자유 텍스트 필드(description 등)는 paraphrase variance가 있으므로 같은 의미라도
+다른 값으로 카운트됨 — voting 효과는 enum/bool/int 필드에서 가장 크고, 자유
+텍스트는 사실상 첫 비-null 값을 그대로 씀.
 """
 
 from __future__ import annotations
 
 from collections import Counter
-from typing import Any
+from typing import Any, TypeVar
+
+from pydantic import BaseModel
 
 from ai.schemas.common import FieldValue
 from ai.schemas.subscription import SubscriptionTerms
 
-SECTION_NAMES = (
-    "pricing", "free_trial", "cancellation", "terms_changes",
-    "data_usage", "liability", "disputes",
-)
+T = TypeVar("T", bound=BaseModel)
+
+UNFAIR_FLAGS_FIELD = "unfair_clause_flags"
 
 
 def _scalar_key(value: Any) -> Any:
@@ -71,12 +78,26 @@ def _vote_field(fvs: list[FieldValue]) -> FieldValue:
     return non_empty[0]  # 실질적으로 도달 안 함
 
 
-def vote_subscription_terms(terms_list: list[SubscriptionTerms]) -> SubscriptionTerms:
-    """N개의 SubscriptionTerms를 필드별 다수결로 한 개로 합성.
+def _is_section_model(obj: Any) -> bool:
+    """sub-model 판정 — pydantic BaseModel 이면서 FieldValue 인 필드를 적어도
+    하나 가진 경우. root model 자체나 scalar/list 는 False.
+    """
+    if not isinstance(obj, BaseModel):
+        return False
+    cls = type(obj)
+    for name in cls.model_fields:
+        if isinstance(getattr(obj, name), FieldValue):
+            return True
+    return False
 
-    - 7개 섹션 × 모든 필드: `_vote_field` 적용
-    - unfair_clause_flags: union (한 번이라도 검출되면 포함)
-    - 메타데이터 (service_name, schema_version 등): 첫 번째 결과 그대로
+
+def vote_terms(terms_list: list[T]) -> T:
+    """도메인-폴리모픽 majority voting.
+
+    root model 의 각 필드를 다음 룰로 처리:
+    - sub-model (FieldValue 필드를 가진 BaseModel) → 내부 FieldValue 별로 `_vote_field`
+    - `unfair_clause_flags` list[str] 필드 → 모든 run union, sorted
+    - 그 외 scalar/str/None → 첫 번째 run 의 값 그대로
     """
     if not terms_list:
         raise ValueError("terms_list is empty")
@@ -84,29 +105,31 @@ def vote_subscription_terms(terms_list: list[SubscriptionTerms]) -> Subscription
         return terms_list[0]
 
     base = terms_list[0]
-    section_kwargs: dict[str, Any] = {}
-    for section_name in SECTION_NAMES:
-        sections = [getattr(t, section_name) for t in terms_list]
-        section_class = type(sections[0])
-        voted_fields = {}
-        for field_name in section_class.model_fields:
-            fvs = [getattr(s, field_name) for s in sections]
-            voted_fields[field_name] = _vote_field(fvs)
-        section_kwargs[section_name] = section_class(**voted_fields)
+    cls = type(base)
 
-    flags: set[str] = set()
-    for t in terms_list:
-        flags.update(t.unfair_clause_flags)
+    kwargs: dict[str, Any] = {}
+    for field_name in cls.model_fields:
+        attrs = [getattr(t, field_name) for t in terms_list]
+        first_attr = attrs[0]
 
-    return SubscriptionTerms(
-        schema_version=base.schema_version,
-        domain=base.domain,
-        service_name=base.service_name,
-        service_provider=base.service_provider,
-        document_url=base.document_url,
-        effective_date=base.effective_date,
-        extraction_date=base.extraction_date,
-        unfair_clause_flags=sorted(flags),
-        raw_document_hash=base.raw_document_hash,
-        **section_kwargs,
-    )
+        if _is_section_model(first_attr):
+            section_cls = type(first_attr)
+            voted_inner: dict[str, Any] = {}
+            for inner_name in section_cls.model_fields:
+                fvs = [getattr(a, inner_name) for a in attrs]
+                voted_inner[inner_name] = _vote_field(fvs)
+            kwargs[field_name] = section_cls(**voted_inner)
+        elif field_name == UNFAIR_FLAGS_FIELD and isinstance(first_attr, list):
+            merged: set[str] = set()
+            for a in attrs:
+                merged.update(a)
+            kwargs[field_name] = sorted(merged)
+        else:
+            kwargs[field_name] = getattr(base, field_name)
+
+    return cls(**kwargs)
+
+
+def vote_subscription_terms(terms_list: list[SubscriptionTerms]) -> SubscriptionTerms:
+    """OTT (SubscriptionTerms) 전용 alias — 기존 호출부 호환 유지."""
+    return vote_terms(terms_list)

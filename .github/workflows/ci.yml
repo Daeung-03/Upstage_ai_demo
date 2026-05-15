@@ -43,6 +43,8 @@ jobs:
             tests/unit/test_schemas_common.py \
             tests/unit/test_schemas_enums.py \
             tests/unit/test_schemas_pain_points.py \
+            tests/unit/test_schemas_finance.py \
+            tests/unit/test_schemas_insurance.py \
             tests/unit/test_services_embed.py \
             tests/unit/test_services_extract.py \
             tests/unit/test_services_ground.py \
