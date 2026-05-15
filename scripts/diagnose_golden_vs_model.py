@@ -53,12 +53,34 @@ def _value_from_run(run_json: dict, field: str):
     return None
 
 
+# score_against_golden 의 enum 동의어 그룹 — 진단도 같은 정규화를 거쳐야
+# false positive ('prorated' vs 'prorated_refund' 같은 별칭) 제거.
+_ENUM_ALIAS_GROUPS = [
+    {"silent_acceptance", "deemed_agreed"},
+    {"prorated", "prorated_refund"},
+    {"opt_out_available", "opt_out"},
+    {"opt_in_explicit", "opt_in_required"},
+]
+
+
+def _enum_canonical(v):
+    if not isinstance(v, str):
+        return v
+    s = v.strip()
+    for group in _ENUM_ALIAS_GROUPS:
+        if s in group:
+            return sorted(group)[0]
+    return s
+
+
 def _value_key(value):
-    """비교용 정규화 — list 는 정렬된 tuple, enum 은 .value."""
+    """비교용 정규화 — list 는 정렬된 tuple, enum 은 .value, 동의어는 canonical 로 압축."""
     if value is None:
         return None
     if isinstance(value, list):
-        return tuple(sorted(str(x) for x in value))
+        return tuple(sorted(_enum_canonical(str(x)) for x in value))
+    if isinstance(value, str):
+        return _enum_canonical(value)
     return value
 
 

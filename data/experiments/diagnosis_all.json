@@ -4,11 +4,11 @@
     "n_runs": 5,
     "categories": {
       "A. both null": 10,
-      "D. model never extracted (golden has value)": 18,
-      "X. ambiguous": 10,
-      "C. model variance (no consensus)": 5,
-      "A. consensus matches golden": 6,
-      "B. consensus disagrees with golden": 2
+      "D. model never extracted (golden has value)": 15,
+      "X. ambiguous": 8,
+      "A. consensus matches golden": 8,
+      "C. model variance (no consensus)": 7,
+      "B. consensus disagrees with golden": 3
     },
     "diagnoses": [
       {
@@ -46,12 +46,12 @@
           null,
           null,
           null,
-          null,
+          true,
           null
         ],
         "consensus_value": null,
-        "agreement": 1.0,
-        "category": "D. model never extracted (golden has value)"
+        "agreement": 0.8,
+        "category": "X. ambiguous"
       },
       {
         "field": "pricing.auto_renewal_consent",
@@ -60,12 +60,12 @@
           null,
           null,
           null,
-          null,
+          "opt_in_explicit",
           null
         ],
         "consensus_value": null,
-        "agreement": 1.0,
-        "category": "D. model never extracted (golden has value)"
+        "agreement": 0.8,
+        "category": "X. ambiguous"
       },
       {
         "field": "pricing.price_change_notice_days",
@@ -105,12 +105,12 @@
           null,
           true,
           true,
-          null,
-          null
+          true,
+          true
         ],
-        "consensus_value": null,
-        "agreement": 0.6,
-        "category": "X. ambiguous"
+        "consensus_value": true,
+        "agreement": 0.8,
+        "category": "A. consensus matches golden"
       },
       {
         "field": "free_trial.duration_days",
@@ -134,11 +134,11 @@
           null,
           null,
           null,
-          null
+          true
         ],
         "consensus_value": null,
-        "agreement": 1.0,
-        "category": "D. model never extracted (golden has value)"
+        "agreement": 0.8,
+        "category": "X. ambiguous"
       },
       {
         "field": "free_trial.cancel_required_before_end",
@@ -188,27 +188,27 @@
         "model_values": [
           null,
           "online",
-          null,
-          null,
-          null
+          "online",
+          "online",
+          "online"
         ],
-        "consensus_value": null,
+        "consensus_value": "online",
         "agreement": 0.8,
-        "category": "X. ambiguous"
+        "category": "A. consensus matches golden"
       },
       {
         "field": "cancellation.method_description",
         "expected": "설정 > 구독관리 (앱/웹) 또는 앱스토어 구독관리",
         "model_values": [
           null,
-          "회원은 언제든지 탈퇴함으로써 본 서비스의 이용을 해지할 수 있다.",
-          null,
-          null,
-          null
+          "회원은 언제든지 탈퇴함으로써 본 서비스 이용을 해지할 수 있습니다.",
+          "와우 멤버십 서비스 해지 시 앱/웹에서 탈퇴 요청",
+          "앱/웹을 통한 탈퇴",
+          "와우 멤버십 서비스 탈퇴 또는 쿠팡 이용 약관 탈퇴를 통해 온라인(앱/웹)에서 해지 가능"
         ],
         "consensus_value": null,
-        "agreement": 0.8,
-        "category": "X. ambiguous"
+        "agreement": 0.2,
+        "category": "C. model variance (no consensus)"
       },
       {
         "field": "cancellation.notice_period_days",
@@ -257,13 +257,13 @@
         "expected": "no_refund",
         "model_values": [
           null,
-          "no_refund",
           null,
+          "prorated",
           null,
-          "full_refund"
+          null
         ],
         "consensus_value": null,
-        "agreement": 0.6,
+        "agreement": 0.8,
         "category": "X. ambiguous"
       },
       {
@@ -337,27 +337,32 @@
           ],
           [
             "app_push",
-            "web_notice"
-          ],
-          [
-            "web_notice"
-          ],
-          [
+            "email",
+            "sms",
             "web_notice",
-            "app_push"
+            "in_app_banner"
           ],
           [
             "app_push",
+            "web_notice"
+          ],
+          [
+            "web_notice"
+          ],
+          [
+            "app_push",
+            "web_notice",
             "email",
             "sms",
-            "web_notice"
+            "in_app_banner"
           ]
         ],
         "consensus_value": [
+          "app_push",
           "email",
           "sms",
-          "app_push",
-          "web_notice"
+          "web_notice",
+          "in_app_banner"
         ],
         "agreement": 0.4,
         "category": "C. model variance (no consensus)"
@@ -410,13 +415,13 @@
         "model_values": [
           true,
           null,
-          null,
+          true,
           true,
           null
         ],
-        "consensus_value": null,
+        "consensus_value": true,
         "agreement": 0.6,
-        "category": "X. ambiguous"
+        "category": "A. consensus matches golden"
       },
       {
         "field": "terms_changes.price_change_explicit_consent",
@@ -437,36 +442,36 @@
         "expected": null,
         "model_values": [
           null,
+          [
+            "성명",
+            "주소",
+            "전화번호",
+            "전자우편주소",
+            "결제수단 정보",
+            "쿠팡캐시 정보"
+          ],
+          [
+            "purchase history",
+            "payment method",
+            "personal identification",
+            "device information",
+            "contact information"
+          ],
           null,
           [
-            "회원 정보",
-            "결제 정보",
-            "배송 정보",
-            "연락처 정보",
-            "디바이스 정보"
-          ],
-          [
-            "회원정보",
-            "결제정보",
-            "이용정보",
-            "쿠팡캐시 정보",
-            "할인쿠폰 정보",
-            "아이디",
-            "비밀번호",
-            "이메일",
-            "전화번호",
+            "이름",
             "주소",
-            "연령",
-            "성별",
+            "전화번호",
+            "이메일",
+            "결제정보",
+            "쿠팡캐시 정보",
             "구매이력",
-            "이용기록",
-            "디바이스 정보"
-          ],
-          null
+            "서비스 이용 기록"
+          ]
         ],
         "consensus_value": null,
-        "agreement": 0.6,
-        "category": "A. consensus matches golden"
+        "agreement": 0.4,
+        "category": "C. model variance (no consensus)"
       },
       {
         "field": "data_usage.third_party_sharing",
@@ -475,8 +480,8 @@
           null,
           true,
           true,
-          true,
-          null
+          null,
+          true
         ],
         "consensus_value": true,
         "agreement": 0.6,
@@ -495,12 +500,6 @@
             "수사기관",
             "정부기관",
             "판매자",
-            "배송업체"
-          ],
-          [
-            "수사기관",
-            "정부기관",
-            "판매자",
             "배송업체",
             "쿠팡페이"
           ],
@@ -511,7 +510,14 @@
             "배송업체",
             "쿠팡페이"
           ],
-          null
+          null,
+          [
+            "수사기관",
+            "정부기관",
+            "판매자",
+            "배송업체",
+            "제휴사"
+          ]
         ],
         "consensus_value": null,
         "agreement": 0.4,
@@ -527,23 +533,26 @@
         "model_values": [
           null,
           [
+            "수사",
             "법령 위반 확인",
-            "거래 및 배송"
-          ],
-          [
-            "법적 절차",
             "거래 및 배송",
-            "마케팅",
-            "서비스 제공"
+            "반품·교환·환불·취소",
+            "기타 법령 요구"
           ],
           [
-            "법적 절차",
-            "부정행위 확인",
+            "법령 위반 확인",
+            "거래 및 배송",
+            "수사기관 요청",
+            "기타 법령 요구"
+          ],
+          null,
+          [
+            "수사기관 요청",
+            "법령 위반 확인",
             "거래 및 배송",
             "반품·교환·환불·취소",
             "법령 요구"
-          ],
-          null
+          ]
         ],
         "consensus_value": null,
         "agreement": 0.4,
@@ -568,28 +577,28 @@
         "expected": true,
         "model_values": [
           false,
-          null,
+          false,
           false,
           null,
           null
         ],
-        "consensus_value": null,
+        "consensus_value": false,
         "agreement": 0.6,
-        "category": "X. ambiguous"
+        "category": "B. consensus disagrees with golden"
       },
       {
         "field": "data_usage.marketing_consent",
         "expected": "opt_out_available",
         "model_values": [
           null,
-          null,
-          null,
+          "opt_out_available",
+          "opt_out_available",
           null,
           null
         ],
         "consensus_value": null,
-        "agreement": 1.0,
-        "category": "D. model never extracted (golden has value)"
+        "agreement": 0.6,
+        "category": "X. ambiguous"
       },
       {
         "field": "data_usage.cross_border_transfer",
@@ -612,8 +621,8 @@
           true,
           true,
           true,
-          false,
-          true
+          true,
+          false
         ],
         "consensus_value": true,
         "agreement": 0.8,
@@ -624,10 +633,10 @@
         "expected": "서비스 중단으로 회원이 입은 손해에 대해 배상 (회사 무과실 입증 시 면책)",
         "model_values": [
           null,
-          "천재지변 또는 이에 준하는 불가항력, 컴퓨터 등 정보통신설비의 보수점검·교체· 고장·통신두절 등의 사유로 서비스가 일시적으로 중단된 경우, 고의 또는 과실이 없으면 배상하지 않으며, 고의·중과실이 있으면 배상한다.",
-          "천재지변 또는 이에 준하는 불가항력, 컴퓨터 등 정보통신설비의 보수점검·교체·... 등으로 서비스 중단 시, 회사는 고의 또는 과실이 없으면 배상하지 않음.",
-          "천재지변, 정보통신설비 보수·점검·교체·고장·통신두절 등으로 인한 서비스 중단에 대해 보상하지 않음",
-          "천재지변 또는 이에 준하는 불가항력, 컴퓨터 등 정보통신설비의 보수점검·교체, 고장, 통신의 두절 등의 사유로 서비스가 일시적으로 중단될 경우, 회사는 해당 손해에 대해 배상하되 고의·과실이 없을 경우 배상하지 않는다."
+          "천재지변 또는 이에 준하는 불가항력, 컴퓨터 등 정보통신설비의 보수점검·교체, 고장, 통신의 두절 등의 사유로 서비스가 일시적으로 중단될 경우, 회사는 해당 중단으로 인한 회원의 손해에 대해 배상한다. 다만, 고의·과실이 없을 경우 배상하지 않는다.",
+          "천재지변 또는 이에 준하는 불가항력, 컴퓨터 등 정보통신설비의 보수점검·교체·고장·통신두절 등으로 인한 서비스 중단에 대해 고의·과실 없을 경우 배상하지 않음",
+          "천재지변, 정보통신설비 보수점검·교체·고장·통신두절 등으로 인한 서비스 중단 시 고의·과실이 없으면 배상하지 않음",
+          "천재지변, 정보통신설비 고장, 통신두절 등 불가항력 사유로 서비스 중단 시 보상 없음"
         ],
         "consensus_value": null,
         "agreement": 0.2,
@@ -638,14 +647,14 @@
         "expected": false,
         "model_values": [
           null,
-          false,
+          null,
           null,
           null,
           null
         ],
         "consensus_value": null,
-        "agreement": 0.8,
-        "category": "X. ambiguous"
+        "agreement": 1.0,
+        "category": "D. model never extracted (golden has value)"
       },
       {
         "field": "liability.damages_cap_description",
@@ -666,9 +675,9 @@
         "expected": "천재지변 또는 이에 준하는 불가항력, 컴퓨터 등 정보통신설비의 보수점검·교체, 고장, 통신의 두절 등의 사유",
         "model_values": [
           "천재지변 또는 이에 준하는 불가항력",
-          "천재지변 또는 이에 준하는 불가항력, 컴퓨터 등 정보통신설비의 보수점검·교체· 고장·통신두절 등",
-          "천재지변 또는 이에 준하는 불가항력, 컴퓨터 등 정보통신설비의 보수점검·교체·... 등",
-          "천재지변, 정보통신설비 보수·점검·교체·고장·통신두절",
+          "천재지변 또는 이에 준하는 불가항력, 컴퓨터 등 정보통신설비의 보수점검·교체, 고장, 통신의 두절 등",
+          "천재지변 또는 이에 준하는 불가항력, 컴퓨터 등 정보통신설비의 보수점검·교체·고장·통신두절 등",
+          "천재지변, 정보통신설비 보수점검·교체·고장·통신두절 등",
           "천재지변 또는 이에 준하는 불가항력"
         ],
         "consensus_value": "천재지변 또는 이에 준하는 불가항력",
@@ -710,11 +719,11 @@
           "민사소송법",
           "민사소송법",
           "민사소송법",
-          "민사소송법",
+          "민사소송법상 관할법원",
           "민사소송법"
         ],
         "consensus_value": "민사소송법",
-        "agreement": 1.0,
+        "agreement": 0.8,
         "category": "B. consensus disagrees with golden"
       },
       {
@@ -722,13 +731,13 @@
         "expected": false,
         "model_values": [
           null,
-          false,
+          null,
           null,
           false,
           null
         ],
         "consensus_value": null,
-        "agreement": 0.6,
+        "agreement": 0.8,
         "category": "X. ambiguous"
       },
       {
@@ -736,13 +745,13 @@
         "expected": false,
         "model_values": [
           null,
-          false,
+          null,
           null,
           false,
           null
         ],
         "consensus_value": null,
-        "agreement": 0.6,
+        "agreement": 0.8,
         "category": "X. ambiguous"
       },
       {
@@ -821,7 +830,6 @@
             "의사표시_의제"
           ],
           [
-            "면책_손배_제한",
             "의사표시_의제"
           ],
           [
@@ -834,7 +842,7 @@
         "consensus_value": [
           "의사표시_의제"
         ],
-        "agreement": 0.8,
+        "agreement": 1.0,
         "category": "B. consensus disagrees with golden"
       }
     ]
@@ -843,13 +851,13 @@
     "fixture": "watcha",
     "n_runs": 5,
     "categories": {
-      "A. both null": 5,
-      "A. consensus matches golden": 14,
+      "A. both null": 6,
+      "A. consensus matches golden": 16,
       "D. model never extracted (golden has value)": 13,
       "C. model variance (no consensus)": 8,
-      "B. consensus disagrees with golden": 7,
-      "X. ambiguous": 3,
-      "E. over-extraction (golden null, model invents)": 1
+      "B. consensus disagrees with golden": 2,
+      "X. ambiguous": 4,
+      "E. over-extraction (golden null, model invents)": 2
     },
     "diagnoses": [
       {
@@ -943,14 +951,14 @@
         "expected": true,
         "model_values": [
           true,
-          false,
           true,
-          null,
-          false
+          true,
+          false,
+          null
         ],
         "consensus_value": true,
-        "agreement": 0.4,
-        "category": "C. model variance (no consensus)"
+        "agreement": 0.6,
+        "category": "A. consensus matches golden"
       },
       {
         "field": "free_trial.duration_days",
@@ -1002,11 +1010,11 @@
           null,
           null,
           null,
-          true
+          null
         ],
         "consensus_value": null,
-        "agreement": 0.8,
-        "category": "A. consensus matches golden"
+        "agreement": 1.0,
+        "category": "A. both null"
       },
       {
         "field": "free_trial.notice_before_conversion_days",
@@ -1027,13 +1035,13 @@
         "expected": "online",
         "model_values": [
           "online",
-          "online",
+          null,
           "online",
           "online",
           "online"
         ],
         "consensus_value": "online",
-        "agreement": 1.0,
+        "agreement": 0.8,
         "category": "A. consensus matches golden"
       },
       {
@@ -1041,10 +1049,10 @@
         "expected": "온라인 셀프 해지 (정기결제 해지 또는 중도 해지)",
         "model_values": [
           "정기결제 해지는 결제주기가 종료됨과 동시에 계약이 해지되며, 다음 결제예정일부터 정기결제가 진행되지 않습니다. 중도 해지는 회원이 신청하는 즉시 계약이 해지되며, 이용대금과 위약금(결제금액의 10%)을 공제한 나머지 금액을 환불합니다.",
-          "정기결제 해지는 결제주기 종료 시 자동 해지, 중도 해지는 즉시 해지 후 이용대금 및 위약금(결제금액의 10%) 공제 후 환불",
-          "정기결제 해지는 결제주기 종료 시 자동 해지되며, 다음 결제예정일부터 정기결제가 진행되지 않음",
-          "회원 홈페이지 또는 서비스 내 ‘계정’ 페이지에서 해지 신청",
-          "회원은 회사가 인정한 방법을 통해 의사표시를 하여, 회사에 의사를 표시하여 회사에 도달될 때 그 효력이 발생"
+          "유료서비스 이용계약을 체결한 후 다음 중 어느 하나의 방법으로 해지를 신청할 수 있습니다.",
+          "정기결제 해지는 결제주기 종료 시 자동 해지, 중도 해지는 즉시 해지",
+          "회원은 서비스 홈페이지 또는 앱을 통해 청약철회 및 해지를 신청할 수 있다.",
+          "온라인(웹사이트) 청약철회"
         ],
         "consensus_value": "정기결제 해지는 결제주기가 종료됨과 동시에 계약이 해지되며, 다음 결제예정일부터 정기결제가 진행되지 않습니다. 중도 해지는 회원이 신청하는 즉시 계약이 해지되며, 이용대금과 위약금(결제금액의 10%)을 공제한 나머지 금액을 환불합니다.",
         "agreement": 0.2,
@@ -1055,12 +1063,12 @@
         "expected": 0,
         "model_values": [
           0,
-          7,
+          null,
           null,
           7,
-          null
+          7
         ],
-        "consensus_value": 7,
+        "consensus_value": null,
         "agreement": 0.4,
         "category": "C. model variance (no consensus)"
       },
@@ -1083,18 +1091,18 @@
         "expected": "중도 해지 시 결제금액의 10% (이용대금 별도 공제: VOD 1편당 2,000원)",
         "model_values": [
           "결제금액의 10%",
-          "위약금(결제금액의 10%)",
           "결제금액의 10%",
-          "결제금액의 10%",
+          "결제금액의 10% 위약금",
+          "결제금액의 10% 위약금",
           "결제금액의 10%"
         ],
         "consensus_value": "결제금액의 10%",
-        "agreement": 0.8,
+        "agreement": 0.6,
         "category": "B. consensus disagrees with golden"
       },
       {
         "field": "cancellation.proration_policy",
-        "expected": "prorated_refund",
+        "expected": "prorated",
         "model_values": [
           "prorated",
           "prorated",
@@ -1104,7 +1112,7 @@
         ],
         "consensus_value": "prorated",
         "agreement": 1.0,
-        "category": "B. consensus disagrees with golden"
+        "category": "A. consensus matches golden"
       },
       {
         "field": "cancellation.blackout_periods",
@@ -1172,21 +1180,24 @@
             "web_notice"
           ],
           [
-            "web_notice"
+            "web_notice",
+            "email"
           ],
           [
             "web_notice"
           ],
           [
-            "web_notice"
+            "email",
+            "web_notice",
+            "in_app_banner"
           ],
           null
         ],
         "consensus_value": [
           "web_notice"
         ],
-        "agreement": 0.8,
-        "category": "A. consensus matches golden"
+        "agreement": 0.4,
+        "category": "C. model variance (no consensus)"
       },
       {
         "field": "terms_changes.notice_lead_time_days",
@@ -1194,27 +1205,27 @@
         "model_values": [
           7,
           7,
-          7,
-          7,
+          30,
+          30,
           7
         ],
         "consensus_value": 7,
-        "agreement": 1.0,
+        "agreement": 0.6,
         "category": "A. consensus matches golden"
       },
       {
         "field": "terms_changes.user_consent_mechanism",
-        "expected": "silent_acceptance",
+        "expected": "deemed_agreed",
         "model_values": [
           "deemed_agreed",
           "opt_out_available",
-          "opt_out_available",
-          "opt_out_available",
-          "deemed_agreed"
+          "deemed_agreed",
+          "deemed_agreed",
+          "opt_out_available"
         ],
-        "consensus_value": "opt_out_available",
+        "consensus_value": "deemed_agreed",
         "agreement": 0.6,
-        "category": "B. consensus disagrees with golden"
+        "category": "A. consensus matches golden"
       },
       {
         "field": "terms_changes.user_right_to_terminate_on_change",
@@ -1223,11 +1234,11 @@
           true,
           true,
           true,
-          null,
-          true
+          false,
+          null
         ],
         "consensus_value": true,
-        "agreement": 0.8,
+        "agreement": 0.6,
         "category": "A. consensus matches golden"
       },
       {
@@ -1235,13 +1246,13 @@
         "expected": true,
         "model_values": [
           null,
+          null,
+          null,
           false,
-          null,
-          null,
-          false
+          null
         ],
         "consensus_value": null,
-        "agreement": 0.6,
+        "agreement": 0.8,
         "category": "X. ambiguous"
       },
       {
@@ -1269,20 +1280,32 @@
             "결제 정보",
             "계정 정보"
           ],
-          null,
-          [
-            "device usage data"
-          ],
           [
             "시청 기록",
-            "결제 정보",
-            "계정 정보",
-            "기기 정보",
             "캐시 충전 정보",
-            "이용 내역"
+            "결제 정보",
+            "기기 정보",
+            "네트워크 정보"
           ],
           [
-            "서비스 이용에 필요한 최소한의 정보"
+            "서비스 이용 단말기 데이터",
+            "결제 정보",
+            "개인정보",
+            "서비스 이용 로그"
+          ],
+          [
+            "이름",
+            "이메일",
+            "전화번호",
+            "결제정보",
+            "IP 주소",
+            "디바이스 정보",
+            "시청 기록"
+          ],
+          [
+            "account information",
+            "device information",
+            "usage data"
           ]
         ],
         "consensus_value": [
@@ -1293,21 +1316,21 @@
           "계정 정보"
         ],
         "agreement": 0.2,
-        "category": "C. model variance (no consensus)"
+        "category": "E. over-extraction (golden null, model invents)"
       },
       {
         "field": "data_usage.third_party_sharing",
-        "expected": "AMBIGUOUS",
+        "expected": true,
         "model_values": [
           true,
-          true,
           false,
-          null,
-          true
+          false,
+          true,
+          null
         ],
         "consensus_value": true,
-        "agreement": 0.6,
-        "category": "B. consensus disagrees with golden"
+        "agreement": 0.4,
+        "category": "C. model variance (no consensus)"
       },
       {
         "field": "data_usage.third_party_recipients",
@@ -1319,21 +1342,21 @@
           [
             "law enforcement agencies"
           ],
+          null,
           [
             "관계사",
             "업무수탁자"
           ],
-          null,
-          null,
           [
-            "관계사",
-            "업무수탁자"
-          ]
+            "수사기관",
+            "통계기관",
+            "업무수탁자",
+            "요금정산기관",
+            "본인확인기관"
+          ],
+          null
         ],
-        "consensus_value": [
-          "관계사",
-          "업무수탁자"
-        ],
+        "consensus_value": null,
         "agreement": 0.4,
         "category": "C. model variance (no consensus)"
       },
@@ -1350,21 +1373,24 @@
           [
             "investigative"
           ],
+          null,
           [
-            "원활한 서비스 제공",
-            "회원 편의 증진"
+            "service provision",
+            "convenience improvement",
+            "billing settlement",
+            "fraud prevention",
+            "legal compliance"
           ],
-          null,
-          null,
           [
-            "원활한 서비스 제공",
-            "회원 편의 증진"
-          ]
+            "수사",
+            "통계·연구",
+            "서비스 제공·위탁",
+            "요금정산",
+            "도용방지"
+          ],
+          null
         ],
-        "consensus_value": [
-          "원활한 서비스 제공",
-          "회원 편의 증진"
-        ],
+        "consensus_value": null,
         "agreement": 0.4,
         "category": "C. model variance (no consensus)"
       },
@@ -1389,12 +1415,12 @@
           true,
           false,
           false,
-          null,
-          false
+          true,
+          null
         ],
-        "consensus_value": false,
-        "agreement": 0.6,
-        "category": "B. consensus disagrees with golden"
+        "consensus_value": true,
+        "agreement": 0.4,
+        "category": "C. model variance (no consensus)"
       },
       {
         "field": "data_usage.marketing_consent",
@@ -1403,11 +1429,11 @@
           "opt_in_explicit",
           null,
           null,
-          null,
+          "opt_out_available",
           null
         ],
         "consensus_value": null,
-        "agreement": 0.8,
+        "agreement": 0.6,
         "category": "X. ambiguous"
       },
       {
@@ -1416,21 +1442,21 @@
         "model_values": [
           null,
           false,
-          false,
           null,
-          false
+          false,
+          null
         ],
-        "consensus_value": false,
+        "consensus_value": null,
         "agreement": 0.6,
-        "category": "B. consensus disagrees with golden"
+        "category": "A. consensus matches golden"
       },
       {
         "field": "liability.service_disruption_compensation",
         "expected": true,
         "model_values": [
           true,
-          true,
           false,
+          true,
           true,
           true
         ],
@@ -1443,10 +1469,10 @@
         "expected": "회사 귀책 서비스 중단 시 이용기간 무료 연장 (24시간 초과 시 초과분의 2배 추가)",
         "model_values": [
           "사업자의 책임 있는 사유로 인한 서비스 중지 또는 장애의 경우 : 서비스 중지•장애시간만큼 무료로 서비스 이용기간 연장",
-          "서비스 중지•장애시간만큼 무료로 서비스 이용기간 연장",
-          "천재지변 또는 이에 준하는 불가항력, 회원의 아이디 관리 소홀, 공중통신선로 장애 등",
-          "책임 있는 사유로 인한 서비스 중지 또는 장애의 경우: 서비스 중지·장애시간만큼 무료로 서비스 이용기간 연장",
-          "서비스 중지·장애시간만큼 무료로 서비스 이용기간 연장"
+          null,
+          "서비스 중지·장애시간만큼 무료로 서비스 이용기간 연장",
+          "서비스 중지·장애시간에 해당하는 이용기간 연장",
+          "서비스 중지•장애시간만큼 무료로 서비스 이용기간 연장"
         ],
         "consensus_value": "사업자의 책임 있는 사유로 인한 서비스 중지 또는 장애의 경우 : 서비스 중지•장애시간만큼 무료로 서비스 이용기간 연장",
         "agreement": 0.2,
@@ -1460,10 +1486,10 @@
           null,
           null,
           null,
-          false
+          null
         ],
         "consensus_value": null,
-        "agreement": 0.6,
+        "agreement": 0.8,
         "category": "X. ambiguous"
       },
       {
@@ -1485,12 +1511,12 @@
         "expected": "천재지변 또는 이에 준하는 불가항력, 회원 귀책, 회사 관리영역 외 공중통신선로 장애, 기타 회사 귀책사유 없는 통신 장애",
         "model_values": [
           "천재지변 또는 이에 준하는 불가항력",
-          "천재지변, 국가비상사태, 정전 등 회사가 통제할 수 없는 불가항력적 사유",
+          "천재지변 또는 이에 준하는 불가항력",
           "천재지변 또는 이에 준하는 불가항력",
           "천재지변, 국가비상사태, 정전 등 회사가 통제할 수 없는 불가항력적 사유",
-          "천재지변, 국가비상사태, 정전 등 회사가 통제할 수 없는 불가항력적 사유"
+          null
         ],
-        "consensus_value": "천재지변, 국가비상사태, 정전 등 회사가 통제할 수 없는 불가항력적 사유",
+        "consensus_value": "천재지변 또는 이에 준하는 불가항력",
         "agreement": 0.6,
         "category": "B. consensus disagrees with golden"
       },
@@ -1499,13 +1525,13 @@
         "expected": true,
         "model_values": [
           true,
-          true,
           null,
           true,
-          false
+          true,
+          true
         ],
         "consensus_value": true,
-        "agreement": 0.6,
+        "agreement": 0.8,
         "category": "A. consensus matches golden"
       },
       {
@@ -1527,13 +1553,13 @@
         "expected": "민사소송법상 관할법원",
         "model_values": [
           "민사소송법상 관할법원",
-          "민사소송법에 따라 정합니다.",
           "민사소송법상 관할법원",
+          null,
           "민사소송법상 관할법원",
-          "민사소송법상 관할법원"
+          null
         ],
         "consensus_value": "민사소송법상 관할법원",
-        "agreement": 0.8,
+        "agreement": 0.6,
         "category": "A. consensus matches golden"
       },
       {
@@ -1634,29 +1660,16 @@
           [
             "면책_손배_제한"
           ],
+          [],
+          [],
+          [],
           [
             "면책_손배_제한"
-          ],
-          [],
-          [],
-          [
-            "간접손해 제외",
-            "광고 책임 없음",
-            "데이터 통화료 책임 없음",
-            "무료 캐시 환불 불가",
-            "위약금",
-            "의사표시_의제",
-            "자동결제",
-            "천재지변 면책",
-            "환불 불가",
-            "회원 정보 도용 시 청약철회 불가"
           ]
         ],
-        "consensus_value": [
-          "면책_손배_제한"
-        ],
-        "agreement": 0.4,
-        "category": "C. model variance (no consensus)"
+        "consensus_value": [],
+        "agreement": 0.6,
+        "category": "X. ambiguous"
       }
     ]
   }

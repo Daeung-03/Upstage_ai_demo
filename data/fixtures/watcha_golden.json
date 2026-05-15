@@ -151,12 +151,12 @@
         "note": "구체적 계산 예시 제공. 12개월 장기 구독 시 월할 계산 + 위약금 별도."
     },
     "cancellation.proration_policy": {
-        "expected": "prorated_refund",
+        "expected": "prorated",
         "model_value": null,
         "model_uncertainty": "confirmed",
         "source_quote": "장기 구독에 따른 할인 혜택이 적용된 12개월 프리미엄 구독권(129,900원)을 구매한 회원이 중도해지를 신청한 경우, 결제금액에서 ⅰ) 장기 구독에 따른 할인 혜택이 적용되기 전 요금을 기준으로 결제 주기의 시작일이 속한 달로부터 해지신청일이 속한 달의 직전 달까지의 요금을 월할계산한 금액, ⅱ) 해지신청일이 속한 달의 요금에서 이용대금, ⅲ) 위약금을 공제한 나머지 금액을 환불 조치합니다.",
         "source_page": null,
-        "note": "제15조 2항. 월할 계산 환불 가능 — Wavve/Tving과 유사 패턴. 단, 위약금 10% 별도 공제."
+        "note": "제15조 2항. 월할 계산 환불 가능 — Wavve/Tving과 유사 패턴. 단, 위약금 10% 별도 공제. v0.3 fix: 'prorated_refund' (schema enum 외) → 'prorated' (ProrationPolicy 표준 값)."
     },
     "cancellation.blackout_periods": {
         "expected": null,
@@ -209,12 +209,12 @@
         "note": "제3조 2항. 일반 7일, 불리한 변경 30일."
     },
     "terms_changes.user_consent_mechanism": {
-        "expected": "silent_acceptance",
+        "expected": "deemed_agreed",
         "model_value": null,
         "model_uncertainty": "confirmed",
         "source_quote": "회원이 변경된 개정약관의 효력 발생일 이후에도 서비스를 계속 이용할 경우, 개정약관이 적용 됩니다.",
         "source_page": null,
-        "note": "제3조 2항. 계속 사용 = 동의 간주."
+        "note": "제3조 2항. 계속 사용 = 동의 간주. v0.3 fix: 'silent_acceptance' (schema enum 외) → 'deemed_agreed' (ConsentMechanism 표준 값. 의미 동일: 사용자 무응답·계속 이용 = 동의 간주)."
     },
     "terms_changes.user_right_to_terminate_on_change": {
         "expected": true,
@@ -249,12 +249,12 @@
         "note": "이용약관 본문에 데이터 카테고리 명시 없음. 개인정보처리방침 별도 참조."
     },
     "data_usage.third_party_sharing": {
-        "expected": "AMBIGUOUS",
+        "expected": true,
         "model_value": null,
         "model_uncertainty": "ambiguous",
         "source_quote": "회사는 서비스 제공과 관련하여 취득한 회원의 정보를 당해 회원의 동의 없이 목적 외로 이용하거나 제3자에게 제공할 수 없습니다. 다만, 다음 각 호의 경우에는 그러하지 않습니다.",
         "source_page": null,
-        "note": "제19조 3항. 원칙적 금지 + 예외(법령 수사, 통계, 위탁사, 요금정산, 본인확인, 법률 규정) 6가지. AMBIGUOUS."
+        "note": "제19조 3항. 원칙적 금지 + 예외(법령 수사, 통계, 위탁사, 요금정산, 본인확인, 법률 규정) 6가지. v0.3 fix: 'AMBIGUOUS' (bool 필드 외 마커) → true (제3자 제공 조항이 *조건부로 존재* — 예외 6항목이 사실상의 sharing). 사람 라벨러 의견 'AMBIGUOUS' 는 note 에 보존."
     },
     "data_usage.third_party_recipients": {
         "expected": [
