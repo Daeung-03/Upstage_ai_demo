@@ -37,6 +37,25 @@ class Settings(BaseSettings):
             if k
         ]
 
+    @property
+    def app_api_key_pool(self) -> list[str]:
+        """FastAPI app 이 round-robin 으로 돌릴 키 풀. key #1 + 설정된 key #2/3/4.
+
+        bulk upload / 데모처럼 동시 요청이 들어올 때 단일 키 rate-limit 에서
+        직렬화되는 걸 막기 위해 가용 키를 모두 사용. eval 스크립트가 동시에
+        돌면 quota 가 겹칠 수 있으니 그땐 Railway 환경에서 key #2/3/4 를 비워두면
+        됨 (→ pool 자동으로 [key #1] 만 됨).
+        """
+        return [
+            k for k in (
+                self.upstage_api_key,
+                self.upstage_api_key_2,
+                self.upstage_api_key_3,
+                self.upstage_api_key_4,
+            )
+            if k
+        ]
+
 
 @lru_cache
 def get_settings() -> Settings:
