@@ -1,5 +1,6 @@
 # app/services/ai_client.py
 from ai.pipeline import run_pipeline
+from ai.services import dispute_reasoning as ai_dispute_reasoning
 from ai.services import embed as ai_embed
 from ai.services import diff as ai_diff
 from ai.services.upstage import UpstageClient
@@ -90,6 +91,29 @@ async def user_impacted_diff(
             user_context=user_context,
             semantic=semantic,
         )
+
+async def generate_dispute_reasoning(
+    *,
+    clause_title: str | None,
+    clause_quote: str | None,
+    clause_description: str | None,
+    risk_level: str | None,
+    pain_point_id: str | None,
+    matches: list[dict],
+) -> "ai_dispute_reasoning.ReasoningResult":
+    """TermClause + 매칭 사례 → "왜 위험한가" 자연어 reasoning. 첫 조회 시 caller
+    가 lazy cache 로 한 번만 호출. accuracy-first (reasoning_effort=high)."""
+    async with UpstageClient(_ai_settings()) as client:
+        return await ai_dispute_reasoning.generate_clause_reasoning(
+            client,
+            clause_title=clause_title,
+            clause_quote=clause_quote,
+            clause_description=clause_description,
+            risk_level=risk_level,
+            pain_point_id=pain_point_id,
+            matches=matches,
+        )
+
 
 async def chat_with_ai(
     query: str,

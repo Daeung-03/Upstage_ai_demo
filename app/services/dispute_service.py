@@ -7,15 +7,19 @@
 
 from __future__ import annotations
 
+import hashlib
+import logging
 import uuid
 from typing import TypedDict
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ai.schemas.flag_canonical import flag_canonical
 from app.models.dispute import DisputeCase
+
+logger = logging.getLogger(__name__)
 
 
 # ── Public input shape (source-agnostic) ────────────────────────
@@ -151,7 +155,7 @@ from sqlalchemy import text as sa_text
 
 
 DEFAULT_TOP_K = int(os.getenv("DISPUTE_TOP_K", "3"))
-DEFAULT_MIN_SCORE = float(os.getenv("DISPUTE_MIN_SCORE", "0.65"))
+DEFAULT_MIN_SCORE = float(os.getenv("DISPUTE_MIN_SCORE", "0.45"))
 
 # Boost 가산값 — 결정론. spec 4.1 참조.
 BOOST_PAIN_POINT = 0.10
@@ -314,50 +318,134 @@ async def find_similar_disputes(
 # ── 라우터 진입점 (라우터는 ORM 모를 필요 없게 dict 로 변환) ─────
 
 
-async def find_disputes_for_clause(
+async def _compute_disputes_signature(db: AsyncSession) -> str:
+    """dispute_cases 의 현재 상태를 short hash 로. 캐시 무효화 키.
+
+    `max(updated_at)` + `count(*)` 만 조합 — case 추가/수정 시 둘 중 하나 변함.
+    삭제(count 감소) 도 detect. SQL 단일 row 라 비용 무시.
+    """
+    row = (await db.execute(
+        select(func.max(DisputeCase.updated_at), func.count(DisputeCase.id))
+    )).one()
+    max_updated, n = row
+    raw = f"{max_updated.isoformat() if max_updated else 'null'}|{n}"
+    return hashlib.sha256(raw.encode()).hexdigest()[:16]
+
+
+async def _get_or_generate_reasoning(
     db: AsyncSession,
     *,
-    clause_id: uuid.UUID,
-    top_k: int = DEFAULT_TOP_K,
-) -> dict | None:
-    """단일 TermClause → top-K 매칭. clause 없으면 None."""
-    from app.models.term import TermClause, TermVersion, Term
+    clause,
+    matches: list[dict],
+    signature: str,
+) -> tuple[str | None, str | None]:
+    """clause 에 대한 reasoning lazy cache. 캐시 hit 면 즉시, miss 면 LLM 호출 후 저장.
 
-    clause = await db.get(TermClause, clause_id)
-    if clause is None:
-        return None
-    # clause → version → term 으로 거슬러 올라가 도메인 컨텍스트 확보
-    version = await db.get(TermVersion, clause.version_id)
-    term = await db.get(Term, version.term_id) if version else None
+    반환: (reasoning, user_action). matches 가 비면 둘 다 None (LLM 호출 안 함).
+    """
+    if not matches:
+        return None, None
 
-    query_text = "\n".join(filter(None, [
+    cached_sig = clause.disputes_signature
+    cached_reasoning = clause.dispute_reasoning
+    if cached_sig == signature and cached_reasoning:
+        # cache hit — user_action 은 reasoning 안에 묶여있던 시기가 있을 수 있어
+        # 컬럼 분리는 follow-up. 지금은 reasoning 만 반환.
+        return cached_reasoning, None
+
+    # cache miss → LLM 생성
+    from app.services.ai_client import generate_dispute_reasoning
+    try:
+        result = await generate_dispute_reasoning(
+            clause_title=clause.title,
+            clause_quote=clause.original_text,
+            clause_description=clause.plain_text,
+            risk_level=clause.risk_level,
+            pain_point_id=clause.pain_point_id,
+            matches=matches,
+        )
+    except Exception as e:
+        # LLM 실패해도 매칭 결과는 정상 반환 — reasoning 만 빈 상태로.
+        # 다음 호출에서 signature 갱신 없이 재시도 가능 (cached_reasoning 이 NULL 이라 miss 유지).
+        logger.exception("dispute reasoning generation failed for clause %s: %s",
+                         clause.id, e)
+        return None, None
+
+    # DB 저장 (commit 은 호출자 — find_disputes_for_term 끝나면 자동 commit 또는
+    # 라우터에서 처리. 여기선 add/update 만)
+    clause.dispute_reasoning = result.reasoning
+    clause.disputes_signature = signature
+    # NOTE: user_action 은 응답으로만 노출, DB 컬럼은 미저장 (재방문 시 reasoning
+    # 안에 동일 행동 가이드가 들어있어 redundant).
+    try:
+        await db.commit()
+        await db.refresh(clause)
+    except Exception:
+        await db.rollback()
+        logger.exception("failed to persist dispute reasoning for clause %s", clause.id)
+    return result.reasoning, result.user_action
+
+
+def _clause_query_text(clause) -> str:
+    return "\n".join(filter(None, [
         clause.title or "",
         clause.plain_text or "",
         clause.original_text or "",
     ])).strip()
 
-    # KeyClause.pain_point_id 는 TermClause 컬럼에 없음 — cosine + flag/domain
-    # boost 만 활용. term-level unfair_flags 는 별도 저장 안 돼있어 빈 리스트.
+
+async def find_disputes_for_clause(
+    db: AsyncSession,
+    *,
+    clause_id: uuid.UUID,
+    top_k: int = DEFAULT_TOP_K,
+    disputes_signature: str | None = None,
+) -> dict | None:
+    """단일 TermClause → top-K 매칭 + LLM reasoning (lazy cache).
+
+    disputes_signature 가 주어지면 그걸 사용 (find_disputes_for_term 호출 경로).
+    None 이면 여기서 computed — 단건 호출 경로용.
+    clause 없으면 None.
+    """
+    from app.models.term import TermClause, TermVersion, Term
+
+    clause = await db.get(TermClause, clause_id)
+    if clause is None:
+        return None
+    version = await db.get(TermVersion, clause.version_id)
+    term = await db.get(Term, version.term_id) if version else None
+
     matches = await find_similar_disputes(
         db,
-        query_text=query_text,
-        clause_pain_point=None,
+        query_text=_clause_query_text(clause),
+        # ← 0003 마이그레이션으로 pain_point_id 컬럼 등장. 이제 pain_point boost 활성.
+        clause_pain_point=clause.pain_point_id,
         term_unfair_flags=[],
         term_domain=(term.domain.value if term and term.domain else "ALL"),
         top_k=top_k,
     )
+    match_dicts = [
+        {
+            "case_id": m.id, "title": m.title, "summary": m.summary,
+            "outcome": m.outcome, "source": m.source,
+            "source_url": m.source_url, "score": m.score,
+            "matched_signals": m.matched_signals,
+        }
+        for m in matches
+    ]
+    signature = disputes_signature or await _compute_disputes_signature(db)
+    reasoning, user_action = await _get_or_generate_reasoning(
+        db, clause=clause, matches=match_dicts, signature=signature,
+    )
+
     return {
         "clause_id": clause_id,
         "clause_title": clause.title,
-        "matches": [
-            {
-                "case_id": m.id, "title": m.title, "summary": m.summary,
-                "outcome": m.outcome, "source": m.source,
-                "source_url": m.source_url, "score": m.score,
-                "matched_signals": m.matched_signals,
-            }
-            for m in matches
-        ],
+        "clause_risk_level": clause.risk_level,
+        "clause_pain_point_id": clause.pain_point_id,
+        "risk_reasoning": reasoning,
+        "user_action": user_action,
+        "matches": match_dicts,
     }
 
 
@@ -367,7 +455,11 @@ async def find_disputes_for_term(
     term_id: uuid.UUID,
     top_k: int = DEFAULT_TOP_K,
 ) -> dict | None:
-    """약관의 latest version 의 모든 TermClause × top-K. term 없으면 None."""
+    """약관의 latest version 의 모든 TermClause × top-K + reasoning. term 없으면 None.
+
+    dispute_cases 의 signature 를 한 번만 계산해 모든 clause 에 공유 — N 회 쿼리
+    절약 + 동일 batch 내 일관성 보장.
+    """
     from app.models.term import TermVersion, Term
     from sqlalchemy.orm import selectinload
 
@@ -384,9 +476,13 @@ async def find_disputes_for_term(
     if latest is None:
         return {"term_id": term_id, "clauses": []}
 
+    signature = await _compute_disputes_signature(db)
     out_clauses: list[dict] = []
     for clause in latest.clauses:
-        sub = await find_disputes_for_clause(db, clause_id=clause.id, top_k=top_k)
+        sub = await find_disputes_for_clause(
+            db, clause_id=clause.id, top_k=top_k,
+            disputes_signature=signature,
+        )
         if sub:
             out_clauses.append(sub)
     return {"term_id": term_id, "clauses": out_clauses}

@@ -89,6 +89,14 @@ class TermClause(Base):
     page: Mapped[int | None] = mapped_column(Integer, nullable=True)
     # bbox: PDF 좌표 [x1, y1, x2, y2] (0-1 정규화). PDF가 아니거나 매칭 실패 시 NULL.
     bbox: Mapped[list[float] | None] = mapped_column(JSONB, nullable=True)
+    # risk_level / pain_point_id: KeyClause (LLM 출력) 의 위험도 + pain_point id.
+    # 분쟁 사례 매칭 시 pain_point boost + reasoning 생성 입력으로 사용.
+    risk_level: Mapped[str | None] = mapped_column(Text, nullable=True)
+    pain_point_id: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # dispute_reasoning: 첫 /v1/terms/{id}/disputes 조회 시 LLM 으로 생성하여 저장
+    # (lazy cache). disputes_signature 가 최신과 다르면 무효화하고 재생성.
+    dispute_reasoning: Mapped[str | None] = mapped_column(Text, nullable=True)
+    disputes_signature: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     version: Mapped["TermVersion"] = relationship("TermVersion", back_populates="clauses")
