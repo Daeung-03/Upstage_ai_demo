@@ -142,6 +142,7 @@ async def list_terms(
             service_name=t.service_name,
             domain=t.domain,
             sub_category=t.sub_category,
+            vendor_slug=t.vendor_slug,
             status=t.status,
             subscribed_at=t.subscribed_at,
             latest_version=(
@@ -169,6 +170,7 @@ async def get_term(
         service_name=term.service_name,
         domain=term.domain,
         sub_category=term.sub_category,
+        vendor_slug=term.vendor_slug,
         status=term.status,
         file_url=term.file_url,
         subscribed_at=term.subscribed_at,

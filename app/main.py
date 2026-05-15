@@ -11,7 +11,7 @@ from app.models.calendar import CalendarEvent, Notification  # noqa
 from app.models.chat import ChatSession, ChatMessage  # noqa
 from app.models.dispute import DisputeCase  # noqa
 
-from app.routers import terms, chat, calendar, notifications, disputes
+from app.routers import terms, chat, calendar, notifications, disputes, vendors
 from ai.services.diff import DiffSchemaError
 from ai.services.extract import SchemaValidationError
 from ai.services.upstage import UpstreamResponseError
@@ -23,6 +23,7 @@ app.include_router(chat.router,          prefix="/chat",          tags=["Chat"])
 app.include_router(calendar.router,      prefix="/calendar",      tags=["Calendar"])
 app.include_router(notifications.router, prefix="/notifications", tags=["Notifications"])
 app.include_router(disputes.router,      prefix="",               tags=["Disputes"])
+app.include_router(vendors.router,       prefix="/vendors",       tags=["Vendors"])
 
 
 # ── 글로벌 예외 → 구조화 HTTP 응답 ─────────────────────────

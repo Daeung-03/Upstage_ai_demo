@@ -21,6 +21,9 @@ class TermSummary(BaseModel):
     service_name: str
     domain: str
     sub_category: Optional[str] = None
+    # 15 서비스 카탈로그의 canonical slug (예: "netflix"). 매칭 안 됐으면 NULL.
+    # 프론트가 vendor 기준 사이드바 그룹핑에 사용.
+    vendor_slug: Optional[str] = None
     status: str
     subscribed_at: Optional[date]
     latest_version: int
@@ -58,6 +61,8 @@ class TermDetailResponse(BaseModel):
     service_name: str
     domain: str
     sub_category: Optional[str] = None
+    # 15 서비스 카탈로그의 canonical slug (예: "netflix"). 매칭 안 됐으면 NULL.
+    vendor_slug: Optional[str] = None
     status: str
     file_url: Optional[str]
     subscribed_at: Optional[date]
