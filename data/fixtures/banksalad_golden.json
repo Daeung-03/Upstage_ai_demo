@@ -1,0 +1,465 @@
+{
+  "_meta": {
+    "service_name": "BankSalad",
+    "terms_version": "2024-09-15 (효력일)",
+    "document_source_url": "https://policies.banksalad.com/뱅크샐러드/서비스-이용-약관 (서비스) + https://policies.banksalad.com/송금/뱅샐머니-이용약관 (전자금융거래)",
+    "schema_version": "v0.2",
+    "labeler": "team",
+    "extraction_date": "2026-05-15",
+    "domain": "fintech_pfm",
+    "instructions": "각 필드의 'expected' 값을 약관 원문 기준으로 정답으로 편집하세요. model_value/source_quote는 참고용. 정답이 약관에 없으면 null 유지, 모호하면 'AMBIGUOUS'로 기록 후 note 작성. 리스트는 정렬된 형태로 입력. enum 값은 schema/enums.py 참조.",
+    "changelog": [
+      "v0.2 (2026-05-15): BankSalad 첫 라벨링. (1) 뱅크샐러드 서비스 이용약관 + (2) 뱅샐머니/전자금융거래 이용약관 두 문서 결합. **PFM (자산관리) + 전자금융 결합 형태 — Toss/KakaoPay와 다른 변종 fintech.**",
+      "v0.2 + Tier1+2 (2026-05-15): account/service 카테고리 추가 라벨링."
+    ],
+    "schema_fit_note": "PFM은 OTT subscription schema와 부적합. pricing 대부분 null (무료 서비스), free_trial 전부 null (체험 개념 없음), cancellation=계약 해지 ≠ 구독 해지. cooling_off_refund_days = null (구매 대상 자체 없음).",
+    "note": "뱅크샐러드는 PFM(개인자산관리) 중심 + 송금 서비스 추가. 서비스 자체는 무료. 모델 probe 결과 'pricing.base_price_krw=0' 강제 채움 패턴 확인 — 라벨링 시 schema fit 비판적 검증 필요."
+  },
+  "pricing.base_price_krw": {
+    "expected": 0,
+    "model_value": 0,
+    "model_uncertainty": "confirmed",
+    "source_quote": "서비스는 무료로 이용할 수 있습니다.",
+    "source_page": 1,
+    "note": "기본 서비스 무료. 단, '무료'는 가격이 0원인 것이 아니라 '결제 모델이 없음' 의미 — schema fit 측면에서는 null이 더 정확. 0으로 유지하되 schema_fit_note 참조."
+  },
+  "pricing.billing_cycle": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": "구독 모델 부재."
+  },
+  "pricing.auto_renewal_enabled": {
+    "expected": false,
+    "model_value": false,
+    "model_uncertainty": "inferred",
+    "source_quote": "서비스는 무료로 이용할 수 있습니다.",
+    "source_page": 1,
+    "note": "구독 모델 부재로 자동갱신 개념 없음."
+  },
+  "pricing.auto_renewal_consent": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": ""
+  },
+  "pricing.price_change_notice_days": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": "가격 변경 개념 부재."
+  },
+  "pricing.price_change_notice_channels": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": ""
+  },
+  "free_trial.offered": {
+    "expected": null,
+    "model_value": false,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": "**정정 — 기존 false는 schema fit 오류**. 무료 서비스이므로 '체험' 개념 자체가 존재하지 않음. null + not_specified가 정확. model이 무료=체험없음=false로 강제 채움한 사례."
+  },
+  "free_trial.duration_days": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": ""
+  },
+  "free_trial.auto_convert_to_paid": {
+    "expected": null,
+    "model_value": false,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": "model_value=false는 부정확 → null."
+  },
+  "free_trial.cancel_required_before_end": {
+    "expected": null,
+    "model_value": false,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": ""
+  },
+  "free_trial.payment_method_required_upfront": {
+    "expected": null,
+    "model_value": false,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": ""
+  },
+  "free_trial.notice_before_conversion_days": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": ""
+  },
+  "cancellation.method": {
+    "expected": "online",
+    "model_value": "online",
+    "model_uncertainty": "confirmed",
+    "source_quote": "전자금융거래 서비스 이용에 관한 해지는 웹사이트 또는 모바일 어플리케이션에서 회사가 제공하는 방법(전자금융거래 서비스 이용 탈퇴 메뉴)에 따릅니다.",
+    "source_page": 1,
+    "note": "fintech에서 cancellation=서비스 탈퇴 ≠ OTT의 구독 해지. schema fit 주의."
+  },
+  "cancellation.method_description": {
+    "expected": "웹/앱 전자금융거래 서비스 이용 탈퇴 메뉴",
+    "model_value": "웹사이트 또는 모바일 어플리케이션에서 전자금융거래 서비스 이용 탈퇴 메뉴를 통해 해지",
+    "model_uncertainty": "confirmed",
+    "source_quote": "전자금융거래 서비스 이용에 관한 해지는 웹사이트 또는 모바일 어플리케이션에서 회사가 제공하는 방법(전자금융거래 서비스 이용 탈퇴 메뉴)에 따릅니다.",
+    "source_page": 1,
+    "note": ""
+  },
+  "cancellation.notice_period_days": {
+    "expected": 0,
+    "model_value": 0,
+    "model_uncertainty": "confirmed",
+    "source_quote": "회원은 언제든지 전자금융거래이용계약을 해지할 수 있습니다.",
+    "source_page": 1,
+    "note": ""
+  },
+  "cancellation.penalty_present": {
+    "expected": false,
+    "model_value": false,
+    "model_uncertainty": "inferred",
+    "source_quote": "회원은 언제든지 전자금융거래이용계약을 해지할 수 있습니다.",
+    "source_page": 1,
+    "note": ""
+  },
+  "cancellation.penalty_description": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": ""
+  },
+  "cancellation.proration_policy": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": "무료 서비스라 환불 개념 부재."
+  },
+  "cancellation.blackout_periods": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": ""
+  },
+  "cancellation.cooling_off_refund_days": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_extracted",
+    "source_quote": "",
+    "source_page": null,
+    "note": "v0.2 신설 필드 — 무료 PFM이므로 청약철회 개념 자체 부재. null + not_specified가 정확."
+  },
+  "cancellation.cooling_off_conditions": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_extracted",
+    "source_quote": "",
+    "source_page": null,
+    "note": "v0.2 신설 필드 — 동일 사유."
+  },
+  "cancellation.third_party_cancellation_required": {
+    "expected": false,
+    "model_value": null,
+    "model_uncertainty": "inferred",
+    "source_quote": "",
+    "source_page": null,
+    "note": "v0.2 신설 필드 — 자체 앱 운영, 앱마켓 결제 게이트웨이 없음 (무료 서비스)."
+  },
+  "terms_changes.notice_channels": {
+    "expected": [
+      "in_app_banner"
+    ],
+    "model_value": [
+      "in_app_banner"
+    ],
+    "model_uncertainty": "confirmed",
+    "source_quote": "회사는 변경되는 내용과 변경일자를 서비스 내에 공지하며",
+    "source_page": 1,
+    "note": "이메일·앱 푸시 명시 없음 — 통지 채널 좁음."
+  },
+  "terms_changes.notice_lead_time_days": {
+    "expected": 30,
+    "model_value": 30,
+    "model_uncertainty": "confirmed",
+    "source_quote": "변경일 30일 전에 이용자에게 알려",
+    "source_page": 1,
+    "note": ""
+  },
+  "terms_changes.user_consent_mechanism": {
+    "expected": "deemed_agreed",
+    "model_value": "deemed_agreed",
+    "model_uncertainty": "confirmed",
+    "source_quote": "동의한 것으로 본다.",
+    "source_page": 1,
+    "note": "정정 — 'deemed_agreed' 스키마에 존재함. 'deemed_agreed'로 매핑."
+  },
+  "terms_changes.user_right_to_terminate_on_change": {
+    "expected": true,
+    "model_value": true,
+    "model_uncertainty": "confirmed",
+    "source_quote": "변경된 약관 내용에 동의하지 않으시는 경우 서비스 이용을 중단하셔야 하며",
+    "source_page": 1,
+    "note": ""
+  },
+  "terms_changes.silent_acceptance_clause": {
+    "expected": true,
+    "model_value": true,
+    "model_uncertainty": "confirmed",
+    "source_quote": "동의한 것으로 본다.",
+    "source_page": 1,
+    "note": "공정위 시정 권고 대상 유형."
+  },
+  "terms_changes.price_change_explicit_consent": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_extracted",
+    "source_quote": "",
+    "source_page": null,
+    "note": "v0.2 신설 필드 — 무료 서비스로 가격 변경 자체 부재."
+  },
+  "data_usage.collected_categories": {
+    "expected": [
+      "개인신용정보",
+      "건강정보",
+      "금융정보",
+      "행정정보"
+    ],
+    "model_value": [
+      "개인신용정보",
+      "금융정보",
+      "건강정보",
+      "행정정보"
+    ],
+    "model_uncertainty": "confirmed",
+    "source_quote": "마이데이터 API를 바탕으로 금융기관에 흩어져 있는 자신의 다양한 개인신용정보를 통합조회하고 관리할 수 있는 마이데이터 서비스를 이용할 수 있습니다.",
+    "source_page": 1,
+    "note": "마이데이터 사업자 특성 — OTT 대비 매우 광범위한 정보 수집. 리스트 알파벳 정렬."
+  },
+  "data_usage.third_party_sharing": {
+    "expected": true,
+    "model_value": true,
+    "model_uncertainty": "confirmed",
+    "source_quote": "제3자 서비스와 상품 등",
+    "source_page": 1,
+    "note": "마이데이터 + 상품 추천 모델이라 3자 공유 광범위."
+  },
+  "data_usage.third_party_recipients": {
+    "expected": [
+      "금융기관",
+      "신용정보회사",
+      "제3자 서비스 제공자",
+      "제휴사"
+    ],
+    "model_value": [
+      "신용정보회사",
+      "금융기관",
+      "제휴사",
+      "제3자 서비스 제공자"
+    ],
+    "model_uncertainty": "confirmed",
+    "source_quote": "제3자 서비스와 상품 등",
+    "source_page": 1,
+    "note": "리스트 알파벳 정렬."
+  },
+  "data_usage.third_party_purposes": {
+    "expected": [
+      "상품 추천",
+      "서비스 제공",
+      "정보 제공",
+      "컨설팅"
+    ],
+    "model_value": [
+      "서비스 제공",
+      "상품 추천",
+      "컨설팅",
+      "정보 제공"
+    ],
+    "model_uncertainty": "confirmed",
+    "source_quote": "제3자 서비스나 상품 등을 추천하거나 상품 등에 관한 컨설팅을 제공할 수 있으며",
+    "source_page": 1,
+    "note": "리스트 정렬."
+  },
+  "data_usage.retention_period_months": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": "이용약관 본문 미명시. 개인정보처리방침 별도 참조 필요."
+  },
+  "data_usage.marketing_use": {
+    "expected": "AMBIGUOUS",
+    "model_value": false,
+    "model_uncertainty": "ambiguous",
+    "source_quote": "제3자 서비스나 상품 등의 제공자는 제3자이며, 관련 법령이나 본 약관에서 달리 정하지 않는 이상 회사는 이에 대한 책임을 지지 않습니다.",
+    "source_page": 1,
+    "note": "정정 — 기존 model_value=false. 실제로는 '상품 추천 + 컨설팅' 명시 = 사실상 마케팅 활용. quote는 책임 분배 조항으로 마케팅 여부 무관. AMBIGUOUS."
+  },
+  "data_usage.marketing_consent": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": ""
+  },
+  "data_usage.cross_border_transfer": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "not_specified",
+    "source_quote": "",
+    "source_page": null,
+    "note": "한국 사업자. 국외 이전 가능성 낮으나 약관 본문 미명시."
+  },
+  "liability.service_disruption_compensation": {
+    "expected": false,
+    "model_value": false,
+    "model_uncertainty": "confirmed",
+    "source_quote": "회사는 서비스 개선이나 점검 등의 합리적인 사정으로 서비스의 전부 또는 일부를 중단해야 하는 경우 이용자에게 이러한 사정을 미리 안내합니다.",
+    "source_page": 1,
+    "note": "사전 안내만 의무. 보상 의무 미명시."
+  },
+  "liability.compensation_description": {
+    "expected": "서비스 중단에 대한 직접적 보상 조항 부재",
+    "model_value": "서비스 중단에 대한 보상은 제공되지 않음",
+    "model_uncertainty": "confirmed",
+    "source_quote": "회사는 서비스 개선이나 점검 등의 합리적인 사정으로 서비스의 전부 또는 일부를 중단해야 하는 경우 이용자에게 이러한 사정을 미리 안내합니다.",
+    "source_page": 1,
+    "note": ""
+  },
+  "liability.damages_cap_present": {
+    "expected": true,
+    "model_value": true,
+    "model_uncertainty": "confirmed",
+    "source_quote": "특별한 사정으로 통상적인 범위를 벗어나는 손해는 책임지지 않습니다.",
+    "source_page": 1,
+    "note": ""
+  },
+  "liability.damages_cap_description": {
+    "expected": "특별한 사정으로 통상적인 범위를 벗어나는 손해는 책임지지 않습니다.",
+    "model_value": "특별한 사정으로 통상적인 범위를 벗어나는 손해는 책임지지 않습니다.",
+    "model_uncertainty": "confirmed",
+    "source_quote": "특별한 사정으로 통상적인 범위를 벗어나는 손해는 책임지지 않습니다.",
+    "source_page": 1,
+    "note": ""
+  },
+  "liability.force_majeure_scope": {
+    "expected": "예기치 못한 시스템 장애, 제3자 사정, 정보통신망 장애",
+    "model_value": "예기치 못한 시스템 장애, 제3자 사정, 정보통신망 장애",
+    "model_uncertainty": "confirmed",
+    "source_quote": "제3자 측의 사정이나, 정보통신망의 장애 등으로 인해 일시적으로 서비스 제공에 장애가 발생할 수 있습니다.",
+    "source_page": 1,
+    "note": ""
+  },
+  "liability.indirect_damages_excluded": {
+    "expected": true,
+    "model_value": false,
+    "model_uncertainty": "confirmed",
+    "source_quote": "특별한 사정으로 통상적인 범위를 벗어나는 손해는 책임지지 않습니다.",
+    "source_page": 1,
+    "note": "정정 — '통상적인 범위 벗어남' = 간접손해/특별손해 사실상 배제 → true가 정확. 기존 false 오류."
+  },
+  "disputes.governing_law": {
+    "expected": "대한민국 법령",
+    "model_value": "대한민국 법령",
+    "model_uncertainty": "confirmed",
+    "source_quote": "본 약관의 해석은 대한민국 법령에 따르며",
+    "source_page": 1,
+    "note": ""
+  },
+  "disputes.jurisdiction_clause": {
+    "expected": "민사소송법상 관할법원",
+    "model_value": "민사소송법",
+    "model_uncertainty": "confirmed",
+    "source_quote": "본 약관 및 서비스와 관련된 모든 분쟁에 관한 관할은 민사소송법에서 정한 바에 따릅니다.",
+    "source_page": 1,
+    "note": ""
+  },
+  "disputes.arbitration_required": {
+    "expected": false,
+    "model_value": false,
+    "model_uncertainty": "confirmed",
+    "source_quote": "본 약관은 강행규정에 반하는 방식으로 소비자의 권리(소송권 포함)를 제한하지 않습니다.",
+    "source_page": 1,
+    "note": "**소송권 명시 보장** — fintech 중 보기 드문 친소비자 조항."
+  },
+  "disputes.class_action_waiver": {
+    "expected": false,
+    "model_value": false,
+    "model_uncertainty": "confirmed",
+    "source_quote": "본 약관은 강행규정에 반하는 방식으로 소비자의 권리(소송권 포함)를 제한하지 않습니다.",
+    "source_page": 1,
+    "note": ""
+  },
+  "account.minimum_age": {
+    "expected": 14,
+    "model_value": null,
+    "model_uncertainty": "not_extracted",
+    "source_quote": "",
+    "source_page": null,
+    "note": "v0.2 신설 필드 — 정보통신망법 등에 따라 14세 이상 가입 가능."
+  },
+  "account.sharing_restrictions": {
+    "expected": "personal_only",
+    "model_value": null,
+    "model_uncertainty": "inferred",
+    "source_quote": "",
+    "source_page": null,
+    "note": "v0.2 신설 필드 — 금융 마이데이터 특성. 본인 인증 기반 1인 1계정. 가구 공유 개념 없음."
+  },
+  "service.regional_content_restriction": {
+    "expected": null,
+    "model_value": null,
+    "model_uncertainty": "inferred",
+    "source_quote": "",
+    "source_page": null,
+    "note": "v0.2 신설 필드 — 원문에 지역 제한 명시 없음."
+  },
+  "service.availability_disclaimer": {
+    "expected": true,
+    "model_value": null,
+    "model_uncertainty": "confirmed",
+    "source_quote": "회사는 서비스 개선이나 점검 등의 합리적인 사정으로 서비스의 전부 또는 일부를 중단해야 하는 경우 이용자에게 이러한 사정을 미리 안내합니다.",
+    "source_page": 1,
+    "note": "v0.2 신설 필드. 서비스 변경/중단 가능 명시."
+  },
+  "unfair_clause_flags": {
+    "expected": [
+      "POST-04",
+      "POST-05",
+      "면책/손배 제한",
+      "의사표시_의제"
+    ],
+    "model_value": [
+      "면책/손배 제한",
+      "의사표시_의제"
+    ],
+    "note": "POST-04(면책/손배 제한) + POST-05(의사표시 의제). 단, 소송권 보장 명시(disputes) + 30일 사전 통지(terms_changes)로 다른 fintech 대비 친소비자적."
+  }
+}

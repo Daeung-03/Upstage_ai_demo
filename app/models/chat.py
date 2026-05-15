@@ -18,7 +18,11 @@ class ChatSession(Base):
 
     user: Mapped["User"] = relationship("User", back_populates="chat_sessions")
     term: Mapped["Term | None"] = relationship("Term", back_populates="chat_sessions")
-    messages: Mapped[list["ChatMessage"]] = relationship("ChatMessage", back_populates="session", cascade="all, delete-orphan")
+    messages = relationship(
+        "ChatMessage",
+        back_populates="session",
+        order_by="ChatMessage.created_at",
+    )
 
 
 class ChatMessage(Base):
@@ -34,4 +38,4 @@ class ChatMessage(Base):
     source_chunks: Mapped[list[uuid.UUID] | None] = mapped_column(ARRAY(UUID(as_uuid=True)), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
-    session: Mapped["ChatSession"] = relationship("ChatSession", back_populates="messages")
+    session = relationship("ChatSession", back_populates="messages")

@@ -1,0 +1,707 @@
+[
+  {
+    "fixture": "netflix",
+    "runs": [
+      {
+        "run": 1,
+        "elapsed_s": 254.5,
+        "tokens": 52310,
+        "grounded": false,
+        "strict": {
+          "overall_pct": 59,
+          "ok": 11,
+          "ok_null": 14,
+          "missed": 7,
+          "wrong": 7,
+          "over_extracted": 3,
+          "type_int": 71.4,
+          "type_enum": 66.7,
+          "type_bool": 75.0,
+          "type_list": 50.0,
+          "type_str": 14.3,
+          "flag_p_norm": 0.0,
+          "flag_r_norm": 0.0,
+          "flag_p": 0.0,
+          "flag_r": 0.0
+        },
+        "semantic": {
+          "overall_pct": 66,
+          "ok": 14,
+          "ok_null": 14,
+          "missed": 7,
+          "wrong": 4,
+          "over_extracted": 3,
+          "type_int": 71.4,
+          "type_enum": 100.0,
+          "type_bool": 75.0,
+          "type_list": 50.0,
+          "type_str": 28.6,
+          "flag_p_norm": 0.0,
+          "flag_r_norm": 0.0,
+          "flag_p": 0.0,
+          "flag_r": 0.0
+        },
+        "key": "key1"
+      }
+    ],
+    "key": "key1"
+  },
+  {
+    "fixture": "coupang_play",
+    "runs": [
+      {
+        "run": 1,
+        "elapsed_s": 107.2,
+        "tokens": 66594,
+        "grounded": false,
+        "strict": {
+          "overall_pct": 54,
+          "ok": 13,
+          "ok_null": 10,
+          "missed": 6,
+          "wrong": 12,
+          "over_extracted": 1,
+          "type_int": 100.0,
+          "type_enum": 50.0,
+          "type_bool": 62.5,
+          "type_list": 16.7,
+          "type_str": 28.6,
+          "flag_p_norm": 0.0,
+          "flag_r_norm": 0.0,
+          "flag_p": 0.0,
+          "flag_r": 0.0
+        },
+        "semantic": {
+          "overall_pct": 61,
+          "ok": 16,
+          "ok_null": 10,
+          "missed": 6,
+          "wrong": 9,
+          "over_extracted": 1,
+          "type_int": 100.0,
+          "type_enum": 50.0,
+          "type_bool": 62.5,
+          "type_list": 16.7,
+          "type_str": 71.4,
+          "flag_p_norm": 0.0,
+          "flag_r_norm": 0.0,
+          "flag_p": 0.0,
+          "flag_r": 0.0
+        },
+        "key": "key1"
+      }
+    ],
+    "key": "key1"
+  },
+  {
+    "fixture": "watcha",
+    "runs": [
+      {
+        "run": 1,
+        "elapsed_s": 379.3,
+        "tokens": 79982,
+        "grounded": false,
+        "strict": {
+          "overall_pct": 47,
+          "ok": 12,
+          "ok_null": 8,
+          "missed": 9,
+          "wrong": 11,
+          "over_extracted": 2,
+          "type_int": 71.4,
+          "type_enum": 50.0,
+          "type_bool": 68.8,
+          "type_list": 16.7,
+          "type_str": 0.0,
+          "flag_p_norm": 0.0,
+          "flag_r_norm": 0.0,
+          "flag_p": 0.0,
+          "flag_r": 0.0
+        },
+        "semantic": {
+          "overall_pct": 59,
+          "ok": 17,
+          "ok_null": 8,
+          "missed": 9,
+          "wrong": 6,
+          "over_extracted": 2,
+          "type_int": 71.4,
+          "type_enum": 83.3,
+          "type_bool": 68.8,
+          "type_list": 33.3,
+          "type_str": 28.6,
+          "flag_p_norm": 0.0,
+          "flag_r_norm": 0.0,
+          "flag_p": 0.0,
+          "flag_r": 0.0
+        },
+        "key": "key1"
+      }
+    ],
+    "key": "key1"
+  },
+  {
+    "fixture": "gemini",
+    "runs": [
+      {
+        "run": 1,
+        "elapsed_s": 159.3,
+        "tokens": 47331,
+        "grounded": false,
+        "strict": {
+          "overall_pct": 33,
+          "ok": 7,
+          "ok_null": 7,
+          "missed": 15,
+          "wrong": 11,
+          "over_extracted": 2,
+          "type_int": 42.9,
+          "type_enum": 0.0,
+          "type_bool": 50.0,
+          "type_list": 33.3,
+          "type_str": 14.3,
+          "flag_p_norm": 0.0,
+          "flag_r_norm": 0.0,
+          "flag_p": 0.0,
+          "flag_r": 0.0
+        },
+        "semantic": {
+          "overall_pct": 40,
+          "ok": 10,
+          "ok_null": 7,
+          "missed": 15,
+          "wrong": 8,
+          "over_extracted": 2,
+          "type_int": 42.9,
+          "type_enum": 16.7,
+          "type_bool": 50.0,
+          "type_list": 33.3,
+          "type_str": 42.9,
+          "flag_p_norm": 0.0,
+          "flag_r_norm": 0.0,
+          "flag_p": 0.0,
+          "flag_r": 0.0
+        },
+        "key": "key1"
+      }
+    ],
+    "key": "key1"
+  },
+  {
+    "fixture": "banksalad",
+    "runs": [
+      {
+        "run": 1,
+        "elapsed_s": 246.2,
+        "tokens": 111545,
+        "grounded": false,
+        "strict": {
+          "overall_pct": 54,
+          "ok": 8,
+          "ok_null": 15,
+          "missed": 11,
+          "wrong": 6,
+          "over_extracted": 2,
+          "type_int": 71.4,
+          "type_enum": 66.7,
+          "type_bool": 56.2,
+          "type_list": 50.0,
+          "type_str": 28.6,
+          "flag_p_norm": 0.0,
+          "flag_r_norm": 0.0,
+          "flag_p": 0.0,
+          "flag_r": 0.0
+        },
+        "semantic": {
+          "overall_pct": 59,
+          "ok": 10,
+          "ok_null": 15,
+          "missed": 11,
+          "wrong": 4,
+          "over_extracted": 2,
+          "type_int": 71.4,
+          "type_enum": 66.7,
+          "type_bool": 56.2,
+          "type_list": 66.7,
+          "type_str": 42.9,
+          "flag_p_norm": 0.0,
+          "flag_r_norm": 0.0,
+          "flag_p": 0.0,
+          "flag_r": 0.0
+        },
+        "key": "key1"
+      }
+    ],
+    "key": "key1"
+  },
+  {
+    "fixture": "spotify",
+    "runs": [
+      {
+        "run": 1,
+        "elapsed_s": 126.2,
+        "tokens": 61223,
+        "grounded": false,
+        "strict": {
+          "overall_pct": 52,
+          "ok": 8,
+          "ok_null": 14,
+          "missed": 12,
+          "wrong": 6,
+          "over_extracted": 2,
+          "type_int": 71.4,
+          "type_enum": 66.7,
+          "type_bool": 50.0,
+          "type_list": 66.7,
+          "type_str": 14.3,
+          "flag_p_norm": 0.14,
+          "flag_r_norm": 0.33,
+          "flag_p": 0.0,
+          "flag_r": 0.0
+        },
+        "semantic": {
+          "overall_pct": 57,
+          "ok": 10,
+          "ok_null": 14,
+          "missed": 12,
+          "wrong": 4,
+          "over_extracted": 2,
+          "type_int": 71.4,
+          "type_enum": 66.7,
+          "type_bool": 50.0,
+          "type_list": 83.3,
+          "type_str": 28.6,
+          "flag_p_norm": 0.14,
+          "flag_r_norm": 0.33,
+          "flag_p": 0.0,
+          "flag_r": 0.0
+        },
+        "key": "key2"
+      }
+    ],
+    "key": "key2"
+  },
+  {
+    "fixture": "tving",
+    "runs": [
+      {
+        "run": 1,
+        "elapsed_s": 194.8,
+        "tokens": 100278,
+        "grounded": false,
+        "strict": {
+          "overall_pct": 59,
+          "ok": 11,
+          "ok_null": 14,
+          "missed": 6,
+          "wrong": 6,
+          "over_extracted": 5,
+          "type_int": 71.4,
+          "type_enum": 50.0,
+          "type_bool": 62.5,
+          "type_list": 50.0,
+          "type_str": 57.1,
+          "flag_p_norm": 0.0,
+          "flag_r_norm": 0.0,
+          "flag_p": 0.0,
+          "flag_r": 0.0
+        },
+        "semantic": {
+          "overall_pct": 64,
+          "ok": 13,
+          "ok_null": 14,
+          "missed": 6,
+          "wrong": 4,
+          "over_extracted": 5,
+          "type_int": 71.4,
+          "type_enum": 50.0,
+          "type_bool": 62.5,
+          "type_list": 50.0,
+          "type_str": 85.7,
+          "flag_p_norm": 0.0,
+          "flag_r_norm": 0.0,
+          "flag_p": 0.0,
+          "flag_r": 0.0
+        },
+        "key": "key2"
+      }
+    ],
+    "key": "key2"
+  },
+  {
+    "fixture": "claude",
+    "runs": [
+      {
+        "run": 1,
+        "elapsed_s": 271.1,
+        "tokens": 114376,
+        "grounded": false,
+        "strict": {
+          "overall_pct": 42,
+          "ok": 13,
+          "ok_null": 5,
+          "missed": 2,
+          "wrong": 16,
+          "over_extracted": 6,
+          "type_int": 71.4,
+          "type_enum": 0.0,
+          "type_bool": 68.8,
+          "type_list": 16.7,
+          "type_str": 14.3,
+          "flag_p_norm": 0.0,
+          "flag_r_norm": 0.0,
+          "flag_p": 0.0,
+          "flag_r": 0.0
+        },
+        "semantic": {
+          "overall_pct": 61,
+          "ok": 21,
+          "ok_null": 5,
+          "missed": 2,
+          "wrong": 8,
+          "over_extracted": 6,
+          "type_int": 71.4,
+          "type_enum": 50.0,
+          "type_bool": 68.8,
+          "type_list": 66.7,
+          "type_str": 42.9,
+          "flag_p_norm": 0.0,
+          "flag_r_norm": 0.0,
+          "flag_p": 0.0,
+          "flag_r": 0.0
+        },
+        "key": "key2"
+      }
+    ],
+    "key": "key2"
+  },
+  {
+    "fixture": "gpt",
+    "runs": [
+      {
+        "run": 1,
+        "elapsed_s": 260.1,
+        "tokens": 97198,
+        "grounded": false,
+        "strict": {
+          "overall_pct": 59,
+          "ok": 16,
+          "ok_null": 9,
+          "missed": 0,
+          "wrong": 10,
+          "over_extracted": 7,
+          "type_int": 71.4,
+          "type_enum": 66.7,
+          "type_bool": 93.8,
+          "type_list": 16.7,
+          "type_str": 0.0,
+          "flag_p_norm": 0.0,
+          "flag_r_norm": 0.0,
+          "flag_p": 0.0,
+          "flag_r": 0.0
+        },
+        "semantic": {
+          "overall_pct": 64,
+          "ok": 18,
+          "ok_null": 9,
+          "missed": 0,
+          "wrong": 8,
+          "over_extracted": 7,
+          "type_int": 71.4,
+          "type_enum": 66.7,
+          "type_bool": 93.8,
+          "type_list": 16.7,
+          "type_str": 28.6,
+          "flag_p_norm": 0.0,
+          "flag_r_norm": 0.0,
+          "flag_p": 0.0,
+          "flag_r": 0.0
+        },
+        "key": "key2"
+      }
+    ],
+    "key": "key2"
+  },
+  {
+    "fixture": "kakaopay",
+    "runs": [
+      {
+        "run": 1,
+        "elapsed_s": 289.6,
+        "tokens": 124131,
+        "grounded": false,
+        "strict": {
+          "overall_pct": 61,
+          "ok": 10,
+          "ok_null": 16,
+          "missed": 2,
+          "wrong": 7,
+          "over_extracted": 7,
+          "type_int": 85.7,
+          "type_enum": 66.7,
+          "type_bool": 68.8,
+          "type_list": 33.3,
+          "type_str": 42.9,
+          "flag_p_norm": 0.0,
+          "flag_r_norm": 0.0,
+          "flag_p": 0.0,
+          "flag_r": 0.0
+        },
+        "semantic": {
+          "overall_pct": 69,
+          "ok": 13,
+          "ok_null": 16,
+          "missed": 2,
+          "wrong": 4,
+          "over_extracted": 7,
+          "type_int": 85.7,
+          "type_enum": 66.7,
+          "type_bool": 68.8,
+          "type_list": 50.0,
+          "type_str": 71.4,
+          "flag_p_norm": 0.0,
+          "flag_r_norm": 0.0,
+          "flag_p": 0.0,
+          "flag_r": 0.0
+        },
+        "key": "key2"
+      }
+    ],
+    "key": "key2"
+  },
+  {
+    "fixture": "wavve",
+    "runs": [
+      {
+        "run": 1,
+        "elapsed_s": 177.1,
+        "tokens": 73712,
+        "grounded": false,
+        "strict": {
+          "overall_pct": 50,
+          "ok": 10,
+          "ok_null": 11,
+          "missed": 7,
+          "wrong": 8,
+          "over_extracted": 6,
+          "type_int": 71.4,
+          "type_enum": 16.7,
+          "type_bool": 68.8,
+          "type_list": 16.7,
+          "type_str": 42.9,
+          "flag_p_norm": 0.0,
+          "flag_r_norm": 0.0,
+          "flag_p": 0.0,
+          "flag_r": 0.0
+        },
+        "semantic": {
+          "overall_pct": 57,
+          "ok": 13,
+          "ok_null": 11,
+          "missed": 7,
+          "wrong": 5,
+          "over_extracted": 6,
+          "type_int": 71.4,
+          "type_enum": 50.0,
+          "type_bool": 68.8,
+          "type_list": 16.7,
+          "type_str": 57.1,
+          "flag_p_norm": 0.0,
+          "flag_r_norm": 0.0,
+          "flag_p": 0.0,
+          "flag_r": 0.0
+        },
+        "key": "key3"
+      }
+    ],
+    "key": "key3"
+  },
+  {
+    "fixture": "disney_plus",
+    "runs": [
+      {
+        "run": 1,
+        "elapsed_s": 303.4,
+        "tokens": 91263,
+        "grounded": true,
+        "strict": {
+          "overall_pct": 59,
+          "ok": 19,
+          "ok_null": 6,
+          "missed": 6,
+          "wrong": 10,
+          "over_extracted": 1,
+          "type_int": 85.7,
+          "type_enum": 66.7,
+          "type_bool": 75.0,
+          "type_list": 33.3,
+          "type_str": 14.3,
+          "flag_p_norm": 0.0,
+          "flag_r_norm": 0.0,
+          "flag_p": 0.0,
+          "flag_r": 0.0
+        },
+        "semantic": {
+          "overall_pct": 69,
+          "ok": 23,
+          "ok_null": 6,
+          "missed": 6,
+          "wrong": 6,
+          "over_extracted": 1,
+          "type_int": 85.7,
+          "type_enum": 66.7,
+          "type_bool": 75.0,
+          "type_list": 50.0,
+          "type_str": 57.1,
+          "flag_p_norm": 0.0,
+          "flag_r_norm": 0.0,
+          "flag_p": 0.0,
+          "flag_r": 0.0
+        },
+        "key": "key3"
+      }
+    ],
+    "key": "key3"
+  },
+  {
+    "fixture": "deepseek",
+    "runs": [
+      {
+        "run": 1,
+        "elapsed_s": 579.0,
+        "tokens": 83551,
+        "grounded": false,
+        "strict": {
+          "overall_pct": 66,
+          "ok": 10,
+          "ok_null": 18,
+          "missed": 6,
+          "wrong": 5,
+          "over_extracted": 3,
+          "type_int": 85.7,
+          "type_enum": 33.3,
+          "type_bool": 93.8,
+          "type_list": 16.7,
+          "type_str": 57.1,
+          "flag_p_norm": 0.0,
+          "flag_r_norm": 0.0,
+          "flag_p": 0.0,
+          "flag_r": 0.0
+        },
+        "semantic": {
+          "overall_pct": 73,
+          "ok": 13,
+          "ok_null": 18,
+          "missed": 6,
+          "wrong": 2,
+          "over_extracted": 3,
+          "type_int": 85.7,
+          "type_enum": 33.3,
+          "type_bool": 93.8,
+          "type_list": 33.3,
+          "type_str": 85.7,
+          "flag_p_norm": 0.0,
+          "flag_r_norm": 0.0,
+          "flag_p": 0.0,
+          "flag_r": 0.0
+        },
+        "key": "key3"
+      }
+    ],
+    "key": "key3"
+  },
+  {
+    "fixture": "upstage",
+    "runs": [
+      {
+        "run": 1,
+        "elapsed_s": 512.2,
+        "tokens": 177409,
+        "grounded": true,
+        "strict": {
+          "overall_pct": 47,
+          "ok": 10,
+          "ok_null": 10,
+          "missed": 2,
+          "wrong": 11,
+          "over_extracted": 9,
+          "type_int": 42.9,
+          "type_enum": 33.3,
+          "type_bool": 68.8,
+          "type_list": 33.3,
+          "type_str": 28.6,
+          "flag_p_norm": 0.0,
+          "flag_r_norm": 0.0,
+          "flag_p": 0.0,
+          "flag_r": 0.0
+        },
+        "semantic": {
+          "overall_pct": 54,
+          "ok": 13,
+          "ok_null": 10,
+          "missed": 2,
+          "wrong": 8,
+          "over_extracted": 9,
+          "type_int": 42.9,
+          "type_enum": 33.3,
+          "type_bool": 68.8,
+          "type_list": 66.7,
+          "type_str": 42.9,
+          "flag_p_norm": 0.0,
+          "flag_r_norm": 0.0,
+          "flag_p": 0.0,
+          "flag_r": 0.0
+        },
+        "key": "key3"
+      }
+    ],
+    "key": "key3"
+  },
+  {
+    "fixture": "toss",
+    "runs": [
+      {
+        "run": 1,
+        "elapsed_s": 291.5,
+        "tokens": 107955,
+        "grounded": true,
+        "strict": {
+          "overall_pct": 64,
+          "ok": 10,
+          "ok_null": 17,
+          "missed": 3,
+          "wrong": 7,
+          "over_extracted": 5,
+          "type_int": 85.7,
+          "type_enum": 66.7,
+          "type_bool": 68.8,
+          "type_list": 66.7,
+          "type_str": 28.6,
+          "flag_p_norm": 0.0,
+          "flag_r_norm": 0.0,
+          "flag_p": 0.0,
+          "flag_r": 0.0
+        },
+        "semantic": {
+          "overall_pct": 73,
+          "ok": 14,
+          "ok_null": 17,
+          "missed": 3,
+          "wrong": 3,
+          "over_extracted": 5,
+          "type_int": 85.7,
+          "type_enum": 66.7,
+          "type_bool": 68.8,
+          "type_list": 83.3,
+          "type_str": 71.4,
+          "flag_p_norm": 0.0,
+          "flag_r_norm": 0.0,
+          "flag_p": 0.0,
+          "flag_r": 0.0
+        },
+        "key": "key3"
+      }
+    ],
+    "key": "key3"
+  }
+]

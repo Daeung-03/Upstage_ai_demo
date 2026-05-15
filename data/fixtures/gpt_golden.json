@@ -1,0 +1,443 @@
+{
+    "_meta": {
+        "service_name": "GPT (OpenAI ChatGPT)",
+        "terms_version": "2025-current (ROW Terms of Use)",
+        "document_source_url": "https://openai.com/policies/row-terms-of-use/",
+        "schema_version": "v0.2",
+        "labeler": "team",
+        "extraction_date": "2026-05-15",
+        "domain": "saas_ai_subscription",
+        "instructions": "각 필드의 'expected' 값을 약관 원문 기준으로 정답으로 편집하세요. model_value/source_quote는 참고용. 정답이 약관에 없으면 null 유지, 모호하면 'AMBIGUOUS'로 기록 후 note 작성. 리스트는 정렬된 형태로 입력. enum 값은 schema/enums.py 참조.",
+        "changelog": [
+            "v0.2 (2026-05-15): GPT 첫 라벨링. OpenAI ROW Terms of Use + Help Center 가이드 결합. Phase B AI SaaS labeling — Claude/Gemini/Upstage/DeepSeek 5-way 비교용."
+        ],
+        "schema_fit_note": "Claude와 유사한 AI SaaS subscription schema. free_trial 부재. cooling_off은 EU/UK/Turkey만 14일 — **한국 거주자에 명시적 cooling-off 없음**(Claude와 차이).",
+        "note": "OpenAI는 OpenAI, L.L.C. (US, 본사 SF). ChatGPT Free/Plus/Pro/Enterprise tier 운영. 본 라벨링은 Consumer ROW Terms 기준. EU 사용자 별도 EU 약관 존재."
+    },
+    "pricing.base_price_krw": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": "약관 본문 가격 미명시. ChatGPT Plus 월 $20, Pro $200 등 별도 pricing 페이지."
+    },
+    "pricing.billing_cycle": {
+        "expected": "monthly",
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "ChatGPT Plus는 월간 기본. 연간 옵션 별도."
+    },
+    "pricing.auto_renewal_enabled": {
+        "expected": true,
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "Subscription fees are billed in advance on a recurring and periodic basis",
+        "source_page": null,
+        "note": "Terms of Use Section on Payments."
+    },
+    "pricing.auto_renewal_consent": {
+        "expected": "opt_out_available",
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "You may cancel your paid subscription at any time.",
+        "source_page": null,
+        "note": "Help Center 명시. 해지 가능 = opt-out."
+    },
+    "pricing.price_change_notice_days": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": "ROW Terms에 가격 변경 사전 통지 일수 명시 없음. EU 약관은 별도 30일 가능."
+    },
+    "pricing.price_change_notice_channels": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": ""
+    },
+    "free_trial.offered": {
+        "expected": false,
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": "ChatGPT Plus 전통적 free trial 부재 (Free tier가 별도 영구 무료). Claude와 동일 패턴."
+    },
+    "free_trial.duration_days": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": ""
+    },
+    "free_trial.auto_convert_to_paid": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": ""
+    },
+    "free_trial.cancel_required_before_end": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": ""
+    },
+    "free_trial.payment_method_required_upfront": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": ""
+    },
+    "free_trial.notice_before_conversion_days": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": ""
+    },
+    "cancellation.method": {
+        "expected": "hybrid",
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "You can cancel your paid subscription at any time. ... For subscriptions made through Apple Subscriptions, cancellations and refunds must be requested directly from Apple.",
+        "source_page": null,
+        "note": "Help Center 명시. 웹: 셀프 해지 / 앱: App Distributor."
+    },
+    "cancellation.method_description": {
+        "expected": "웹 구독: ChatGPT 계정 설정 셀프 해지 / 앱 구독: App Store/Google Play 통해",
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "For subscriptions made through Apple Subscriptions, cancellations and refunds must be requested directly from Apple.",
+        "source_page": null,
+        "note": ""
+    },
+    "cancellation.notice_period_days": {
+        "expected": 0,
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "You can cancel your paid subscription at any time.",
+        "source_page": null,
+        "note": "별도 통지 기간 없음."
+    },
+    "cancellation.penalty_present": {
+        "expected": false,
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "You can cancel your paid subscription at any time.",
+        "source_page": null,
+        "note": "위약금 부재."
+    },
+    "cancellation.penalty_description": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": ""
+    },
+    "cancellation.proration_policy": {
+        "expected": "no_refund",
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "Payments are non-refundable, except where required by law. Additionally, subscription fees are non-refundable.",
+        "source_page": null,
+        "note": "Help Center 명시. 일반 해지는 환불 없음. 단, EU/UK/Turkey는 14일 cooling-off 별도."
+    },
+    "cancellation.blackout_periods": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": ""
+    },
+    "cancellation.cooling_off_refund_days": {
+        "expected": 14,
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "If you live in the EU, UK, or Turkey, you are eligible for a prorated refund if you cancel your subscription within 14 days of purchase.",
+        "source_page": null,
+        "note": "v0.2 신설 필드 — **EU/UK/Turkey 거주자만 14일 cooling-off**. Korea 명시적 제외 — Claude(한국 7일 명시)와 차이. 한국 거주자에 cooling-off 미보장."
+    },
+    "cancellation.cooling_off_conditions": {
+        "expected": "EU/UK/Turkey 거주자 한정 (구입 후 14일 이내)",
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "If you live in the EU, UK, or Turkey, you are eligible for a prorated refund if you cancel your subscription within 14 days of purchase.",
+        "source_page": null,
+        "note": "v0.2 신설 필드 — 거주국 제한 + prorated 환불."
+    },
+    "cancellation.third_party_cancellation_required": {
+        "expected": true,
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "For subscriptions made through Apple Subscriptions, cancellations and refunds must be requested directly from Apple.",
+        "source_page": null,
+        "note": "v0.2 신설 필드 — Apple/Google 인앱 결제 시 해당 마켓 통해 해지 필수."
+    },
+    "terms_changes.notice_channels": {
+        "expected": [
+            "email",
+            "web_notice"
+        ],
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "ROW Terms 표준 — 이메일 + 웹 게시."
+    },
+    "terms_changes.notice_lead_time_days": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": "약관 본문 사전 통지 일수 명시 없음. EU 약관은 별도."
+    },
+    "terms_changes.user_consent_mechanism": {
+        "expected": "silent_acceptance",
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "ROW Terms 표준 — 계속 사용 시 동의 간주."
+    },
+    "terms_changes.user_right_to_terminate_on_change": {
+        "expected": true,
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "표준 SaaS 패턴."
+    },
+    "terms_changes.silent_acceptance_clause": {
+        "expected": true,
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": ""
+    },
+    "terms_changes.price_change_explicit_consent": {
+        "expected": false,
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "v0.2 신설 필드 — 명시적 동의 절차 없음. opt-out 구조."
+    },
+    "data_usage.collected_categories": {
+        "expected": [
+            "account_information",
+            "communications",
+            "content",
+            "payment_information",
+            "technical_data"
+        ],
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "Privacy Policy 별도. 일반 SaaS 카테고리."
+    },
+    "data_usage.third_party_sharing": {
+        "expected": true,
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "Privacy Policy 명시 — service providers, affiliates."
+    },
+    "data_usage.third_party_recipients": {
+        "expected": [
+            "affiliates",
+            "service_providers"
+        ],
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "Privacy Policy 영역."
+    },
+    "data_usage.third_party_purposes": {
+        "expected": [
+            "service_provision"
+        ],
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": ""
+    },
+    "data_usage.retention_period_months": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": "Privacy Policy 별도. 30일~무기한 옵션 등 별도 분석 필요."
+    },
+    "data_usage.marketing_use": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": "Privacy Policy 영역."
+    },
+    "data_usage.marketing_consent": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": ""
+    },
+    "data_usage.cross_border_transfer": {
+        "expected": true,
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": "OpenAI는 US 사업자. 한국 거주자 입장 국외 이전."
+    },
+    "liability.service_disruption_compensation": {
+        "expected": false,
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": "AS IS 표준 패턴."
+    },
+    "liability.compensation_description": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": ""
+    },
+    "liability.damages_cap_present": {
+        "expected": true,
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": "ROW Terms 표준 — $100 또는 12개월 결제액 등 한도 존재. 직접 quote 확보 필요."
+    },
+    "liability.damages_cap_description": {
+        "expected": "12개월 결제액 또는 $100 중 큰 금액 한도 (추정)",
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "ROW Terms 표준 패턴."
+    },
+    "liability.force_majeure_scope": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": ""
+    },
+    "liability.indirect_damages_excluded": {
+        "expected": true,
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": "표준 SaaS — 간접손해 제외."
+    },
+    "disputes.governing_law": {
+        "expected": "California law",
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": "ROW Terms — California law (OpenAI 본사 SF). 한국 거주자는 한국 강행규정 우선."
+    },
+    "disputes.jurisdiction_clause": {
+        "expected": "San Francisco, California (exclusive)",
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "Claude와 유사 패턴."
+    },
+    "disputes.arbitration_required": {
+        "expected": true,
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": "OpenAI Terms는 명시적 강제 중재 조항 보유 (Claude와 차이). JAMS arbitration."
+    },
+    "disputes.class_action_waiver": {
+        "expected": true,
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": "강제 중재 동반 집단소송 포기."
+    },
+    "account.minimum_age": {
+        "expected": 13,
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "v0.2 신설 필드 — OpenAI ROW Terms 표준: 13세 (또는 거주국 최소 연령). 부모 동의 시 미성년 가능."
+    },
+    "account.sharing_restrictions": {
+        "expected": "personal_only",
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": "v0.2 신설 필드 — 계정 공유 금지 표준 조항."
+    },
+    "service.regional_content_restriction": {
+        "expected": true,
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": "v0.2 신설 필드 — Supported regions 제한 존재. 일부 국가 차단."
+    },
+    "service.availability_disclaimer": {
+        "expected": true,
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": "v0.2 신설 필드 — 표준 AS IS 면책."
+    },
+    "unfair_clause_flags": {
+        "expected": [
+            "POST-04",
+            "POST-05",
+            "강제 중재",
+            "면책_손배_제한",
+            "의사표시_의제",
+            "집단소송 포기"
+        ],
+        "model_value": null,
+        "note": "POST-04(면책/손배 제한) + POST-05(silent acceptance) + 강제 중재 + 집단소송 포기. 한국 거주자에 cooling-off 미보장은 **Claude와 큰 차이** (Claude는 한국 7일 명시)."
+    }
+}

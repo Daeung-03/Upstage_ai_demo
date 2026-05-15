@@ -1,0 +1,446 @@
+{
+    "_meta": {
+        "service_name": "Gemini (Google)",
+        "terms_version": "2024-05-22 (Google Terms of Service updated)",
+        "document_source_url": "https://policies.google.com/terms (Google Terms) + https://policies.google.com/terms/generative-ai (deprecated, now under main terms)",
+        "schema_version": "v0.2",
+        "labeler": "team",
+        "extraction_date": "2026-05-15",
+        "domain": "saas_ai_subscription",
+        "instructions": "각 필드의 'expected' 값을 약관 원문 기준으로 정답으로 편집하세요. model_value/source_quote는 참고용. 정답이 약관에 없으면 null 유지, 모호하면 'AMBIGUOUS'로 기록 후 note 작성. 리스트는 정렬된 형태로 입력. enum 값은 schema/enums.py 참조.",
+        "changelog": [
+            "v0.2 (2026-05-15): Gemini 첫 라벨링. 2024-05-22 이후 Google Terms 통합 적용 — Generative AI Additional Terms 폐지. Phase B AI SaaS labeling."
+        ],
+        "schema_fit_note": "Gemini는 Google Workspace 통합 + 독립 앱(Gemini Advanced) 형태. 본 라벨링은 Consumer Gemini Advanced 기준. **Google 통합 약관 적용 → 다른 AI SaaS 대비 약관 분량 막대 + 다른 Google 서비스와 공유**.",
+        "note": "Google LLC (US). Gemini Free, Advanced($19.99/월), Gemini for Workspace 등 운영. **Generative AI Additional Terms는 2024-05-22 이후 폐지** — 일반 Google Terms 적용. 한국 거주자 cooling-off 별도 명시 어려움."
+    },
+    "pricing.base_price_krw": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": "Google Terms 가격 미명시. Gemini Advanced 월 $19.99."
+    },
+    "pricing.billing_cycle": {
+        "expected": "monthly",
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "Gemini Advanced (Google One AI Premium) 월간 기본."
+    },
+    "pricing.auto_renewal_enabled": {
+        "expected": true,
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": "Google One 표준 — 자동 갱신."
+    },
+    "pricing.auto_renewal_consent": {
+        "expected": "opt_out_available",
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": ""
+    },
+    "pricing.price_change_notice_days": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": "Google Terms에 명시적 사전 통지 일수 없음. EU 별도 30일 가능."
+    },
+    "pricing.price_change_notice_channels": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": ""
+    },
+    "free_trial.offered": {
+        "expected": true,
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": "Gemini Advanced 통상 1개월 무료 체험 제공."
+    },
+    "free_trial.duration_days": {
+        "expected": 30,
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": "Google One AI Premium 1개월 무료. 약관 본문에는 미명시(프로모션 별도)."
+    },
+    "free_trial.auto_convert_to_paid": {
+        "expected": true,
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": "Google One 표준 — 체험 종료 시 자동 유료 전환."
+    },
+    "free_trial.cancel_required_before_end": {
+        "expected": true,
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": ""
+    },
+    "free_trial.payment_method_required_upfront": {
+        "expected": true,
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": "Google One 가입 시 결제 수단 사전 등록 필수."
+    },
+    "free_trial.notice_before_conversion_days": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": "체험 종료 사전 알림 의무 미명시."
+    },
+    "cancellation.method": {
+        "expected": "hybrid",
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": "Google One 계정 → 멤버십 관리 (웹/앱). 인앱 결제는 App Distributor."
+    },
+    "cancellation.method_description": {
+        "expected": "Google One 멤버십 페이지에서 셀프 해지 또는 App Distributor (앱 결제)",
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": ""
+    },
+    "cancellation.notice_period_days": {
+        "expected": 0,
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "언제든 해지 가능."
+    },
+    "cancellation.penalty_present": {
+        "expected": false,
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": ""
+    },
+    "cancellation.penalty_description": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": ""
+    },
+    "cancellation.proration_policy": {
+        "expected": "no_refund",
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": "Google One 표준 — 잔여 기간 환불 없음(EU 별도)."
+    },
+    "cancellation.blackout_periods": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": ""
+    },
+    "cancellation.cooling_off_refund_days": {
+        "expected": 14,
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "v0.2 신설 필드 — EU/EEA 14일 cooling-off 표준 (소비자권리 지침). 한국 거주자 명시적 cooling-off 없음."
+    },
+    "cancellation.cooling_off_conditions": {
+        "expected": "EU/EEA 거주자 한정 (14일 이내)",
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "v0.2 신설 필드 — 거주국 제한."
+    },
+    "cancellation.third_party_cancellation_required": {
+        "expected": true,
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": "v0.2 신설 필드 — 앱 결제 시 App Distributor 통해 해지 필수."
+    },
+    "terms_changes.notice_channels": {
+        "expected": [
+            "email",
+            "in_app_banner",
+            "web_notice"
+        ],
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "Google 표준 — 이메일 + 웹/앱 게시."
+    },
+    "terms_changes.notice_lead_time_days": {
+        "expected": 30,
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "Google Terms 표준 — 중대한 변경 30일 사전 통지 일반."
+    },
+    "terms_changes.user_consent_mechanism": {
+        "expected": "silent_acceptance",
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": "Google Terms 표준 — 계속 사용 시 동의 간주."
+    },
+    "terms_changes.user_right_to_terminate_on_change": {
+        "expected": true,
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": ""
+    },
+    "terms_changes.silent_acceptance_clause": {
+        "expected": true,
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": ""
+    },
+    "terms_changes.price_change_explicit_consent": {
+        "expected": false,
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "v0.2 신설 필드 — opt-out 구조."
+    },
+    "data_usage.collected_categories": {
+        "expected": [
+            "account_information",
+            "ai_conversations",
+            "device_information",
+            "location",
+            "payment_information",
+            "usage_data"
+        ],
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": "Google Privacy Policy 광범위 카테고리. AI SaaS 중 가장 광범위."
+    },
+    "data_usage.third_party_sharing": {
+        "expected": true,
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": "Google 광고 생태계 + 계열사 공유."
+    },
+    "data_usage.third_party_recipients": {
+        "expected": [
+            "advertisers",
+            "affiliates",
+            "service_providers"
+        ],
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": "Privacy Policy 명시."
+    },
+    "data_usage.third_party_purposes": {
+        "expected": [
+            "advertising",
+            "service_provision"
+        ],
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": ""
+    },
+    "data_usage.retention_period_months": {
+        "expected": 18,
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "Gemini Apps Activity 기본 18개월 보관. 사용자 설정 변경 가능 (3개월/18개월/36개월/직접삭제)."
+    },
+    "data_usage.marketing_use": {
+        "expected": true,
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": "Google 광고 모델 — 마케팅 활용 광범위."
+    },
+    "data_usage.marketing_consent": {
+        "expected": "opt_out_available",
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": "광고 설정 통한 opt-out 가능."
+    },
+    "data_usage.cross_border_transfer": {
+        "expected": true,
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": "Google US + 글로벌 데이터센터."
+    },
+    "liability.service_disruption_compensation": {
+        "expected": false,
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": "AS IS."
+    },
+    "liability.compensation_description": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": ""
+    },
+    "liability.damages_cap_present": {
+        "expected": true,
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": "Google Terms 표준 — 무료 서비스는 발생 손해 한도. 유료는 12개월 결제액."
+    },
+    "liability.damages_cap_description": {
+        "expected": "유료 서비스: 12개월 결제액 한도. 무료 서비스: 직접 손해만",
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": "Google Terms 표준."
+    },
+    "liability.force_majeure_scope": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": ""
+    },
+    "liability.indirect_damages_excluded": {
+        "expected": true,
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": "표준 SaaS — 간접손해 제외."
+    },
+    "disputes.governing_law": {
+        "expected": "California law",
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": "Google US Terms — California law (한국 거주자 강행규정 별도)."
+    },
+    "disputes.jurisdiction_clause": {
+        "expected": "Santa Clara County, California",
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": "Google US 본사 위치."
+    },
+    "disputes.arbitration_required": {
+        "expected": "AMBIGUOUS",
+        "model_value": null,
+        "model_uncertainty": "ambiguous",
+        "source_quote": "",
+        "source_page": null,
+        "note": "Google Terms는 일부 국가/제품별 중재 조항 별도. Consumer Gemini는 명시적 강제 중재 부재 추정."
+    },
+    "disputes.class_action_waiver": {
+        "expected": false,
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": ""
+    },
+    "account.minimum_age": {
+        "expected": 18,
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": "v0.2 신설 필드 — Gemini Advanced 18세 이상. 일부 Gemini for Workspace 학생 13세+ 별도."
+    },
+    "account.sharing_restrictions": {
+        "expected": "personal_only",
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": "v0.2 신설 필드 — Google 계정 1인 1계정 표준."
+    },
+    "service.regional_content_restriction": {
+        "expected": true,
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": "v0.2 신설 필드 — 국가별 Gemini 가용성 차이 (예: EU 일부 기능 제한)."
+    },
+    "service.availability_disclaimer": {
+        "expected": true,
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": "v0.2 신설 필드 — Google Terms 표준 AS IS."
+    },
+    "unfair_clause_flags": {
+        "expected": [
+            "POST-04",
+            "POST-05",
+            "광범위 광고 활용",
+            "면책_손배_제한",
+            "의사표시_의제"
+        ],
+        "model_value": null,
+        "note": "POST-04(면책/손배) + POST-05(silent acceptance) + 광고 생태계 통한 광범위 데이터 활용. 한국 거주자 명시적 cooling-off 부재."
+    }
+}

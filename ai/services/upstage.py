@@ -22,11 +22,12 @@ class UpstageClient:
     MAX_RETRIES = 3
     RETRY_BACKOFF_S = 0.5
 
-    def __init__(self, settings: Settings, timeout_s: float = 300.0):
+    def __init__(self, settings: Settings, timeout_s: float = 300.0, api_key: str | None = None):
         self.settings = settings
+        self.api_key = api_key or settings.upstage_api_key
         self._client = httpx.AsyncClient(
             base_url=settings.upstage_base_url,
-            headers={"Authorization": f"Bearer {settings.upstage_api_key}"},
+            headers={"Authorization": f"Bearer {self.api_key}"},
             timeout=timeout_s,
         )
         # 호출별 usage 누적 — 파이프라인이 단계별로 snapshot_usage()로 빼간다.

@@ -1,0 +1,444 @@
+{
+    "_meta": {
+        "service_name": "Coupang Play",
+        "terms_version": "2026-current",
+        "document_source_url": "https://www.coupangplay.com/tac (이용 기준) + https://www.coupangplay.com/tac/tvod (유료서비스 이용 약관) + https://www.coupang.com/np/policies/terms (모회사 쿠팡 이용약관)",
+        "schema_version": "v0.3",
+        "labeler": "team",
+        "extraction_date": "2026-05-15",
+        "instructions": "각 필드의 'expected' 값을 약관 원문 기준으로 정답으로 편집하세요. model_value/source_quote는 참고용. 정답이 약관에 없으면 null 유지, 모호하면 'AMBIGUOUS'로 기록 후 note 작성. 리스트는 정렬된 형태로 입력. enum 값은 schema/enums.py 참조.",
+        "changelog": [
+            "v0.2 (2026-05-13): Coupang Play 첫 라벨링. 쿠팡플레이는 (1) 와우 멤버십 부속 서비스 / (2) 별도 패스(스포츠패스 등) 두 형태 운영. **약관 페이지가 region-block(미국 IP 차단)으로 직접 접근 불가** — 검색 결과·고객 가이드·뉴스 보도 기반 라벨링. 보수적 'inferred' 표기 적극 활용.",
+            "v0.3 (2026-05-15): 통합 fixture(쿠팡 이용 약관 40조 + 쿠팡플레이 이용 기준 19조 + 와우 멤버십 약관 11조, 64KB)를 정본으로 재라벨링. 기존 v0.2는 21KB iframe 본문만 기준이라 다수 필드를 None으로 라벨링했으나, 통합본은 본문에 명시. 11개 필드 expected 갱신 + source_quote 정확 인용으로 교체."
+        ],
+        "note": "쿠팡플레이는 쿠팡(주) 자체 서비스. (1) 와우 멤버십에 포함되는 형태 / (2) 쿠팡플레이 패스(예: 스포츠패스) 별도 결제 형태. 본 라벨링은 (2) 유료서비스 이용약관 기준. 모회사 쿠팡 일반 약관(coupang.com/np/policies/terms) 일부 조항 준용. **본 라벨링은 약관 직접 fetch 불가로 간접 인용 기반** — PDF/스크린샷 확보 시 source_quote 정밀화 권장. 2025년 12월 공정위 면책 조항 조사 사례 별도 참조."
+    },
+    "pricing.base_price_krw": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": "약관 본문에 가격 명시 없음. 쿠팡플레이는 와우 멤버십(월 7,890원) 포함 또는 패스(스포츠패스 등 4,990원~) 별도."
+    },
+    "pricing.billing_cycle": {
+        "expected": "monthly",
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": "월 단위 정기결제 기본. (원문 인용 오염 제거)"
+    },
+    "pricing.auto_renewal_enabled": {
+        "expected": true,
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": "유료서비스 이용약관 — 자동결제 명시. (원문 인용 오염 제거)"
+    },
+    "pricing.auto_renewal_consent": {
+        "expected": "opt_in_explicit",
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": "동의한다 명시 (원문 인용 오염 제거)"
+    },
+    "pricing.price_change_notice_days": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "회사가 약관을 개정할 경우에는 적용 일자 및 개정 사유를 명시해 현행 약관과 함께 사이버몰의 화면에 그 적용일자 7일(다만, 회원에게 불리한 내용으로 변경하는 경우에는 30일) 이전부터 적용일자 전일까지 공지한다",
+        "source_page": null,
+        "note": "쿠팡 일반 이용약관 제3조. 30일은 불리한 약관 변경용이며 요금 변경 통지일수 명시 없음."
+    },
+    "pricing.price_change_notice_channels": {
+        "expected": [
+            "email",
+            "in_app_banner"
+        ],
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "사이버몰의 화면에 ... 공지",
+        "source_page": null,
+        "note": "쿠팡 일반 약관 — 사이버몰 화면(in_app_banner) + 이메일 통상 적용."
+    },
+    "free_trial.offered": {
+        "expected": true,
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "체험 혜택 기간 부여: 별도의 이용료를 지불하지 않거나, 할인된 이용료를 지불하고 본 서비스의 전부 또는 일부를 이용할 수 있는 혜택",
+        "source_page": null,
+        "note": "와우 멤버십 약관 제3조 ② 1 — 체험 혜택 기간 명시. v0.2 not_specified → v0.3 명시."
+    },
+    "free_trial.duration_days": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": ""
+    },
+    "free_trial.auto_convert_to_paid": {
+        "expected": true,
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "무료로 본 서비스의 전부 또는 일부를 이용 중인 대상회원의 경우, 해당 기간 동안에 한하여 본 회원에 준하는 것으로 보며, 본 약관 및 이용료 결제 등에 동의함으로써 본 회원이 된다.",
+        "source_page": null,
+        "note": "와우 멤버십 약관 제4조 ③ — 체험 → 유료 자동 전환 명시."
+    },
+    "free_trial.cancel_required_before_end": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": ""
+    },
+    "free_trial.payment_method_required_upfront": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": ""
+    },
+    "free_trial.notice_before_conversion_days": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": ""
+    },
+    "cancellation.method": {
+        "expected": "online",
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": "유료서비스 이용약관 — 앱/웹 설정 메뉴 자동 해지. Tving과 달리 단일 채널. (오염 제거)"
+    },
+    "cancellation.method_description": {
+        "expected": "설정 > 구독관리 (앱/웹) 또는 앱스토어 구독관리",
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "",
+        "source_page": null,
+        "note": ""
+    },
+    "cancellation.notice_period_days": {
+        "expected": 0,
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "별도 통지 기간 없음. 신청 시 즉시 또는 결제 주기 종료 시 효력."
+    },
+    "cancellation.penalty_present": {
+        "expected": false,
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "한국 OTT 일반 패턴. 위약금 조항 없음."
+    },
+    "cancellation.penalty_description": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": ""
+    },
+    "cancellation.proration_policy": {
+        "expected": "no_refund",
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "결제 후 콘텐츠를 한 번이라도 시청하면 환불 및 청약철회가 불가능합니다.",
+        "source_page": null,
+        "note": "유료서비스 이용약관 — **Tving/Wavve의 일할 계산과 달리 시청 시 환불 불가**. Netflix/Spotify와 유사한 엄격 정책. 한국 OTT 중 가장 사용자 불리한 환불 정책."
+    },
+    "cancellation.blackout_periods": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": ""
+    },
+    "cancellation.cooling_off_refund_days": {
+        "expected": 7,
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "결제 후 콘텐츠를 시청하지 않은 경우에는 이용요금을 결제한 해당 구독 기간 내 청약철회가 가능합니다.",
+        "source_page": null,
+        "note": "v0.2 신설 필드 — 유료서비스 이용약관. 결제 후 7일 + 미시청 조건. 콘텐츠 1회 시청 시 권리 소멸."
+    },
+    "cancellation.cooling_off_conditions": {
+        "expected": "콘텐츠 미시청",
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "결제 후 콘텐츠를 한 번이라도 시청하면 환불 및 청약철회가 불가능합니다.",
+        "source_page": null,
+        "note": "v0.2 신설 필드 — 시청 1회 시 권리 소멸. 가장 엄격한 cooling-off 조건."
+    },
+    "cancellation.third_party_cancellation_required": {
+        "expected": true,
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "iOS 인앱결제로 결제한 경우 각 스토어를 통해 직접 패스 해지를 신청해야 합니다.",
+        "source_page": null,
+        "note": "v0.2 신설 필드 — iOS 인앱결제 시 별도 채널 해지 필수. 명시적 조항 존재."
+    },
+    "terms_changes.notice_channels": {
+        "expected": [
+            "email",
+            "in_app_banner"
+        ],
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "사이버몰의 화면에 ... 공지",
+        "source_page": null,
+        "note": "쿠팡 일반 약관 — 사이버몰 화면(in_app_banner). 이메일은 통상 추가 적용."
+    },
+    "terms_changes.notice_lead_time_days": {
+        "expected": 7,
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "그 적용일자 7일(다만, 회원에게 불리한 내용으로 변경하는 경우에는 30일) 이전부터 적용일자 전일까지 공지",
+        "source_page": null,
+        "note": "쿠팡 일반 약관 제3조. 일반 7일, 불리한 변경 30일. **2025년 쿠팡이 면책 조항 공지 기간을 30→7일 단축한 사례로 여론 악화 → 대표이사 사임까지 이어진 이슈 존재**."
+    },
+    "terms_changes.user_consent_mechanism": {
+        "expected": "deemed_agreed",
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "쿠팡 일반 약관 표준 — deemed_agreed 조항 존재 추정."
+    },
+    "terms_changes.user_right_to_terminate_on_change": {
+        "expected": true,
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "한국 약관 표준."
+    },
+    "terms_changes.silent_acceptance_clause": {
+        "expected": true,
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "쿠팡 일반 약관 표준 — silent acceptance 추정. 직접 quote 확보 필요."
+    },
+    "terms_changes.price_change_explicit_consent": {
+        "expected": true,
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "v0.2 신설 필드 — 별도 새로운 동의"
+    },
+    "data_usage.collected_categories": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": "이용약관 본문 명시 없음. 쿠팡 통합 개인정보처리방침 별도 참조 필요."
+    },
+    "data_usage.third_party_sharing": {
+        "expected": true,
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "회사는 다음과 같은 경우에 법이 허용하는 범위 내에서 회원의 개인정보를 제3자에게 제공할 수 있습니다.",
+        "source_page": null,
+        "note": "쿠팡 이용 약관 제13조 ⑪ — 수사기관/판매자/배송업체 등에 제공 가능 명시."
+    },
+    "data_usage.third_party_recipients": {
+        "expected": [
+            "law_enforcement",
+            "sellers",
+            "shipping_carriers"
+        ],
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "1. 수사기관이나 기타 정부기관... 3. 판매자 또는 배송업체 등에게 거래 및 배송 등에 필요한 최소한의 회원의 정보(성명, 주소, 전화번호)를 제공하는 경우",
+        "source_page": null,
+        "note": "쿠팡 이용 약관 제13조 ⑪. 법령 + 부정행위 확인 + 거래/배송 + 반품·교환·환불 등 5개 카테고리 중 상위 3개."
+    },
+    "data_usage.third_party_purposes": {
+        "expected": [
+            "law_enforcement",
+            "transaction_fulfillment",
+            "fraud_prevention"
+        ],
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "정보제공을 요청 받은 경우 ... 부정행위를 확인하기 위해 필요한 경우 ... 거래 및 배송 등에 필요한 ... 반품, 교환, 환불, 취소 등을 위하여 필요한 경우",
+        "source_page": null,
+        "note": "쿠팡 이용 약관 제13조 ⑪. 수사/부정행위 확인/거래·배송 목적."
+    },
+    "data_usage.retention_period_months": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": ""
+    },
+    "data_usage.marketing_use": {
+        "expected": true,
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "회사는 서비스의 운영과 관련하여 서비스 화면 등에 광고를 게재할 수 있습니다.",
+        "source_page": null,
+        "note": "쿠팡 이용 약관 제9조 ② — 광고 게재 가능 + 제10조 ③ 광고성 전자우편 발송 가능."
+    },
+    "data_usage.marketing_consent": {
+        "expected": "opt_out_available",
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "회사는 회원이 동의하지 않는 영리목적의 광고성 전자우편, 앱푸쉬 등을 발송하지 않습니다.",
+        "source_page": null,
+        "note": "쿠팡 이용 약관 제10조 ③ — 회원의 수신 거절 가능."
+    },
+    "data_usage.cross_border_transfer": {
+        "expected": false,
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "본 서비스는 대한민국에서만 이용 가능하고, 이용자가 대한민국 외에서 접속할 경우 본 서비스 이용이 제한됩니다.",
+        "source_page": null,
+        "note": "쿠팡플레이 이용 기준 제8조 — 한국 전용 서비스. 국외 이전 명시 없음."
+    },
+    "liability.service_disruption_compensation": {
+        "expected": true,
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "회사는 제1항의 사유로 서비스의 제공이 일시적으로 중단됨으로 인하여 회원이 입은 손해에 대하여 배상합니다. 단, 회사가 고의 또는 과실이 없음을 입증하는 경우에는 그러하지 아니합니다.",
+        "source_page": null,
+        "note": "쿠팡 이용 약관 제5조 ② — 회원 손해 배상 명시. 단 회사 무과실 입증 시 면책 (예외 조건). v0.2 inferred(False) → v0.3 명시(True)로 정정."
+    },
+    "liability.compensation_description": {
+        "expected": "서비스 중단으로 회원이 입은 손해에 대해 배상 (회사 무과실 입증 시 면책)",
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "회사는 제1항의 사유로 서비스의 제공이 일시적으로 중단됨으로 인하여 회원이 입은 손해에 대하여 배상합니다. 단, 회사가 고의 또는 과실이 없음을 입증하는 경우에는 그러하지 아니합니다.",
+        "source_page": null,
+        "note": "쿠팡 이용 약관 제5조 ②. 통합 fixture 기준 정확 표현."
+    },
+    "liability.damages_cap_present": {
+        "expected": false,
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "한국 OTT 일반 — 손해배상 한도 명시 없음. 2025년 공정위 조사로 일부 면책 조항 수정 권고됨."
+    },
+    "liability.damages_cap_description": {
+        "expected": null,
+        "model_value": null,
+        "model_uncertainty": "not_specified",
+        "source_quote": "",
+        "source_page": null,
+        "note": ""
+    },
+    "liability.force_majeure_scope": {
+        "expected": "천재지변 또는 이에 준하는 불가항력, 컴퓨터 등 정보통신설비의 보수점검·교체, 고장, 통신의 두절 등의 사유",
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "회사는 천재지변 또는 이에 준하는 불가항력, 컴퓨터 등 정보통신설비의 보수점검·교체, 고장, 통신의 두절 등의 사유가 발생한 경우에는 서비스의 제공을 일시적으로 중단할 수 있습니다.",
+        "source_page": null,
+        "note": "쿠팡 이용 약관 제5조 ①. v0.2 inferred → v0.3 정확 quote로 교체."
+    },
+    "liability.indirect_damages_excluded": {
+        "expected": true,
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "회사는 회원이 서비스를 이용하여 기대하는 수익을 상실한 것에 대하여 책임을 지지 않으며, 그 밖의 서비스를 통하여 얻은 자료로 인한 손해에 관하여 책임을 지지 않습니다.",
+        "source_page": null,
+        "note": "쿠팡 이용 약관 제38조 ③ — 기대 수익 상실 등 간접 손해 면책 명시."
+    },
+    "disputes.governing_law": {
+        "expected": "대한민국 법률",
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "쿠팡(주)은 한국 사업자. 한국 법률 표준 적용."
+    },
+    "disputes.jurisdiction_clause": {
+        "expected": "민사소송법상 관할법원",
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "분쟁이 발생한 경우, 회사와 이용자 상호 협의를 통해 해결하는 것을 원칙으로 하되, 협의에 의하여 해결되지 아니할 경우에는 통상의 민사재판에 의하며, 이 경우 민사소송법상의 관할법원에 소를 제기합니다.",
+        "source_page": null,
+        "note": "쿠팡 일반 약관 — 민사소송법 관할 적용. Wavve(회원 주소 전속)·Netflix(서울 배타)와 다름."
+    },
+    "disputes.arbitration_required": {
+        "expected": false,
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "약관에 중재 조항 없음."
+    },
+    "disputes.class_action_waiver": {
+        "expected": false,
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "약관에 집단소송 포기 조항 없음. 실제로 쿠팡 대상 집단소송 진행 중 사례 있음."
+    },
+    "account.minimum_age": {
+        "expected": 19,
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "v0.2 신설 필드 — 한국 OTT 표준. 유료서비스 19세 미만은 법정대리인 동의 필요."
+    },
+    "account.sharing_restrictions": {
+        "expected": "household_only",
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "v0.2 신설 필드 — 쿠팡플레이는 와우 멤버십 단위 또는 패스 단위 이용. 가구 외 공유 제한 일반적."
+    },
+    "service.regional_content_restriction": {
+        "expected": true,
+        "model_value": null,
+        "model_uncertainty": "confirmed",
+        "source_quote": "Sorry, Coupang Play is not available in your region",
+        "source_page": null,
+        "note": "v0.2 신설 필드 — **국가별 접근 차단 명시적 확인** (US IP에서 region-block 발생). 한국 외 지역 접근 불가."
+    },
+    "service.availability_disclaimer": {
+        "expected": true,
+        "model_value": null,
+        "model_uncertainty": "inferred",
+        "source_quote": "",
+        "source_page": null,
+        "note": "v0.2 신설 필드 — 한국 OTT 표준. 콘텐츠 라이선스 변경 등 임의 제거 가능."
+    },
+    "unfair_clause_flags": {
+        "expected": [
+            "POST-01",
+            "POST-03",
+            "POST-04",
+            "POST-05",
+            "면책/손배 제한",
+            "약관 일방 변경권",
+            "의사표시_의제",
+            "환불 거부 (시청 시 청약철회 권리 소멸)"
+        ],
+        "model_value": null,
+        "note": "POST-03(환불 거부) — 시청 1회 시 청약철회 권리 소멸은 가장 엄격한 환불 정책. POST-04(면책/손배) — 2025년 공정위 조사 대상이었던 정보 유출 면책 조항. POST-05(silent acceptance) + POST-01(약관 일방 변경권) + 2025년 면책조항 공지 기간 30→7일 단축 시도로 여론 악화 사례 별도 참조."
+    }
+}
