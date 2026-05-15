@@ -3,14 +3,24 @@ from __future__ import annotations
 import logging
 import time
 import json
-from typing import Any
+from typing import Literal, Any
 
 from pydantic import BaseModel, Field
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ai.schemas.subscription import SubscriptionTerms
+<<<<<<< Updated upstream
 from ai.services.extract import extract_subscription_with_voting
+=======
+from ai.schemas.finance import FinanceTerms
+from ai.schemas.insurance import InsuranceTerms 
+from ai.services.extract import (
+    extract_finance_with_voting,
+    extract_insurance_with_voting,
+    extract_subscription_with_voting,
+)
+>>>>>>> Stashed changes
 from ai.services.ground import check_groundedness
 from ai.services.parse import parse_document
 from ai.services.summarize import KeyClause, summarize_risks
