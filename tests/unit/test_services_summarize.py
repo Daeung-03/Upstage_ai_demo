@@ -25,7 +25,13 @@ def settings(sample_api_key, sample_base_url):
 
 
 def _fv(v, u=Uncertainty.CONFIRMED, page=1, quote="...", pain_point_id=None):
-    return FieldValue(value=v, uncertainty=u, citation=Citation(page=page, quote=quote, pain_point_id=pain_point_id))
+    """FieldValue dict — Pydantic v2 generic invariant 회피."""
+    u_str = u.value if hasattr(u, "value") else u
+    return {
+        "value": v,
+        "uncertainty": u_str,
+        "citation": {"page": page, "quote": quote, "pain_point_id": pain_point_id},
+    }
 
 
 @pytest.fixture

@@ -124,17 +124,27 @@ async def test_parse_document_raises_on_empty_response(httpx_mock, settings):
             await parse_document(client, file_bytes=b"", filename="empty.pdf")
 
 
-async def test_parse_document_uses_html_mime_for_html_files(httpx_mock, settings):
-    """HTML 파일은 application/pdf가 아닌 text/html로 전송되어야 함."""
-    httpx_mock.add_response(
-        url=f"{settings.upstage_base_url}/document-digitization",
-        json={"content": {"markdown": "# Terms"}, "elements": []},
-    )
+async def test_parse_document_html_short_circuits_without_http(httpx_mock, settings):
+    """HTML 파일은 Document Parse API 를 거치지 않고 로컬 HTMLParser 로 직접 추출 —
+    HTTP 호출 0번, ParsedElement 1 개 (전체 markdown, page=1, bbox=None) 반환.
+
+    Round 2 이후 정책: Document Parse 가 HTML 입력에 415 Unsupported 를 반환 +
+    HTML 은 이미 구조화돼서 OCR/layout 불필요라 우회.
+    """
     async with UpstageClient(settings) as client:
-        await parse_document(client, file_bytes=b"<html><body>terms</body></html>", filename="terms.html")
-    req = httpx_mock.get_request()
-    body = req.content.decode("utf-8", errors="ignore")
-    assert "text/html" in body
+        result = await parse_document(
+            client,
+            file_bytes="<html><body><p>약관 본문</p></body></html>".encode("utf-8"),
+            filename="terms.html",
+        )
+    # HTTP 호출 없음
+    assert httpx_mock.get_requests() == []
+    # 텍스트 추출 + 단일 element
+    assert "약관 본문" in result.markdown
+    assert len(result.elements) == 1
+    assert result.elements[0].page == 1
+    assert result.elements[0].bbox is None
+    assert "약관 본문" in result.elements[0].text
 
 
 async def test_parse_document_mode_parameter_passes_through(httpx_mock, settings):

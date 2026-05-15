@@ -26,7 +26,8 @@ class _FakeClient:
 
 
 def _fv(v, page=1, quote="..."):
-    return FieldValue(value=v, uncertainty=Uncertainty.CONFIRMED, citation=Citation(page=page, quote=quote))
+    """FieldValue dict — Pydantic v2 generic invariant 회피."""
+    return {"value": v, "uncertainty": "confirmed", "citation": {"page": page, "quote": quote}}
 
 
 def _build_terms() -> SubscriptionTerms:
@@ -91,10 +92,10 @@ async def test_run_pipeline_invokes_each_stage_in_order(monkeypatch):
         call_order.append("ground")
         return ground
 
-    monkeypatch.setattr("services.pipeline.parse_document", fake_parse)
-    monkeypatch.setattr("services.pipeline.extract_subscription_with_voting", fake_extract)
-    monkeypatch.setattr("services.pipeline.summarize_risks", fake_summarize)
-    monkeypatch.setattr("services.pipeline.check_groundedness", fake_ground)
+    monkeypatch.setattr("ai.pipeline.parse_document", fake_parse)
+    monkeypatch.setattr("ai.pipeline.extract_subscription_with_voting", fake_extract)
+    monkeypatch.setattr("ai.pipeline.summarize_risks", fake_summarize)
+    monkeypatch.setattr("ai.pipeline.check_groundedness", fake_ground)
 
     fake_client = _FakeClient()
     result = await run_pipeline(
@@ -133,10 +134,10 @@ async def test_run_pipeline_aggregates_token_usage_per_stage(monkeypatch):
     async def fake_summarize(client, *, terms): return summary
     async def fake_ground(client, *, summary, source_markdown): return ground
 
-    monkeypatch.setattr("services.pipeline.parse_document", fake_parse)
-    monkeypatch.setattr("services.pipeline.extract_subscription_with_voting", fake_extract)
-    monkeypatch.setattr("services.pipeline.summarize_risks", fake_summarize)
-    monkeypatch.setattr("services.pipeline.check_groundedness", fake_ground)
+    monkeypatch.setattr("ai.pipeline.parse_document", fake_parse)
+    monkeypatch.setattr("ai.pipeline.extract_subscription_with_voting", fake_extract)
+    monkeypatch.setattr("ai.pipeline.summarize_risks", fake_summarize)
+    monkeypatch.setattr("ai.pipeline.check_groundedness", fake_ground)
 
     # 첫 snapshot_usage()는 reset(빈 리스트)
     # 그 후 parse → 1 호출, extract → 1 호출, summarize → 1 호출, ground → 2 호출(2개 클로즈)

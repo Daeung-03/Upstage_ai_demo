@@ -91,7 +91,7 @@ async def test_retry_does_not_sleep_after_final_attempt(httpx_mock, settings, mo
     async def fake_sleep(seconds: float) -> None:
         sleep_calls.append(seconds)
 
-    monkeypatch.setattr("services.upstage.asyncio.sleep", fake_sleep)
+    monkeypatch.setattr("ai.services.upstage.asyncio.sleep", fake_sleep)
 
     async with UpstageClient(settings) as client:
         with pytest.raises(httpx.HTTPStatusError):
