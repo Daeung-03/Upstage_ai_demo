@@ -31,7 +31,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pytest pytest-asyncio
+          pip install pytest pytest-asyncio pytest-httpx
 
       # 살아있는 단위 테스트만 실행. 파이프라인 리팩 이전의 stale 테스트
       # (test_routes_terms, test_services_pipeline, test_services_voting 등)
