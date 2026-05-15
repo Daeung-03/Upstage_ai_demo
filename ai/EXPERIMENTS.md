@@ -25,24 +25,24 @@
 | **Config** | Solar Pro 3, extract N=2 medium, summarize=high, ground=medium, prompt #1 |
 | **Scope** | 15 fixture (OTT 7 + AI 5 + Fintech 3) |
 | **방법론** | **Trimmed mean** (drop min/max from each fixture's measurements) |
-| **Source measurements** | 10 JSON × 15 fixture × N=2 inner = 236 individual measurements (2026-05-15 01:45 ~ 18:00) |
-| **Strict avg (trimmed)** | **57.3%** |
-| **Semantic avg (trimmed)** | **63.6%** |
-| **Per-fixture best (strict)** | netflix 72.9% (semantic 78.1%) — trimmed |
-| **Per-fixture worst** | gemini 39.9% strict / 44.2% semantic |
-| **Latency avg / fixture** | ~565s |
-| **Tokens avg / fixture** | ~150K |
-| **Date** | 2026-05-15 22:24 (집계) |
-| **Source** | [`data/experiments/trimmed_mean_drop1_20260515_222419.md`](../data/experiments/trimmed_mean_drop1_20260515_222419.md) |
+| **Source measurements** | 12 JSON × 15 fixture × N=2 inner = 311 individual measurements (2026-05-15 01:45 ~ 23:47) |
+| **Strict avg (trimmed)** | **57.1%** |
+| **Semantic avg (trimmed)** | **63.3%** |
+| **Per-fixture best (strict)** | netflix 71.9% (semantic 77.2%) — trimmed |
+| **Per-fixture worst** | gemini 40.3% strict / 44.5% semantic |
+| **Latency avg / fixture** | ~509s |
+| **Tokens avg / fixture** | ~145K |
+| **Date** | 2026-05-15 23:47 (집계) |
+| **Source** | [`data/experiments/trimmed_mean_drop1_20260515_234743.md`](../data/experiments/trimmed_mean_drop1_20260515_234743.md) |
 | **Aggregator** | [`scripts/aggregate_trimmed_mean.py`](../scripts/aggregate_trimmed_mean.py) `--trim drop1` |
 
-**선정 사유**: 이전 winner 보고치 (55.3 / 60.5) 는 단일 run 측정으로, 같은 config 의 자연 분산 (±10%p) 한쪽 꼬리에 가까웠음. 동일 config 10번 측정의 trimmed mean (236 measurements) 이 통계적으로 정직한 baseline. backend 부하 변동까지 시간대별로 자연 평균됨.
+**선정 사유**: 이전 winner 보고치 (55.3 / 60.5) 는 단일 run 측정으로, 같은 config 의 자연 분산 (±10%p) 한쪽 꼬리에 가까웠음. 동일 config 12번 측정의 trimmed mean (311 measurements) 이 통계적으로 정직한 baseline. backend 부하 변동까지 시간대별로 자연 평균됨. 10 JSON → 12 JSON 추가 시 strict 57.25 → 57.14 로 ±0.4%p 안에서 변동 — **baseline robustness 확인**.
 
 **도메인별 trimmed mean**:
-- Fintech (kakaopay 68.6 / toss 66.0 / banksalad 58.3): strict avg **64.3%**, semantic **70.6%** — 도메인 최고
-- OTT (netflix 72.9 / spotify 63.5 / wavve 63.6 / disney_plus 60.1 / tving 57.0 / watcha 52.4 / coupang_play 48.5): strict **59.7%**, semantic **66.9%**
-- AI 영문 (gpt 55.3 / deepseek 51.6): strict **53.5%**, semantic **57.3%**
-- AI 한국어 (claude 55.1 / upstage 45.9 / gemini 39.9): strict **47.0%**, semantic **53.1%** — 가장 낮음, schema-fit 가설 (AI 약관 필드가 OTT-shaped 7섹션에 안 들어맞음) 검증 후보.
+- Fintech (kakaopay 68.1 / toss 65.3 / banksalad 58.3): strict avg **63.9%**, semantic **70.1%** — 도메인 최고
+- OTT (netflix 71.9 / spotify 64.5 / wavve 62.0 / disney_plus 59.2 / tving 57.3 / watcha 51.2 / coupang_play 47.2): strict **59.0%**, semantic **66.1%**
+- AI 영문 (gpt 56.3 / deepseek 53.2): strict **54.8%**, semantic **58.3%**
+- AI 한국어 (claude 56.0 / upstage 46.3 / gemini 40.3): strict **47.5%**, semantic **53.1%** — 가장 낮음, schema-fit 가설 (AI 약관 필드가 OTT-shaped 7섹션에 안 들어맞음) 검증 후보.
 
 ---
 
@@ -52,7 +52,8 @@
 
 | Date | Scope | Config | Strict | Semantic | Latency (s) | Tokens | Grounded | Detail |
 |---|---|---|---|---|---|---|---|---|
-| **2026-05-15 22:24** | **15 fixtures, 10 runs trimmed mean (236 measurements)** | **BC + prompt #1, N=2 medium** | **57.3% trim** | **63.6% trim** | ~565 | ~150K | — | [trimmed_mean_drop1_20260515_222419.md](../data/experiments/trimmed_mean_drop1_20260515_222419.md) |
+| **2026-05-15 23:47** | **15 fixtures, 12 runs trimmed mean (311 measurements)** | **BC + prompt #1, N=2 medium** | **57.1% trim** | **63.3% trim** | ~509 | ~145K | — | [trimmed_mean_drop1_20260515_234743.md](../data/experiments/trimmed_mean_drop1_20260515_234743.md) — 최종 |
+| 2026-05-15 22:24 | 15 fixtures, 10 runs (236 measurements) | BC + prompt #1, N=2 medium | 57.3% trim | 63.6% trim | ~565 | ~150K | — | [trimmed_mean_drop1_20260515_222419.md](../data/experiments/trimmed_mean_drop1_20260515_222419.md) — A1/A2 추가 전 |
 | 2026-05-15 | 12 fixtures × 2 runs (single shot) | BC + prompt #1, N=2 medium | 55.3% avg | 60.5% avg | ~800 | ~198K | 12.5% | [all_fixtures_20260515_180018.md](../data/experiments/all_fixtures_20260515_180018.md) — *trimmed mean 의 1 sample 에 해당, 별도 winner 아님* |
 | 2026-05-14 | Netflix only, 3 rounds, 23 runs | **G: N=2 medium, prompt mini-fix** | 71.6% (max 80%) | – | 222 | 70K | – | [aggregate_summary.md](../data/experiments/aggregate_summary.md) |
 
