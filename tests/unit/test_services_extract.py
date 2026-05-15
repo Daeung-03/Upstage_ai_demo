@@ -5,7 +5,11 @@ import pytest
 from ai.schemas.common import Uncertainty
 from ai.schemas.enums import BillingCycle, ConsentMechanism
 from ai.schemas.subscription import SubscriptionTerms
-from ai.services.extract import extract_subscription, extract_subscription_with_voting
+from ai.services.extract import (
+    _find_element_for_quote,
+    extract_subscription,
+    extract_subscription_with_voting,
+)
 from ai.services.parse import ParsedElement
 from ai.services.settings import Settings
 from ai.services.upstage import UpstageClient
@@ -119,3 +123,36 @@ async def test_extract_with_voting_rejects_n_below_one(settings, bad_n):
                 client, parsed_markdown="...", parsed_elements=[],
                 service_name="X", service_provider="Y", n=bad_n,
             )
+
+
+def test_find_element_for_quote_skips_empty_text_elements():
+    """회귀 가드: elem.text=='' 인 element가 첫 자리에 있어도 매칭되면 안 된다.
+
+    이전 버그: step 3 의 `en in qn` 이 en=='' 일 때 항상 True 라 모든 quote 가
+    첫 번째 빈 element 의 bbox 로 매핑되어, 다른 페이지/위치의 citation 들이
+    전부 동일한 좌측 상단 헤더 좌표를 가지게 되었다.
+    """
+    elements = [
+        # 빈 텍스트 (Upstage 응답이 content.text 가 항상 "" 인 경우)
+        ParsedElement(id=0, page=1, category="header", text="", bbox=(0.0, 0.0, 0.1, 0.1)),
+        ParsedElement(id=1, page=1, category="paragraph", text="", bbox=(0.2, 0.2, 0.3, 0.3)),
+        # 진짜 매칭돼야 할 element
+        ParsedElement(
+            id=2, page=3, category="paragraph",
+            text="구독 기간의 일부 또는 이용하지 않은 콘텐츠에 대한 환불은 제공되지 않습니다.",
+            bbox=(0.5, 0.5, 0.9, 0.6),
+        ),
+    ]
+    match = _find_element_for_quote("환불은 제공되지 않습니다.", page=3, elements=elements)
+    assert match is not None
+    assert match.id == 2
+    assert match.bbox == (0.5, 0.5, 0.9, 0.6)
+
+
+def test_find_element_for_quote_returns_none_when_all_empty():
+    """매칭 후보가 전혀 없으면 잘못된 fallback 대신 None."""
+    elements = [
+        ParsedElement(id=0, page=1, category="header", text="", bbox=(0.0, 0.0, 0.1, 0.1)),
+        ParsedElement(id=1, page=1, category="paragraph", text="", bbox=(0.2, 0.2, 0.3, 0.3)),
+    ]
+    assert _find_element_for_quote("어떤 문장이든", page=1, elements=elements) is None
