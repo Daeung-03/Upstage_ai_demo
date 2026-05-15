@@ -13,7 +13,7 @@ CHAT_COMPLETIONS_PATH = "/chat/completions"
 MODEL = "solar-pro3"
 # summary 단계 reasoning_effort. 미지정 시 Solar default(`minimal`).
 # 위험 조항 식별은 도메인 판단이 들어가 high까지 올릴 수 있음. env로 실험 조절.
-SUMMARIZE_REASONING_EFFORT = os.getenv("SUMMARIZE_REASONING_EFFORT", "high")
+SUMMARIZE_REASONING_EFFORT = os.getenv("SUMMARIZE_REASONING_EFFORT", "minimal")
 # Default: "high" — 2026-05-15 Round 5 실험에서 minimal→high가 +4.7%p (B avg 71%)
 # ground=medium과 결합 시 +8.4%p (BC avg 74.7%, peak 80%)
 
