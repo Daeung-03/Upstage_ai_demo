@@ -19,8 +19,13 @@ async def run_full_pipeline(
     filename: str,
     service_name: str,
     service_provider: str = "",
+    domain: str = "subscription",
 ):
-    """run_pipeline 래퍼. AnalysisResult 반환."""
+    """run_pipeline 래퍼. AnalysisResult 반환.
+
+    domain: "subscription" (OTT/구독, 기본) | "finance" (전자금융/PG) |
+    "insurance" (보험). 도메인별 schema/prompt 가 분기됨.
+    """
     async with UpstageClient(_ai_settings()) as client:
         return await run_pipeline(
             client,
@@ -28,6 +33,7 @@ async def run_full_pipeline(
             filename=filename,
             service_name=service_name,
             service_provider=service_provider,
+            domain=domain,
         )
 
 

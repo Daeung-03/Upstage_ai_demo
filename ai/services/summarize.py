@@ -6,7 +6,7 @@ import os
 from pydantic import BaseModel, Field
 
 from ai.prompts.summarize_subscription import SYSTEM_PROMPT, USER_PROMPT_TEMPLATE
-from ai.schemas.subscription import SubscriptionTerms
+from ai.schemas.subscription import SubscriptionTerms  # noqa: F401 (re-export for callers)
 from ai.services.upstage import UpstageClient
 
 CHAT_COMPLETIONS_PATH = "/chat/completions"
@@ -36,7 +36,10 @@ class SummaryResult(BaseModel):
     key_clauses: list[KeyClause] = Field(default_factory=list)
 
 
-async def summarize_risks(client: UpstageClient, *, terms: SubscriptionTerms) -> SummaryResult:
+async def summarize_risks(client: UpstageClient, *, terms: BaseModel) -> SummaryResult:
+    """약관 추출 결과를 요약 — schema-agnostic. SubscriptionTerms / FinanceTerms /
+    InsuranceTerms 어떤 BaseModel 이든 JSON dump 해 LLM 에 넘긴다. 도메인별 프롬프트
+    튜닝은 follow-up (ai/EXPERIMENTS.md 백로그)."""
     payload = {
         "model": MODEL,
         "messages": [

@@ -224,7 +224,25 @@ OTT/구독 외 도메인용 추출 스키마를 별도 정의해 두었습니다
 
 `ai/services/voting.py` 는 schema-polymorphic 으로 리팩되어 위 두 도메인 + 기존 OTT 스키마에 모두 동작합니다 (`vote_terms(terms_list)`). 단위 테스트는 `tests/unit/test_schemas_{finance,insurance}.py`, `test_services_voting.py::test_vote_terms_works_on_*` 에 포함.
 
-**현재 상태**: 데이터 계약(스키마) + 집계 로직(voting) 까지 완료. 도메인별 prompt 튜닝 / extract 라우팅 / golden 평가는 [`ai/EXPERIMENTS.md`](ai/EXPERIMENTS.md) 백로그에 follow-up 으로 등재.
+**파이프라인 라우팅**: `run_pipeline(..., domain="finance" | "insurance" | "subscription")` 으로 도메인 분기.
+
+```python
+# app/services/ai_client.py
+result = await run_full_pipeline(file_bytes, filename, service_name, domain="finance")
+# result.terms 는 FinanceTerms 인스턴스, result.domain == "finance"
+```
+
+| 진입점 | 위치 |
+|---|---|
+| 프롬프트 | [`ai/prompts/extract_finance.py`](ai/prompts/extract_finance.py), [`ai/prompts/extract_insurance.py`](ai/prompts/extract_insurance.py) |
+| Extract 함수 | `extract_finance` / `extract_finance_with_voting` / `extract_insurance` / `extract_insurance_with_voting` ([`ai/services/extract.py`](ai/services/extract.py)) |
+| Pipeline 진입점 | `run_pipeline(..., domain=...)` ([`ai/pipeline.py`](ai/pipeline.py)) |
+
+**Golden 라벨링 도구**:
+- 기존 OTT-shaped fintech golden 을 finance 좌표계로 자동 변환: [`scripts/remap_fintech_golden_v03.py`](scripts/remap_fintech_golden_v03.py) → `data/fixtures/{toss,kakaopay,banksalad}_golden_v03_finance.json`
+- 새 약관용 빈 템플릿: [`scripts/build_finance_golden_template.py`](scripts/build_finance_golden_template.py), [`scripts/build_insurance_golden_template.py`](scripts/build_insurance_golden_template.py)
+
+**현재 상태**: 스키마 + voting + 프롬프트 + 라우팅 + golden 자동 remap (fintech 3건) + insurance 템플릿까지 완료. 실 약관 fixture 추가 + 도메인별 정확도 평가는 deadline 후 진행 ([`ai/EXPERIMENTS.md`](ai/EXPERIMENTS.md) 백로그).
 
 ---
 
