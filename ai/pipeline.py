@@ -3,13 +3,15 @@ from __future__ import annotations
 import logging
 import time
 import json
-from typing import Any
+from typing import Literal, Any
 
 from pydantic import BaseModel, Field
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ai.schemas.subscription import SubscriptionTerms
+from ai.schemas.finance import FinanceTerms
+from ai.schemas.insurance import InsuranceTerms 
 from ai.services.extract import (
     extract_finance_with_voting,
     extract_insurance_with_voting,

@@ -1,4 +1,11 @@
+from __future__ import annotations
+
 import uuid
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from app.models.user import User
+    from app.models.term import Term
 from datetime import datetime
 from sqlalchemy import Enum as SAEnum
 from sqlalchemy import ForeignKey, Text, DateTime, func, ARRAY
