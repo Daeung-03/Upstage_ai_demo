@@ -17,6 +17,16 @@ def _split_chunks(text: str, size: int = CHUNK_SIZE) -> list[str]:
     return [text[i:i+size] for i in range(0, len(text), size)]
 
 
+def _split_clauses(text: str) -> list[str]:
+    """raw_text 를 *조항 단위* 로 split. Document Parse markdown 의 빈 줄 기준.
+
+    process_version_update 의 semantic diff 와 compute_user_impacted_diff 가
+    공유. token chunking (_split_chunks) 과 다름 — 임베딩 기반 의미 비교는
+    *의미 단위* 가 필요해 빈 줄 기준이 더 정확.
+    """
+    return [c.strip() for c in (text or "").split("\n\n") if c.strip()]
+
+
 # ── AnalysisResult → DB 저장용 변환 헬퍼 ──────────────────
 def _collect_field_bboxes(terms) -> dict[str, tuple[int | None, list[float] | None]]:
     """SubscriptionTerms 의 모든 FieldValue.citation 을 순회하며 quote → (page, bbox) 매핑.
@@ -199,7 +209,19 @@ async def process_version_update(
     user_id: uuid.UUID,
     file_bytes: bytes,
     file_url: str,
-) -> TermVersion:
+    include_user_impact: bool = False,
+    user_plan: str | None = None,
+    user_custom_notes: str | None = None,
+) -> tuple[TermVersion, str | None]:
+    """약관 신버전 업로드 처리.
+
+    include_user_impact=True 일 때는 기존 summarize_version_diff 대신 user-impact
+    diff (semantic + LLM 1회) 를 실행해 *현재 사용자에게의 영향* 자유문까지 같이
+    생성. 추가 LLM 호출 1회 발생 — 사용자가 명시적으로 원할 때만 사용.
+
+    반환: (TermVersion, user_impact | None).
+    user_impact 는 include_user_impact=True 이고 prev_version 본문이 다를 때만 값 있음.
+    """
 
     # 이전 latest 버전을 미리 끌어와 diff_summary 비교 base 로 사용.
     # 같은 트랜잭션에서 is_latest=False 로 업데이트하기 *전에* 조회해야 일관됨.
@@ -247,13 +269,37 @@ async def process_version_update(
     # 버전 변경점 요약 — 이전 버전이 있고 본문이 동일하지 않을 때만 LLM 호출.
     # 동일 본문이면 의미상 "변경 없음" 이 자명하므로 토큰 낭비 회피.
     diff_summary: str | None = None
+    user_impact: str | None = None
     if prev_version is not None and (prev_version.raw_text or "") != raw_text:
-        diff_result = await ai_client.summarize_version_diff(
-            old_text=prev_version.raw_text or "",
-            new_text=raw_text,
-            service_name=service_name,
-        )
-        diff_summary = diff_result.diff_summary
+        if include_user_impact:
+            # user-impact diff 한 번에 일반 diff + 개별 영향 자유문 모두 얻음.
+            # semantic diff (embedding) + LLM 1회.
+            old_clauses = _split_clauses(prev_version.raw_text or "")
+            new_clauses = _split_clauses(raw_text)
+            user_context: dict = {}
+            if term_obj and term_obj.subscribed_at:
+                user_context["subscribed_at"] = term_obj.subscribed_at.isoformat()
+            if user_plan:
+                user_context["plan"] = user_plan
+            if user_custom_notes:
+                user_context["custom_notes"] = user_custom_notes
+            ui_result = await ai_client.user_impacted_diff(
+                old_text=prev_version.raw_text or "",
+                new_text=raw_text,
+                service_name=service_name,
+                old_clauses=old_clauses,
+                new_clauses=new_clauses,
+                user_context=user_context or None,
+            )
+            diff_summary = ui_result.diff_summary
+            user_impact = ui_result.user_impact
+        else:
+            diff_result = await ai_client.summarize_version_diff(
+                old_text=prev_version.raw_text or "",
+                new_text=raw_text,
+                service_name=service_name,
+            )
+            diff_summary = diff_result.diff_summary
 
     new_version = TermVersion(
         term_id=term_id,
@@ -297,7 +343,7 @@ async def process_version_update(
 
     await db.flush()
     await db.refresh(new_version)
-    return new_version
+    return new_version, user_impact
 
 
 # ── 아래는 기존 코드 그대로 ──────────────────────────────
@@ -421,10 +467,6 @@ async def compute_user_impacted_diff(
     if len(rows) < 2:
         raise ValueError("term has fewer than 2 versions; nothing to compare")
     new_v, old_v = rows[0], rows[1]
-
-    def _split_clauses(text: str) -> list[str]:
-        """raw_text 를 빈 줄 기준 split — Document Parse markdown 의 조항 구분 기준."""
-        return [c.strip() for c in (text or "").split("\n\n") if c.strip()]
 
     old_clauses = _split_clauses(old_v.raw_text or "")
     new_clauses = _split_clauses(new_v.raw_text or "")

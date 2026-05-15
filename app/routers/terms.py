@@ -189,10 +189,35 @@ async def get_term(
     )
 
 
-@router.post("/{term_id}/update", response_model=TermUpdateResponse, status_code=201)
+@router.post(
+    "/{term_id}/update",
+    response_model=TermUpdateResponse,
+    status_code=201,
+    summary="약관 신버전 업로드 + diff (선택적으로 user-impact 자동 생성)",
+    description=(
+        "기존 term 에 새 버전을 추가하고 이전 버전과의 변경점 요약을 생성. "
+        "신버전이 prev_version 과 동일 본문이면 LLM 호출 생략 (diff_summary=null).\n\n"
+        "**`include_user_impact` Form 플래그**\n"
+        "- `false` (기본): 기존 흐름 — Solar Pro 3 일반 diff_summary 1회 호출. 응답의 "
+        "`user_impact` 는 null.\n"
+        "- `true`: semantic diff (embedding 기반 조항 분류) + user-impact LLM 호출 (1회) "
+        "을 합쳐 *현재 사용자에게의 영향* 자유문까지 생성. 응답의 `user_impact` 채워짐.\n"
+        "  - `user_plan`, `user_custom_notes` Form 으로 사용자 컨텍스트 보강 가능.\n"
+        "  - `Term.subscribed_at` 은 DB 에서 자동으로 가져와 user_context 에 포함.\n"
+        "  - 추가 LLM 호출 1회 발생 → 응답 시간 ~2-3초 늘어남.\n\n"
+        "변경 사항이 있으면 `Notification` 자동 생성. user_impact 가 있으면 알림 본문에 "
+        "함께 저장되어 사용자가 \"무엇이 어떻게 바뀌었고, 나에게 어떤 영향이 있나\" 한 번에 확인 가능.\n\n"
+        "대안: 별도로 호출하려면 `POST /terms/{term_id}/user-impact` (이미 업로드된 두 버전을 "
+        "재비교) 사용."
+    ),
+    tags=["Terms / 버전 업데이트"],
+)
 async def update_term(
     term_id: uuid.UUID,
     file: UploadFile = File(...),
+    include_user_impact: bool = Form(False),
+    user_plan: Optional[str] = Form(None),
+    user_custom_notes: Optional[str] = Form(None),
     db: AsyncSession = Depends(get_db),
 ):
     term = await term_service.get_term_detail(db, term_id, TEMP_USER_ID)
@@ -202,20 +227,28 @@ async def update_term(
     file_bytes = await file.read()
     file_url = f"/files/{file.filename}"
 
-    new_version = await term_service.process_version_update(
+    new_version, user_impact = await term_service.process_version_update(
         db=db,
         term_id=term_id,
         user_id=TEMP_USER_ID,
         file_bytes=file_bytes,
         file_url=file_url,
+        include_user_impact=include_user_impact,
+        user_plan=user_plan,
+        user_custom_notes=user_custom_notes,
     )
+
+    # 알림 본문: user_impact 있으면 함께 노출, 없으면 diff_summary 만.
+    notif_body = new_version.diff_summary or ""
+    if user_impact:
+        notif_body = (notif_body + "\n\n[나에게의 영향]\n" + user_impact).strip()
 
     new_notification = Notification(
         user_id=term.user_id,
         term_id=term.id,
         version_id=new_version.id,
         title=f"[{term.service_name}] 약관이 업데이트됐어요",
-        diff_summary=new_version.diff_summary,
+        diff_summary=notif_body or None,
         status=NotificationStatus.UNREAD,
     )
     db.add(new_notification)
@@ -226,6 +259,7 @@ async def update_term(
         term_id=term_id,
         new_version=new_version.version,
         diff_summary=new_version.diff_summary,
+        user_impact=user_impact,
     )
 
 

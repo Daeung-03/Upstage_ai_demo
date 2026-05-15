@@ -67,6 +67,8 @@ class TermUpdateResponse(BaseModel):
     term_id: UUID
     new_version: int
     diff_summary: Optional[str]
+    # include_user_impact=true 로 업로드했을 때만 채워짐. 그 외엔 null.
+    user_impact: Optional[str] = None
 
 # ── 의미 검색 ─────────────────────────────────────────
 class SearchRequest(BaseModel):
