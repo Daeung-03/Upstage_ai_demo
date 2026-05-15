@@ -28,6 +28,14 @@ class ClauseDisputeMatches(BaseModel):
 
     clause_id: UUID
     clause_title: str | None = None
+    # 약관 KeyClause 의 LLM 분류 결과. 프론트에서 ★ 색상/뱃지에 사용.
+    clause_risk_level: str | None = None
+    clause_pain_point_id: str | None = None
+    # LLM 으로 생성된 "왜 위험한가" 자연어 단락 (3-4문장).
+    # 첫 조회 시 생성/캐시, 이후 즉시 반환. dispute_cases 갱신 시 무효화.
+    risk_reasoning: str | None = None
+    # reasoning 단락 다음 줄 "이 조항이 영향 받으면 ~ 할 수 있습니다" 식 행동 가이드.
+    user_action: str | None = None
     matches: list[DisputeMatch] = Field(default_factory=list)
 
 
