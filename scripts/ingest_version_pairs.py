@@ -133,7 +133,7 @@ async def _ingest_one(
             }
             up_files = {"file": (past.name, past.read_bytes(), "text/html")}
             up = await client.post(
-                f"{base_url}/terms/upload", data=up_data, files=up_files, timeout=600.0
+                f"{base_url}/terms/upload", data=up_data, files=up_files, timeout=1000.0
             )
             if up.status_code != 201:
                 return {"key": pair["key"], "ok": False,
@@ -148,7 +148,7 @@ async def _ingest_one(
             upd_files = {"file": (cur.name, cur.read_bytes(), "text/html")}
             upd = await client.post(
                 f"{base_url}/terms/{term_id}/update",
-                data=upd_data, files=upd_files, timeout=600.0,
+                data=upd_data, files=upd_files, timeout=1000.0,
             )
             if upd.status_code != 201:
                 return {"key": pair["key"], "ok": False, "term_id": term_id,
