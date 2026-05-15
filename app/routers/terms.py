@@ -202,6 +202,28 @@ async def get_term(
     )
 
 
+@router.delete(
+    "/{term_id}",
+    status_code=204,
+    summary="약관 + 연관 데이터 일괄 삭제",
+    description=(
+        "지정된 term 및 모든 자식 행 (TermVersion / TermChunk / TermClause / "
+        "CalendarEvent / Notification) 을 cascade 로 삭제. 대화 내역 (ChatSession) "
+        "은 보존되며 `term_id` 만 NULL 로 끊김.\n\n"
+        "본인 소유 term 만 삭제 가능 — 없거나 다른 user 소유면 404."
+    ),
+    tags=["Terms / 업로드"],
+)
+async def delete_term(
+    term_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+):
+    ok = await term_service.delete_term(db, term_id, TEMP_USER_ID)
+    if not ok:
+        raise HTTPException(status_code=404, detail="약관을 찾을 수 없습니다.")
+    return None
+
+
 @router.post(
     "/{term_id}/update",
     response_model=TermUpdateResponse,
