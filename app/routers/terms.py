@@ -181,6 +181,7 @@ async def get_term(
                 diff_summary=v.diff_summary,
                 is_latest=v.is_latest,
                 created_at=v.created_at,
+                effective_date=v.effective_date,
                 clauses=[
                     ClauseDetail(
                         id=c.id,
