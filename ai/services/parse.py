@@ -110,6 +110,21 @@ def _coords_to_bbox(coords: list[dict]) -> tuple[float, float, float, float] | N
     return (min(xs), min(ys), max(xs), max(ys))
 
 
+def _element_text(content) -> str:
+    """ParsedElement.text 추출 — Upstage 응답이 markdown 에만 채우므로 그쪽 우선.
+
+    응답 shape: {"html": str, "markdown": str, "text": str}. 관찰 결과 text 는
+    항상 빈 문자열, markdown 에 실제 OCR 텍스트가 들어있다.
+    """
+    if not isinstance(content, dict):
+        return ""
+    for key in ("markdown", "text", "html"):
+        v = content.get(key)
+        if v:
+            return v
+    return ""
+
+
 def _parse_html_directly(file_bytes: bytes) -> DocumentParseResult:
     """HTML 입력은 Document Parse(415 Unsupported)를 우회하고 직접 텍스트 추출.
 
@@ -163,7 +178,9 @@ async def parse_document(
             id=e["id"],
             page=e["page"],
             category=e["category"],
-            text=(e.get("content") or {}).get("text", ""),
+            # Upstage 응답은 content.markdown 에 실제 텍스트를 담고, content.text 는
+            # 항상 빈 문자열로 비워둠. markdown 우선, 비면 text 로 fallback (방어용).
+            text=_element_text(e.get("content")),
             bbox=_coords_to_bbox(e.get("coordinates") or []),
         )
         for e in elements_raw

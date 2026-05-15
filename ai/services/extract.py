@@ -126,16 +126,36 @@ def _is_ai_domain(service_name: str, parsed_markdown: str | None = None) -> bool
     return False
 
 
-def _select_system_prompt(service_name: str, parsed_markdown: str | None = None) -> str:
-    """시스템 프롬프트 분기 — MINIMAL_PROMPT > AI 자동 분기 > 기본.
+def _detect_language(text: str | None) -> str:
+    """약관 본문 언어 감지 — 한글 비율 ≥ 30%면 'ko', 아니면 'en'.
 
-    AI 분기 prompt: AI_SPECIALIZED=1 (Round 10 default)일 때 LLM-1~6 룰 포함된
-    AI_SYSTEM_PROMPT 사용, 0이면 LLM 룰 없는 순수 MINIMAL_SYSTEM_PROMPT (Round 9).
+    Round 10 측정: AI_SYSTEM_PROMPT (영문 boilerplate 룰)이 한국어 AI 약관에 부작용
+    (-8.5%p) 이라 언어별 분기 필요. Claude 한국어판, Gemini Korea, Upstage 등은
+    한국어 본문이라 minimal prompt가 더 효과적 (Round 9).
+    """
+    if not text:
+        return "ko"  # default safe
+    ko = sum(1 for c in text if "가" <= c <= "힯")
+    total = sum(1 for c in text if c.isalpha())
+    if total == 0:
+        return "ko"
+    return "ko" if ko / total > 0.3 else "en"
+
+
+def _select_system_prompt(service_name: str, parsed_markdown: str | None = None) -> str:
+    """시스템 프롬프트 분기 — MINIMAL_PROMPT > AI 자동 분기 (언어별) > 기본.
+
+    AI 분기 prompt:
+    - 영문 AI 약관 (GPT/DeepSeek 영문) → AI_SYSTEM_PROMPT (LLM-1~6 영문 boilerplate 룰).
+    - 한국어 AI 약관 (Claude 한국어판/Gemini Korea/Upstage 등) → MINIMAL_SYSTEM_PROMPT.
+    - AI_SPECIALIZED=0 환경변수 시 모든 AI를 minimal로 (Round 9 동작).
     """
     if USE_MINIMAL_PROMPT:
         return MINIMAL_SYSTEM_PROMPT
     if AUTO_AI_DOMAIN and _is_ai_domain(service_name, parsed_markdown):
-        return AI_SYSTEM_PROMPT if USE_AI_SPECIALIZED else MINIMAL_SYSTEM_PROMPT
+        if USE_AI_SPECIALIZED and _detect_language(parsed_markdown) == "en":
+            return AI_SYSTEM_PROMPT
+        return MINIMAL_SYSTEM_PROMPT
     return SYSTEM_PROMPT
 from ai.schemas.common import Citation, FieldValue
 from ai.schemas.subscription import SubscriptionTerms
@@ -199,6 +219,8 @@ def _find_element_for_quote(
         return None
     for elem in elements:
         en = _normalize(elem.text)
+        if not en:
+            continue  # 빈 element 는 "" in qn 이 항상 True 라 첫 element 가 무조건 잡히는 버그 방지
         if qn in en or en in qn:
             return elem
 
@@ -206,7 +228,8 @@ def _find_element_for_quote(
     anchor = qn[:20]
     if len(anchor) >= 8:
         for elem in elements:
-            if anchor in _normalize(elem.text):
+            en = _normalize(elem.text)
+            if en and anchor in en:
                 return elem
 
     return None
