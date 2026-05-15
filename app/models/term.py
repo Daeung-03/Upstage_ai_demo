@@ -23,6 +23,10 @@ class Term(Base):
     # 1단계 domain 안의 sub-category — 도메인별 권장값은 ai_sub_category 모듈 참고.
     # 자유 텍스트 (DB 레벨 enum 강제 안 함) — 새 sub-category 추가 시 마이그레이션 불필요.
     sub_category: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # 지원하는 15개 서비스의 canonical slug (예: "netflix", "kakao-pay", "claude").
+    # app/models/vendors.py 의 VENDORS 카탈로그 1:1. process_upload 가 service_name
+    # 으로부터 자동 추론. 매칭 안 되면 NULL (unsupported vendor).
+    vendor_slug: Mapped[str | None] = mapped_column(Text, nullable=True)
     status: Mapped[TermStatus] = mapped_column(
         SAEnum(TermStatus, name="term_status", create_type=False),
         default=TermStatus.ACTIVE

@@ -24,10 +24,13 @@ ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_RESULT = Path("/tmp/variance_run_1.json")
 DEFAULT_GOLDEN = ROOT / "data" / "fixtures" / "netflix_golden.json"
 
-SECTIONS = (
+# v1.0 (legacy: model run JSON 이 새 섹션을 안 가질 때 graceful skip 용)
+SECTIONS_LEGACY = (
     "pricing", "free_trial", "cancellation", "terms_changes",
     "data_usage", "liability", "disputes",
 )
+# v1.1.0 — account / service_availability 섹션 추가. 모델 run 에 없으면 skip.
+SECTIONS = SECTIONS_LEGACY + ("account", "service_availability")
 
 
 def _enum_value(v):
@@ -324,25 +327,32 @@ def main():
             "pricing.base_price_krw", "pricing.price_change_notice_days",
             "free_trial.duration_days", "free_trial.notice_before_conversion_days",
             "cancellation.notice_period_days",
+            "cancellation.cooling_off_refund_days",  # v1.1.0
             "terms_changes.notice_lead_time_days",
             "data_usage.retention_period_months",
+            "account.minimum_age",  # v1.1.0
         ],
         "bool": [
             "pricing.auto_renewal_enabled",
             "free_trial.offered", "free_trial.auto_convert_to_paid",
             "free_trial.cancel_required_before_end", "free_trial.payment_method_required_upfront",
             "cancellation.penalty_present",
+            "cancellation.third_party_cancellation_required",  # v1.1.0
             "terms_changes.user_right_to_terminate_on_change", "terms_changes.silent_acceptance_clause",
+            "terms_changes.price_change_explicit_consent",  # v1.1.0
             "data_usage.third_party_sharing", "data_usage.marketing_use", "data_usage.cross_border_transfer",
             "liability.service_disruption_compensation", "liability.damages_cap_present",
             "liability.indirect_damages_excluded",
             "disputes.arbitration_required", "disputes.class_action_waiver",
+            "service_availability.availability_disclaimer",  # v1.1.0
+            "service_availability.regional_content_restriction",  # v1.1.0
         ],
         "enum": [
             "pricing.billing_cycle", "pricing.auto_renewal_consent",
             "cancellation.method", "cancellation.proration_policy",
             "terms_changes.user_consent_mechanism",
             "data_usage.marketing_consent",
+            "account.sharing_restrictions",  # v1.1.0
         ],
         "list": [
             "pricing.price_change_notice_channels",
@@ -352,6 +362,7 @@ def main():
         ],
         "str": [
             "cancellation.method_description", "cancellation.penalty_description",
+            "cancellation.cooling_off_conditions",  # v1.1.0
             "liability.compensation_description", "liability.damages_cap_description", "liability.force_majeure_scope",
             "disputes.governing_law", "disputes.jurisdiction_clause",
         ],
@@ -373,6 +384,9 @@ def main():
     section_counters: dict[str, dict[str, int]] = {}
 
     for section in SECTIONS:
+        # v1.1.0 새 섹션은 legacy run JSON 에 없을 수 있음 → graceful skip
+        if section not in run["terms"]:
+            continue
         for field, fv in run["terms"][section].items():
             key = f"{section}.{field}"
             actual = _enum_value(fv["value"])

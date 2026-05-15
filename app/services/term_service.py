@@ -8,6 +8,7 @@ from sqlalchemy import select, update
 from app.models.term import Term, TermVersion, TermChunk, TermClause
 from app.models.calendar import CalendarEvent
 from app.models.enums import ClauseType, EventType
+from app.models.vendors import canonical_vendor_slug, vendor_domain
 from app.services import ai_client
 from app.services.calendar_service import compute_calendar_events
 
@@ -148,12 +149,19 @@ async def process_upload(
     vectors  = await ai_client.embed_chunks(chunks)
     dates    = compute_calendar_events(result.terms, subscribed_at)
 
+    # Vendor 카탈로그 자동 매핑 — 15 서비스 중 하나로 인식되면 canonical slug 저장,
+    # domain 도 vendor 가 명시한 값으로 override (정책 b: vendor mapping 우선).
+    # 매칭 안 되면 vendor_slug=NULL + 사용자 명시 domain 그대로.
+    resolved_vendor = canonical_vendor_slug(service_name)
+    resolved_domain = (vendor_domain(resolved_vendor) if resolved_vendor else None) or domain.upper()
+
     # 2. Term 저장
     term = Term(
         user_id=user_id,
         service_name=service_name,
-        domain=domain.upper(),
+        domain=resolved_domain,
         sub_category=sub_category,
+        vendor_slug=resolved_vendor,
         file_url=file_url,
         subscribed_at=subscribed_at,
     )

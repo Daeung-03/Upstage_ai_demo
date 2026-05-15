@@ -180,9 +180,13 @@ REASONING_EFFORT = os.getenv("EXTRACT_REASONING_EFFORT", "medium")
 
 CHAT_COMPLETIONS_PATH = "/chat/completions"
 MODEL = "solar-pro3"
+# v1.1.0: account / service_availability 추가. bbox enrichment 폴리모픽 reflection
+# (`_enrich_with_bbox`) 가 model_fields 순회라서 사실상 SECTION_NAMES 안 쓰지만
+# legacy 참조 위해 유지.
 SECTION_NAMES = (
     "pricing", "free_trial", "cancellation", "terms_changes",
     "data_usage", "liability", "disputes",
+    "account", "service_availability",
 )
 
 

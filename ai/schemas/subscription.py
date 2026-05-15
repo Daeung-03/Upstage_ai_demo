@@ -1,7 +1,8 @@
 from pydantic import BaseModel, Field
 
-from ai.schemas.common import FieldValue
+from ai.schemas.common import FieldValue, empty_fv
 from ai.schemas.enums import (
+    AccountSharingPolicy,
     BillingCycle,
     CancellationMethod,
     ConsentMechanism,
@@ -36,6 +37,19 @@ class Cancellation(BaseModel):
     penalty_description: FieldValue[str]
     proration_policy: FieldValue[ProrationPolicy]
     blackout_periods: FieldValue[list[str]]
+    # v1.1.0 확장 (golden 라벨러가 자주 추가하는 OTT 표준 필드들).
+    # backwards-compat: empty_fv() dict default + validate_default=True 로 pydantic
+    # 이 dict 를 typed FieldValue 로 coerce. 안 그러면 raw dict 가 저장돼 voting/
+    # bbox enrichment 에서 .value attribute 접근 시 깨짐.
+    third_party_cancellation_required: FieldValue[bool] = Field(
+        default_factory=empty_fv, validate_default=True
+    )
+    cooling_off_refund_days: FieldValue[int] = Field(
+        default_factory=empty_fv, validate_default=True
+    )
+    cooling_off_conditions: FieldValue[str] = Field(
+        default_factory=empty_fv, validate_default=True
+    )
 
 
 class TermsChanges(BaseModel):
@@ -44,6 +58,43 @@ class TermsChanges(BaseModel):
     user_consent_mechanism: FieldValue[ConsentMechanism]
     user_right_to_terminate_on_change: FieldValue[bool]
     silent_acceptance_clause: FieldValue[bool]
+    # v1.1.0 확장 — 가격 변경 시 별도 동의 명시 여부 (한국 OTT 일반적으로 True 라벨).
+    # backwards-compat default — TermsChanges 가 finance/insurance 도 공유함.
+    price_change_explicit_consent: FieldValue[bool] = Field(
+        default_factory=empty_fv, validate_default=True
+    )
+
+
+# === v1.1.0 새 섹션 — Account 정책 ===
+class Account(BaseModel):
+    """가입·계정 정책. OTT 표준 라벨링에 자주 등장 (gemini/coupang/watcha).
+
+    필드 모두 backwards-compat default — 기존 fixture 가 account 섹션 없이도
+    construction 가능.
+    """
+    minimum_age: FieldValue[int] = Field(default_factory=empty_fv, validate_default=True)
+    sharing_restrictions: FieldValue[AccountSharingPolicy] = Field(
+        default_factory=empty_fv, validate_default=True
+    )
+
+
+def _default_account() -> "Account":
+    return Account()
+
+
+# === v1.1.0 새 섹션 — 서비스 가용성 ===
+class ServiceAvailability(BaseModel):
+    """서비스 중단 / 지역 제한 정책."""
+    availability_disclaimer: FieldValue[bool] = Field(
+        default_factory=empty_fv, validate_default=True
+    )
+    regional_content_restriction: FieldValue[bool] = Field(
+        default_factory=empty_fv, validate_default=True
+    )
+
+
+def _default_service_availability() -> "ServiceAvailability":
+    return ServiceAvailability()
 
 
 class DataUsage(BaseModel):
@@ -74,7 +125,7 @@ class Disputes(BaseModel):
 
 
 class SubscriptionTerms(BaseModel):
-    schema_version: str = "1.0.0"
+    schema_version: str = "1.1.0"
     domain: str = "subscription"
 
     service_name: str
@@ -90,6 +141,9 @@ class SubscriptionTerms(BaseModel):
     data_usage: DataUsage
     liability: Liability
     disputes: Disputes
+    # v1.1.0 확장 — 새 섹션 backwards-compat default (모든 필드 not_specified).
+    account: Account = Field(default_factory=_default_account)
+    service_availability: ServiceAvailability = Field(default_factory=_default_service_availability)
 
     unfair_clause_flags: list[str] = Field(default_factory=list)
     raw_document_hash: str | None = None
