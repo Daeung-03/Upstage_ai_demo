@@ -1,90 +1,116 @@
+"""POST /terms/upload 라우터 wiring 테스트.
+
+term_service.process_upload 와 DB 세션은 monkeypatch/dependency override 로
+격리. 실 Supabase / Upstage 안 거치고 라우터 책임만 검증:
+- 필수 필드 누락 → 422
+- 정상 흐름: process_upload 결과를 TermUploadResponse 로 매핑
+"""
+from __future__ import annotations
+
+import uuid
+from datetime import date, datetime, timezone
+from types import SimpleNamespace
+
+import pytest
 from fastapi.testclient import TestClient
 
+from app.database import get_db
 from app.main import app
-from ai.schemas.common import Citation, FieldValue, Uncertainty
-from ai.schemas.enums import BillingCycle, ConsentMechanism, NoticeChannel
-from ai.schemas.subscription import (
-    Cancellation, DataUsage, Disputes, FreeTrial, Liability,
-    Pricing, SubscriptionTerms, TermsChanges,
-)
-from ai.pipeline import AnalysisResult, StageTiming, StageUsage
-from ai.services.summarize import KeyClause, KeyClauseCitation
+from app.services import term_service
 
 
-def _fv(v, page=1, quote="..."):
-    return FieldValue(value=v, uncertainty=Uncertainty.CONFIRMED, citation=Citation(page=page, quote=quote))
+@pytest.fixture(autouse=True)
+def _override_db():
+    """get_db dependency 가 Supabase 접속 안 하도록 차단. process_upload 가
+    monkeypatch 되어 즉시 반환하므로 db 객체는 실제로 안 쓰임."""
+    async def _fake():
+        yield None
+
+    app.dependency_overrides[get_db] = _fake
+    yield
+    app.dependency_overrides.pop(get_db, None)
 
 
-def _fake_result() -> AnalysisResult:
-    terms = SubscriptionTerms(
-        service_name="TestStream", service_provider="TestCo", extraction_date="2026-05-13T00:00:00Z",
-        pricing=Pricing(base_price_krw=_fv(9900), billing_cycle=_fv(BillingCycle.MONTHLY),
-                         auto_renewal_enabled=_fv(True),
-                         auto_renewal_consent=_fv(ConsentMechanism.OPT_OUT_AVAILABLE),
-                         price_change_notice_days=_fv(30),
-                         price_change_notice_channels=_fv([NoticeChannel.EMAIL])),
-        free_trial=FreeTrial(offered=_fv(False), duration_days=_fv(0), auto_convert_to_paid=_fv(False),
-                              cancel_required_before_end=_fv(False), payment_method_required_upfront=_fv(False),
-                              notice_before_conversion_days=_fv(0)),
-        cancellation=Cancellation(method=_fv("online"), method_description=_fv(""), notice_period_days=_fv(0),
-                                   penalty_present=_fv(False), penalty_description=_fv(""),
-                                   proration_policy=_fv("no_refund"), blackout_periods=_fv([])),
-        terms_changes=TermsChanges(notice_channels=_fv([NoticeChannel.EMAIL]), notice_lead_time_days=_fv(30),
-                                    user_consent_mechanism=_fv(ConsentMechanism.OPT_OUT_AVAILABLE),
-                                    user_right_to_terminate_on_change=_fv(True),
-                                    silent_acceptance_clause=_fv(False)),
-        data_usage=DataUsage(collected_categories=_fv([]), third_party_sharing=_fv(False),
-                              third_party_recipients=_fv([]), third_party_purposes=_fv([]),
-                              retention_period_months=_fv(0), marketing_use=_fv(False),
-                              marketing_consent=_fv(ConsentMechanism.OPT_OUT_AVAILABLE),
-                              cross_border_transfer=_fv(False)),
-        liability=Liability(service_disruption_compensation=_fv(False), compensation_description=_fv(""),
-                             damages_cap_present=_fv(False), damages_cap_description=_fv(""),
-                             force_majeure_scope=_fv(""), indirect_damages_excluded=_fv(False)),
-        disputes=Disputes(governing_law=_fv(""), jurisdiction_clause=_fv(""),
-                           arbitration_required=_fv(False), class_action_waiver=_fv(False)),
+@pytest.fixture
+def client():
+    return TestClient(app, raise_server_exceptions=False)
+
+
+def _post_upload(client: TestClient, *, service_name="Netflix", domain="OTT", file=True):
+    files = {"file": ("netflix.pdf", b"%PDF fake", "application/pdf")} if file else {}
+    data = {"service_name": service_name, "domain": domain}
+    return client.post("/terms/upload", files=files, data=data)
+
+
+def _fake_term_version():
+    term_id = uuid.uuid4()
+    term = SimpleNamespace(
+        id=term_id,
+        service_name="Netflix",
+        domain="OTT",
+        status="ACTIVE",
+        created_at=datetime(2026, 5, 15, tzinfo=timezone.utc),
+        subscribed_at=date(2026, 5, 1),
     )
-    clause = KeyClause(title="자동갱신", description="...", risk_level="high",
-                       pain_point_id="MID-02", citation=KeyClauseCitation(page=1, quote="..."))
-    return AnalysisResult(
-        terms=terms, summary="요약", key_clauses=[clause], ungrounded_clauses=[],
-        grounded=True,
-        timings=[StageTiming(stage="parse", seconds=0.1)],
-        usage=[StageUsage(stage="parse", calls=1, pages=3),
-               StageUsage(stage="extract", calls=1, prompt_tokens=1000, total_tokens=1500)],
+    version = SimpleNamespace(id=uuid.uuid4(), version=1, term_id=term_id)
+    return term, version
+
+
+# ── happy path ───────────────────────────────────────────
+
+
+def test_upload_endpoint_happy_path(monkeypatch, client):
+    """process_upload 결과를 TermUploadResponse 로 매핑."""
+    captured = {}
+
+    async def fake_upload(*, db, user_id, service_name, subscribed_at,
+                          file_bytes, file_url, domain):
+        captured["service_name"] = service_name
+        captured["domain"] = domain
+        captured["filename"] = file_url.split("/")[-1]
+        return _fake_term_version()
+
+    monkeypatch.setattr(term_service, "process_upload", fake_upload)
+
+    # 커밋/리프레시는 라우터가 직접 호출. db=None 이라 attr 호출 시 AttributeError.
+    # raise_server_exceptions=False 이므로 200 응답 조건은 process_upload 까지만.
+    # 라우터의 db.commit() / db.refresh() 호출을 막기 위해 dummy 객체로 override.
+    class _DummyDB:
+        async def commit(self): return None
+        async def refresh(self, obj): return None
+
+    async def _dummy_get_db():
+        yield _DummyDB()
+
+    app.dependency_overrides[get_db] = _dummy_get_db
+    try:
+        r = _post_upload(client, service_name="Netflix", domain="OTT")
+    finally:
+        app.dependency_overrides[get_db] = lambda: iter([None])
+
+    assert r.status_code == 201, r.text
+    body = r.json()
+    assert body["service_name"] == "Netflix"
+    assert body["domain"] == "OTT"
+    assert body["version"] == 1
+    assert captured["service_name"] == "Netflix"
+    assert captured["domain"] == "OTT"
+    assert captured["filename"] == "netflix.pdf"
+
+
+# ── 422 validation ───────────────────────────────────────
+
+
+def test_upload_endpoint_missing_file_returns_422(client):
+    """필수 multipart file 누락 → FastAPI 가 422 자동 반환."""
+    r = client.post("/terms/upload", data={"service_name": "Netflix"})
+    assert r.status_code == 422
+
+
+def test_upload_endpoint_missing_service_name_returns_422(client):
+    """필수 form 필드 service_name 누락 → 422."""
+    r = client.post(
+        "/terms/upload",
+        files={"file": ("netflix.pdf", b"%PDF", "application/pdf")},
     )
-
-
-def test_analyze_endpoint_happy_path(monkeypatch):
-    async def fake_run_pipeline(*args, **kwargs):
-        return _fake_result()
-
-    monkeypatch.setattr("app.routes.terms.run_pipeline", fake_run_pipeline)
-    monkeypatch.setenv("UPSTAGE_API_KEY", "test-key")
-
-    client = TestClient(app)
-    response = client.post(
-        "/v1/terms/analyze",
-        files={"file": ("netflix.pdf", b"%PDF fake", "application/pdf")},
-        data={"service_name": "Netflix", "service_provider": "Netflix Inc."},
-    )
-    assert response.status_code == 200
-    body = response.json()
-    assert body["summary"] == "요약"
-    assert body["grounded"] is True
-    assert len(body["key_clauses"]) == 1
-    assert body["terms"]["service_name"] == "TestStream"
-    # usage 필드가 timings 옆에 노출되는지
-    assert len(body["usage"]) == 2
-    assert body["usage"][0]["stage"] == "parse"
-    assert body["usage"][0]["pages"] == 3
-    assert body["usage"][1]["total_tokens"] == 1500
-
-
-def test_analyze_endpoint_missing_file_returns_422():
-    client = TestClient(app)
-    response = client.post(
-        "/v1/terms/analyze",
-        data={"service_name": "Netflix", "service_provider": "Netflix Inc."},
-    )
-    assert response.status_code == 422
+    assert r.status_code == 422

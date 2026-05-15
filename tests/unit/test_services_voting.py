@@ -16,11 +16,21 @@ from ai.services.voting import _scalar_key, _vote_field, vote_subscription_terms
 
 
 def _fv(value, page=1, quote="..."):
+    """_vote_field 가 직접 받는 FieldValue 객체 — .value 등 attr 접근 필요."""
     return FieldValue(
         value=value,
         uncertainty=Uncertainty.CONFIRMED if value is not None else Uncertainty.NOT_SPECIFIED,
         citation=Citation(page=page, quote=quote) if value is not None else None,
     )
+
+
+def _fv_dict(value, page=1, quote="..."):
+    """SubscriptionTerms 의 FieldValue[T] 필드 채울 때 — Pydantic v2 generic 은
+    invariant 라 FieldValue 객체로 넘기면 검증 실패. dict 로 넘기면 coerce 됨."""
+    if value is None:
+        return {"value": None, "uncertainty": "not_specified", "citation": None}
+    return {"value": value, "uncertainty": "confirmed",
+            "citation": {"page": page, "quote": quote}}
 
 
 # ============ _vote_field 단위 ============
@@ -121,40 +131,41 @@ def _build_terms(
     notice_days: int | None,
     flags: list[str] | None = None,
 ) -> SubscriptionTerms:
+    # SubscriptionTerms 필드는 _fv_dict (Pydantic v2 generic invariant 회피용 dict)
     return SubscriptionTerms(
         service_name="Netflix", service_provider="N", extraction_date="2026-05-13",
         pricing=Pricing(
-            base_price_krw=_fv(None),
-            billing_cycle=_fv(BillingCycle.MONTHLY),
-            auto_renewal_enabled=_fv(True),
-            auto_renewal_consent=_fv(auto_renewal_consent),
-            price_change_notice_days=_fv(notice_days),
-            price_change_notice_channels=_fv([NoticeChannel.EMAIL]),
+            base_price_krw=_fv_dict(None),
+            billing_cycle=_fv_dict(BillingCycle.MONTHLY),
+            auto_renewal_enabled=_fv_dict(True),
+            auto_renewal_consent=_fv_dict(auto_renewal_consent),
+            price_change_notice_days=_fv_dict(notice_days),
+            price_change_notice_channels=_fv_dict([NoticeChannel.EMAIL]),
         ),
-        free_trial=FreeTrial(offered=_fv(False), duration_days=_fv(0),
-                              auto_convert_to_paid=_fv(False), cancel_required_before_end=_fv(False),
-                              payment_method_required_upfront=_fv(False),
-                              notice_before_conversion_days=_fv(0)),
-        cancellation=Cancellation(method=_fv(CancellationMethod.ONLINE),
-                                   method_description=_fv(""), notice_period_days=_fv(0),
-                                   penalty_present=_fv(False), penalty_description=_fv(""),
-                                   proration_policy=_fv(ProrationPolicy.NO_REFUND),
-                                   blackout_periods=_fv([])),
-        terms_changes=TermsChanges(notice_channels=_fv([NoticeChannel.EMAIL]),
-                                    notice_lead_time_days=_fv(30),
-                                    user_consent_mechanism=_fv(ConsentMechanism.DEEMED_AGREED),
-                                    user_right_to_terminate_on_change=_fv(True),
-                                    silent_acceptance_clause=_fv(True)),
-        data_usage=DataUsage(collected_categories=_fv([]), third_party_sharing=_fv(False),
-                              third_party_recipients=_fv([]), third_party_purposes=_fv([]),
-                              retention_period_months=_fv(0), marketing_use=_fv(False),
-                              marketing_consent=_fv(ConsentMechanism.OPT_OUT_AVAILABLE),
-                              cross_border_transfer=_fv(False)),
-        liability=Liability(service_disruption_compensation=_fv(False), compensation_description=_fv(""),
-                             damages_cap_present=_fv(False), damages_cap_description=_fv(""),
-                             force_majeure_scope=_fv(""), indirect_damages_excluded=_fv(False)),
-        disputes=Disputes(governing_law=_fv("대한민국"), jurisdiction_clause=_fv("서울"),
-                           arbitration_required=_fv(False), class_action_waiver=_fv(False)),
+        free_trial=FreeTrial(offered=_fv_dict(False), duration_days=_fv_dict(0),
+                              auto_convert_to_paid=_fv_dict(False), cancel_required_before_end=_fv_dict(False),
+                              payment_method_required_upfront=_fv_dict(False),
+                              notice_before_conversion_days=_fv_dict(0)),
+        cancellation=Cancellation(method=_fv_dict(CancellationMethod.ONLINE),
+                                   method_description=_fv_dict(""), notice_period_days=_fv_dict(0),
+                                   penalty_present=_fv_dict(False), penalty_description=_fv_dict(""),
+                                   proration_policy=_fv_dict(ProrationPolicy.NO_REFUND),
+                                   blackout_periods=_fv_dict([])),
+        terms_changes=TermsChanges(notice_channels=_fv_dict([NoticeChannel.EMAIL]),
+                                    notice_lead_time_days=_fv_dict(30),
+                                    user_consent_mechanism=_fv_dict(ConsentMechanism.DEEMED_AGREED),
+                                    user_right_to_terminate_on_change=_fv_dict(True),
+                                    silent_acceptance_clause=_fv_dict(True)),
+        data_usage=DataUsage(collected_categories=_fv_dict([]), third_party_sharing=_fv_dict(False),
+                              third_party_recipients=_fv_dict([]), third_party_purposes=_fv_dict([]),
+                              retention_period_months=_fv_dict(0), marketing_use=_fv_dict(False),
+                              marketing_consent=_fv_dict(ConsentMechanism.OPT_OUT_AVAILABLE),
+                              cross_border_transfer=_fv_dict(False)),
+        liability=Liability(service_disruption_compensation=_fv_dict(False), compensation_description=_fv_dict(""),
+                             damages_cap_present=_fv_dict(False), damages_cap_description=_fv_dict(""),
+                             force_majeure_scope=_fv_dict(""), indirect_damages_excluded=_fv_dict(False)),
+        disputes=Disputes(governing_law=_fv_dict("대한민국"), jurisdiction_clause=_fv_dict("서울"),
+                           arbitration_required=_fv_dict(False), class_action_waiver=_fv_dict(False)),
         unfair_clause_flags=flags or [],
     )
 

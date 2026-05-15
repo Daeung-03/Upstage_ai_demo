@@ -19,7 +19,14 @@ from ai.schemas.subscription import (
 
 
 def _fv(v, u=Uncertainty.CONFIRMED, page=1, quote="..."):
-    return FieldValue(value=v, uncertainty=u, citation=Citation(page=page, quote=quote))
+    """FieldValue dict — Pydantic v2 generic invariant 회피.
+
+    `FieldValue(value=9900)` 는 parameterized 가 아니라 `FieldValue[int]` 어노테이션
+    필드에 못 들어감 (invariant). dict 로 넘기면 SubscriptionTerms 각 섹션이
+    FieldValue[T] 로 자동 coerce.
+    """
+    u_str = u.value if hasattr(u, "value") else u
+    return {"value": v, "uncertainty": u_str, "citation": {"page": page, "quote": quote}}
 
 
 def test_pricing_section_minimal():
