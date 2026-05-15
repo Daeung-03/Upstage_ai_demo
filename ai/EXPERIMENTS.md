@@ -22,17 +22,27 @@
 
 | 항목 | 값 |
 |---|---|
-| **Config** | Solar Pro 3, `reasoning_effort=high`, voting `N=2` medium |
-| **Scope** | 전 fixture (12개 OTT/구독 서비스) — BC + prompt #1 |
-| **Strict accuracy (avg)** | 55.3% |
-| **Semantic accuracy (avg)** | 60.5% |
-| **Fixture별 최고** | netflix 85.0% semantic (75.5% strict) |
-| **Latency (avg / fixture)** | ~800s |
-| **Tokens (avg / fixture)** | ~198K |
-| **Date** | 2026-05-15 |
-| **Source** | [`data/experiments/all_fixtures_20260515_180018.md`](../data/experiments/all_fixtures_20260515_180018.md) |
+| **Config** | Solar Pro 3, extract N=2 medium, summarize=high, ground=medium, prompt #1 |
+| **Scope** | 15 fixture (OTT 7 + AI 5 + Fintech 3) |
+| **방법론** | **Trimmed mean** (drop min/max from each fixture's measurements) |
+| **Source measurements** | 10 JSON × 15 fixture × N=2 inner = 236 individual measurements (2026-05-15 01:45 ~ 18:00) |
+| **Strict avg (trimmed)** | **57.3%** |
+| **Semantic avg (trimmed)** | **63.6%** |
+| **Per-fixture best (strict)** | netflix 72.9% (semantic 78.1%) — trimmed |
+| **Per-fixture worst** | gemini 39.9% strict / 44.2% semantic |
+| **Latency avg / fixture** | ~565s |
+| **Tokens avg / fixture** | ~150K |
+| **Date** | 2026-05-15 22:24 (집계) |
+| **Source** | [`data/experiments/trimmed_mean_drop1_20260515_222419.md`](../data/experiments/trimmed_mean_drop1_20260515_222419.md) |
+| **Aggregator** | [`scripts/aggregate_trimmed_mean.py`](../scripts/aggregate_trimmed_mean.py) `--trim drop1` |
 
-**선정 사유**: 12개 fixture에 걸친 가장 광범위한 평가에서 가장 안정적인 strict/semantic 평균을 보임. Netflix 단일 fixture에서는 `N=2 medium`(config G)이 71.6% strict까지 도달했으므로, 단일 도메인 최적화 시 그 config를 베이스라인으로 사용.
+**선정 사유**: 이전 winner 보고치 (55.3 / 60.5) 는 단일 run 측정으로, 같은 config 의 자연 분산 (±10%p) 한쪽 꼬리에 가까웠음. 동일 config 10번 측정의 trimmed mean (236 measurements) 이 통계적으로 정직한 baseline. backend 부하 변동까지 시간대별로 자연 평균됨.
+
+**도메인별 trimmed mean**:
+- Fintech (kakaopay 68.6 / toss 66.0 / banksalad 58.3): strict avg **64.3%**, semantic **70.6%** — 도메인 최고
+- OTT (netflix 72.9 / spotify 63.5 / wavve 63.6 / disney_plus 60.1 / tving 57.0 / watcha 52.4 / coupang_play 48.5): strict **59.7%**, semantic **66.9%**
+- AI 영문 (gpt 55.3 / deepseek 51.6): strict **53.5%**, semantic **57.3%**
+- AI 한국어 (claude 55.1 / upstage 45.9 / gemini 39.9): strict **47.0%**, semantic **53.1%** — 가장 낮음, schema-fit 가설 (AI 약관 필드가 OTT-shaped 7섹션에 안 들어맞음) 검증 후보.
 
 ---
 
@@ -42,7 +52,8 @@
 
 | Date | Scope | Config | Strict | Semantic | Latency (s) | Tokens | Grounded | Detail |
 |---|---|---|---|---|---|---|---|---|
-| 2026-05-15 | 12 fixtures × 2 runs | BC + prompt #1, N=2 medium | 55.3% avg | 60.5% avg | ~800 | ~198K | 12.5% | [all_fixtures_20260515_180018.md](../data/experiments/all_fixtures_20260515_180018.md) |
+| **2026-05-15 22:24** | **15 fixtures, 10 runs trimmed mean (236 measurements)** | **BC + prompt #1, N=2 medium** | **57.3% trim** | **63.6% trim** | ~565 | ~150K | — | [trimmed_mean_drop1_20260515_222419.md](../data/experiments/trimmed_mean_drop1_20260515_222419.md) |
+| 2026-05-15 | 12 fixtures × 2 runs (single shot) | BC + prompt #1, N=2 medium | 55.3% avg | 60.5% avg | ~800 | ~198K | 12.5% | [all_fixtures_20260515_180018.md](../data/experiments/all_fixtures_20260515_180018.md) — *trimmed mean 의 1 sample 에 해당, 별도 winner 아님* |
 | 2026-05-14 | Netflix only, 3 rounds, 23 runs | **G: N=2 medium, prompt mini-fix** | 71.6% (max 80%) | – | 222 | 70K | – | [aggregate_summary.md](../data/experiments/aggregate_summary.md) |
 
 ### 실험 상세
