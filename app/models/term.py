@@ -3,7 +3,7 @@ from datetime import datetime, date
 from sqlalchemy import Enum as SAEnum
 from sqlalchemy import String, Text, Integer, Boolean, Date, DateTime, ForeignKey, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy import Column
 from pgvector.sqlalchemy import HALFVEC
 from app.database import Base
@@ -83,6 +83,9 @@ class TermClause(Base):
     title: Mapped[str | None] = mapped_column(Text, nullable=True)
     original_text: Mapped[str] = mapped_column(Text, nullable=False)
     plain_text: Mapped[str | None] = mapped_column(Text, nullable=True)
+    page: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    # bbox: PDF 좌표 [x1, y1, x2, y2] (0-1 정규화). PDF가 아니거나 매칭 실패 시 NULL.
+    bbox: Mapped[list[float] | None] = mapped_column(JSONB, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     version: Mapped["TermVersion"] = relationship("TermVersion", back_populates="clauses")

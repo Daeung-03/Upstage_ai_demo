@@ -17,14 +17,73 @@ def _split_chunks(text: str, size: int = CHUNK_SIZE) -> list[str]:
 
 
 # ── AnalysisResult → DB 저장용 변환 헬퍼 ──────────────────
+def _collect_field_bboxes(terms) -> dict[str, tuple[int | None, list[float] | None]]:
+    """SubscriptionTerms 의 모든 FieldValue.citation 을 순회하며 quote → (page, bbox) 매핑.
+
+    extract.py 의 _enrich_with_bbox 가 채워둔 bbox 를 KeyClause 와 합치기 위함.
+    KeyClauseCitation 자체는 page+quote 만 있고 bbox 가 없어서, 같은 본문을 인용한
+    field citation 으로부터 보강한다. quote 가 비어있거나 bbox 가 없으면 스킵.
+    """
+    out: dict[str, tuple[int | None, list[float] | None]] = {}
+
+    def walk(obj):
+        if obj is None:
+            return
+        # FieldValue 형태: value + uncertainty + citation
+        cit = getattr(obj, "citation", None)
+        if cit is not None and getattr(cit, "quote", None):
+            bbox = getattr(cit, "bbox", None)
+            page = getattr(cit, "page", None)
+            bbox_list = list(bbox) if bbox else None
+            # 같은 quote 가 여러 번 잡히면 bbox 있는 쪽을 우선
+            existing = out.get(cit.quote)
+            if existing is None or (existing[1] is None and bbox_list is not None):
+                out[cit.quote] = (page, bbox_list)
+        # 하위 모델/리스트 재귀. Pydantic v2 는 model_fields 가 클래스 속성.
+        fields = getattr(type(obj), "model_fields", None)
+        if fields:
+            for name in fields:
+                walk(getattr(obj, name, None))
+        elif isinstance(obj, (list, tuple)):
+            for item in obj:
+                walk(item)
+
+    walk(terms)
+    return out
+
+
+def _match_bbox(
+    quote: str, lookup: dict[str, tuple[int | None, list[float] | None]]
+) -> tuple[int | None, list[float] | None]:
+    """KeyClause.quote 로 field citation lookup 에서 bbox 를 best-effort 매칭.
+
+    1) exact match → 2) lookup quote 가 keyclause quote 의 부분문자열 → 3) 역방향.
+    """
+    if not quote:
+        return (None, None)
+    if quote in lookup:
+        return lookup[quote]
+    for q, (page, bbox) in lookup.items():
+        if q and (q in quote or quote in q):
+            return (page, bbox)
+    return (None, None)
+
+
 def _parse_result_to_clauses(result) -> list[dict]:
+    lookup = _collect_field_bboxes(result.terms)
     out = []
     for c in result.key_clauses:
+        cit_page = getattr(c.citation, "page", None)
+        matched_page, matched_bbox = _match_bbox(c.citation.quote, lookup)
         out.append({
             "clause_type": "ETC",               # KeyClause에 clause_type 없음 → 전부 ETC
             "title": c.title,
             "original_text": c.citation.quote,  # 원문 인용구
             "plain_text": c.description,        # 평문 설명
+            # page: KeyClauseCitation 의 page 우선, 없으면 매칭된 field citation page.
+            "page": cit_page if cit_page is not None else matched_page,
+            # bbox: KeyClauseCitation 엔 bbox 가 없으므로 매칭된 field citation 만 사용.
+            "bbox": matched_bbox,
         })
     return out
 
@@ -110,6 +169,8 @@ async def process_upload(
             title=c.get("title"),
             original_text=c["original_text"],
             plain_text=c.get("plain_text"),
+            page=c.get("page"),
+            bbox=c.get("bbox"),
         ))
 
     # 6. CalendarEvents
@@ -192,6 +253,8 @@ async def process_version_update(
             title=c.get("title"),
             original_text=c["original_text"],
             plain_text=c.get("plain_text"),
+            page=c.get("page"),
+            bbox=c.get("bbox"),
         ))
 
     for d in dates:
@@ -254,7 +317,7 @@ async def search_chunks(
 ) -> list[dict]:
     from sqlalchemy import text as sa_text
 
-    query_vec = (await ai_client.embed_chunks([query]))[0]
+    query_vec = await ai_client.embed_query(query)
 
     rows = (await db.execute(
         sa_text("""
