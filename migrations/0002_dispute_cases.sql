@@ -39,8 +39,11 @@ CREATE INDEX IF NOT EXISTS dispute_cases_pain_point_ids_gin
 CREATE INDEX IF NOT EXISTS dispute_cases_unfair_flags_gin
     ON dispute_cases USING GIN (unfair_flags);
 
--- pgvector cosine 유사도 ANN 인덱스 (HNSW)
-CREATE INDEX IF NOT EXISTS dispute_cases_embedding_hnsw
-    ON dispute_cases USING hnsw (embedding halfvec_cosine_ops);
+-- pgvector ANN 인덱스(HNSW/IVFFlat) 는 4000차원이 한계 — halfvec(4096) 미지원.
+-- 분쟁 사례 데이터는 수십~수백 row 규모라 linear cosine scan 으로 충분 (HNSW 없이도
+-- 1ms 미만). row 가 만 개 이상으로 늘면:
+--   1) embedding 차원 축소 후 halfvec(2000) 재인덱싱, 또는
+--   2) sparsevec 으로 인덱스 가능한 형태로 변환.
+-- 둘 다 별도 마이그레이션 + 임베딩 재산출 필요.
 
 COMMIT;
