@@ -24,6 +24,22 @@ Concretely: do not gate experiments on token budget. When presenting trade-offs,
 lead with accuracy delta, then time delta. Token usage is reported for visibility
 only.
 
+## Upstage API key 분리 정책
+
+`.env` 에 키 4개 (`UPSTAGE_API_KEY`, `UPSTAGE_API_KEY_2/3/4`). 용도가 명확히 분리됨:
+
+- **Key #1 (`UPSTAGE_API_KEY`)** — **서비스 dev / FastAPI app / 데모 / `scripts/single_run.py`**
+  전용. quota / rate limit 이 평가 작업과 겹치면 dev 중인 서비스 호출이 깨지므로
+  격리. `app/services/ai_client.py` 와 `Settings.service_api_key` property 가 이
+  키만 사용.
+- **Key #2/3/4 (`UPSTAGE_API_KEY_2/3/4`)** — **평가 / 벤치마크 스크립트 전용**.
+  `parallel_run.py`, `run_all_fixtures.py`, `eval_variance.py` 가 사용. `Settings.eval_api_keys`
+  property 가 set 된 것만 리턴. 비어있으면 스크립트가 exit 1 — silent fallback 금지
+  (key #1 으로 흘러가면 정책 무의미).
+
+새 평가/벤치마크 스크립트 추가 시: `settings.eval_api_keys` 만 사용. `service_api_key`
+는 절대 평가 코드에서 호출하지 말 것.
+
 ### Chatbot exception
 The chatbot service (`app/services/chat_service.py`, `chat_with_ai`) has a
 latency-vs-accuracy tradeoff: user is waiting on a live response, so reasonable

@@ -1,6 +1,6 @@
 """여러 fixture를 *각각 다른 API 키*로 동시 실행.
 
-`settings.api_keys` 의 i번째 키를 i번째 fixture의 UpstageClient 에 주입해서
+`settings.eval_api_keys` 의 i번째 키를 i번째 fixture의 UpstageClient 에 주입해서
 `asyncio.gather` 로 병렬 실행. 같은 키에 두 pipeline이 몰리지 않으므로
 Upstage 429 rate limit 충돌 없음 (N=2 voting + ground 5~6회 호출/pipeline 기준).
 
@@ -118,9 +118,13 @@ async def main():
     out_dir.mkdir(parents=True, exist_ok=True)
 
     settings = Settings()
-    keys = settings.api_keys
+    keys = settings.eval_api_keys
     if not keys:
-        print("ERROR: no API keys configured (set UPSTAGE_API_KEY in .env)")
+        print(
+            "ERROR: no eval API keys configured. 평가 스크립트는 UPSTAGE_API_KEY_2/3/4 "
+            "중 최소 한 개 필요 (key #1 은 서비스 dev 전용으로 분리).",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     # Resolve fixtures + assign keys (round-robin if N > len(keys))
