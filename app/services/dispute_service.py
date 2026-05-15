@@ -155,7 +155,7 @@ from sqlalchemy import text as sa_text
 
 
 DEFAULT_TOP_K = int(os.getenv("DISPUTE_TOP_K", "3"))
-DEFAULT_MIN_SCORE = float(os.getenv("DISPUTE_MIN_SCORE", "0.65"))
+DEFAULT_MIN_SCORE = float(os.getenv("DISPUTE_MIN_SCORE", "0.45"))
 
 # Boost 가산값 — 결정론. spec 4.1 참조.
 BOOST_PAIN_POINT = 0.10
