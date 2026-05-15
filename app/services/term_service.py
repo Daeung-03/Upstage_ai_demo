@@ -9,6 +9,7 @@ from app.models.term import Term, TermVersion, TermChunk, TermClause
 from app.models.calendar import CalendarEvent
 from app.models.enums import ClauseType, EventType
 from app.services import ai_client
+from app.services.calendar_service import compute_calendar_events
 
 CHUNK_SIZE = 500
 
@@ -127,7 +128,7 @@ async def process_upload(
     clauses  = _parse_result_to_clauses(result)
     chunks   = _split_chunks(raw_text)
     vectors  = await ai_client.embed_chunks(chunks)
-    dates    = await ai_client.extract_dates(raw_text)
+    dates    = compute_calendar_events(result.terms, subscribed_at)
 
     # 2. Term 저장
     term = Term(
@@ -235,7 +236,11 @@ async def process_version_update(
     clauses  = _parse_result_to_clauses(result)
     chunks   = _split_chunks(raw_text)
     vectors  = await ai_client.embed_chunks(chunks)
-    dates    = await ai_client.extract_dates(raw_text)
+    # 버전 업데이트 시점에는 가입일을 Term 으로부터 끌어와 캘린더 이벤트 재계산.
+    dates    = compute_calendar_events(
+        result.terms,
+        term_obj.subscribed_at if term_obj else None,
+    )
 
     # 버전 변경점 요약 — 이전 버전이 있고 본문이 동일하지 않을 때만 LLM 호출.
     # 동일 본문이면 의미상 "변경 없음" 이 자명하므로 토큰 낭비 회피.

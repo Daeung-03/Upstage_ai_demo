@@ -56,11 +56,6 @@ async def summarize_version_diff(
             service_name=service_name,
         )
 
-
-async def extract_dates(text: str) -> list[dict]:
-    # TODO: AI팀 R2 구현 완료 시 교체
-    return []
-
 async def chat_with_ai(
     query: str,
     term_ids: list[str],
