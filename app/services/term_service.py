@@ -254,7 +254,7 @@ async def search_chunks(
 ) -> list[dict]:
     from sqlalchemy import text as sa_text
 
-    query_vec = (await ai_client.embed_chunks([query]))[0]
+    query_vec = await ai_client.embed_query(query)
 
     rows = (await db.execute(
         sa_text("""
