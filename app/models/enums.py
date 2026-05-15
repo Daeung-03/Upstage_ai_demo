@@ -20,6 +20,9 @@ class ClauseType(str, enum.Enum):
     PRIVACY = "PRIVACY"
     RENEWAL = "RENEWAL"
     LIABILITY = "LIABILITY"
+    # v1.1: 약관 변경 / 의사표시 의제 / 통지 기간 등 (이전엔 ETC 로 묶여 분류 불가).
+    # migration 0004 이전 DB 에는 enum 값 없을 수 있음 — 호출자 fallback 책임.
+    TERMS_CHANGE = "TERMS_CHANGE"
     ETC = "ETC"
 
 class EventType(str, enum.Enum):

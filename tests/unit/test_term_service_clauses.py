@@ -139,11 +139,16 @@ def test_parse_result_to_clauses_populates_page_and_bbox():
     assert out[0]["bbox"] == [0.1, 0.2, 0.3, 0.4]
     assert out[0]["title"] == "요금"
     assert out[0]["plain_text"] == "월 결제"
-    assert out[0]["clause_type"] == "ETC"
+    # v1.1: _derive_clause_type 이 title "요금" 키워드 → PAYMENT 로 분류.
+    assert out[0]["clause_type"] == "PAYMENT"
 
     assert out[1]["page"] == 5
     assert out[1]["bbox"] == [0.5, 0.5, 0.6, 0.6]
+    # title "환불" → CANCELLATION 키워드 매칭.
+    assert out[1]["clause_type"] == "CANCELLATION"
 
     # 매칭 실패 → bbox 는 None, page 는 KeyClauseCitation 의 값을 그대로.
     assert out[2]["page"] == 9
     assert out[2]["bbox"] is None
+    # title "미매칭" + description "bbox 없음" → 키워드 매칭 실패 → ETC.
+    assert out[2]["clause_type"] == "ETC"

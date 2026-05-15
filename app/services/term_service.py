@@ -81,6 +81,70 @@ def _match_bbox(
     return (None, None)
 
 
+def _derive_clause_type(
+    *, pain_point_id: str | None, title: str | None, description: str | None,
+    explicit: str | None = None,
+) -> str:
+    """KeyClause → DB ClauseType 추론.
+
+    우선순위:
+    1. `explicit` (LLM 이 직접 출력한 clause_type — B 옵션 활성 후) 가 ClauseType enum
+       값이면 그대로 사용.
+    2. `pain_point_id` 매핑: PRE-04 → PRIVACY, MID-* → TERMS_CHANGE,
+       POST-01/02 → CANCELLATION, POST-04 → LIABILITY, POST-03/05 → ETC,
+       PRE-01/02 → ETC, PRE-03 → CANCELLATION (자동 결제 전환).
+    3. `title` + `description` 텍스트 키워드 fallback.
+    4. 매칭 실패 → "ETC".
+
+    ClauseType enum (v1.1): PAYMENT / CANCELLATION / PRIVACY / RENEWAL / LIABILITY /
+    TERMS_CHANGE / ETC. TERMS_CHANGE 는 v1.1 신규 (migration 0004) — 미적용 환경에서는
+    "TERMS_CHANGE" 값이 거부되므로 호출자가 enum 보유 여부에 따라 fallback.
+    """
+    valid = {"PAYMENT", "CANCELLATION", "PRIVACY", "RENEWAL", "LIABILITY",
+             "TERMS_CHANGE", "ETC"}
+    # 1. LLM explicit
+    if explicit and isinstance(explicit, str):
+        v = explicit.strip().upper().replace("-", "_")
+        if v in valid:
+            return v
+
+    # 2. pain_point_id 매핑
+    ppid = (pain_point_id or "").strip().upper()
+    PPID_TO_TYPE = {
+        "PRE-01": "ETC",
+        "PRE-02": "ETC",
+        "PRE-03": "CANCELLATION",  # 무료체험 → 자동전환 = 결제 전환 관련
+        "PRE-04": "PRIVACY",
+        "MID-01": "TERMS_CHANGE",
+        "MID-02": "TERMS_CHANGE",
+        "POST-01": "CANCELLATION",  # 위약금
+        "POST-02": "CANCELLATION",
+        "POST-03": "ETC",           # 보장/혜택 미인지
+        "POST-04": "LIABILITY",
+        "POST-05": "ETC",           # 분쟁/집단소송
+    }
+    if ppid in PPID_TO_TYPE:
+        return PPID_TO_TYPE[ppid]
+
+    # 3. title + description 키워드 fallback (한국어)
+    text = f"{title or ''} {description or ''}"
+    KEYWORD_RULES = [
+        ("PRIVACY", ["개인정보", "데이터", "제3자", "정보 수집", "프라이버시", "수집·이용"]),
+        ("TERMS_CHANGE", ["약관 변경", "약관 개정", "변경 시 자동 동의", "변경 시 동의",
+                          "의사표시", "통지 기간", "사전 고지"]),
+        ("CANCELLATION", ["위약금", "해지", "환불", "취소", "탈퇴", "중도해지"]),
+        ("RENEWAL", ["자동 갱신", "자동갱신", "정기 결제 갱신", "구독 갱신"]),
+        ("PAYMENT", ["결제", "요금", "가격", "구독료", "비용", "청구"]),
+        ("LIABILITY", ["면책", "손해배상", "보상", "책임 제한", "책임 부담", "배상"]),
+    ]
+    for ctype, kws in KEYWORD_RULES:
+        if any(kw in text for kw in kws):
+            return ctype
+
+    # 4. fallback
+    return "ETC"
+
+
 def _parse_result_to_clauses(result) -> list[dict]:
     lookup = _collect_field_bboxes(result.terms)
     out = []
@@ -95,8 +159,16 @@ def _parse_result_to_clauses(result) -> list[dict]:
         pain_point_id = getattr(c, "pain_point_id", None)
         if isinstance(pain_point_id, str):
             pain_point_id = pain_point_id.upper() or None  # "POST-01" 형태로
+        # KeyClause schema v1.1 에서 LLM 이 직접 clause_type 출력 가능 (B 옵션).
+        explicit_ct = getattr(c, "clause_type", None)
+        clause_type = _derive_clause_type(
+            pain_point_id=pain_point_id,
+            title=getattr(c, "title", None),
+            description=getattr(c, "description", None),
+            explicit=explicit_ct,
+        )
         out.append({
-            "clause_type": "ETC",               # KeyClause에 clause_type 없음 → 전부 ETC
+            "clause_type": clause_type,
             "title": c.title,
             "original_text": c.citation.quote,  # 원문 인용구
             "plain_text": c.description,        # 평문 설명
