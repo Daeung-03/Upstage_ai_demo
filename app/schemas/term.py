@@ -72,7 +72,9 @@ class SearchRequest(BaseModel):
 
 class ChunkResult(BaseModel):
     chunk_id: UUID
+    chunk_index: int
     content: str
+    # cosine similarity (1.0 = 동일, 0 = 무관). pgvector cosine distance 의 1 보수.
     score: float
 
 class SearchResponse(BaseModel):
