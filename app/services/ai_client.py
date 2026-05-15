@@ -5,6 +5,7 @@ from ai.services import diff as ai_diff
 from ai.services.upstage import UpstageClient
 from ai.services.settings import Settings as AISettings
 from app.config import get_settings
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 def _ai_settings() -> AISettings:
@@ -66,17 +67,24 @@ async def chat_with_ai(
     query: str,
     term_ids: list[str],
     history: list[dict],
+    db: AsyncSession,
 ) -> dict:
-    """
-    R3 chat stub — AI팀 구현 완료 시 교체
-    from ai.pipeline import chat  으로 교체 예정
-    """
     try:
-        from ai.pipeline import chat  # AI팀 구현 후 활성화
-        return await chat(query=query, term_ids=term_ids, history=history)
+        from ai.pipeline import chat
+        from ai.services.upstage import UpstageClient
+        from ai.services.settings import Settings as AISettings   # ← ai settings 사용
+
+        settings = AISettings()
+        async with UpstageClient(settings) as client:
+            return await chat(
+                client,
+                query=query,
+                term_ids=term_ids,
+                history=history,
+                db=db,
+            )
     except ImportError:
-        # --- STUB ---
         return {
-            "answer": f"[STUB] '{query}'에 대한 답변입니다. AI팀 구현 후 교체됩니다.",
+            "answer": f"[STUB] '{query}'에 대한 답변입니다.",
             "sources": [],
         }

@@ -4,6 +4,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     database_url: str
     upstage_api_key: str
+    upstage_base_url: str = "https://api.upstage.ai"
     log_level: str = "INFO"
 
     # extra="ignore": .env 가 AI 평가용 추가 환경변수(UPSTAGE_API_KEY_2/3 등)와

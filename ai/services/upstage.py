@@ -75,6 +75,9 @@ class UpstageClient:
                     )
                     await self._backoff_if_more_attempts(attempt, f"{resp.status_code}")
                     continue
+                
+                if resp.status_code >= 400:
+                    logger.error("upstage error body: %s", resp.text) # 클라이언트 오류 디버깅용
                 resp.raise_for_status()
                 logger.info("upstage %s %s -> %s", method, path, resp.status_code)
                 # resp.json()이 ValueError를 던질 수 있어 (HTML 오류 페이지, 빈 body 등)

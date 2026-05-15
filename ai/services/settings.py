@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     upstage_api_key_2: str | None = None
     upstage_api_key_3: str | None = None
     upstage_api_key_4: str | None = None
-    upstage_base_url: str = "https://api.upstage.ai/v1"
+    upstage_base_url: str = "https://api.upstage.ai/v1/"
     log_level: str = "INFO"
 
     # extra="ignore": .env 가 app 측 DATABASE_URL 등과 공유되더라도 AI Settings 부팅을
