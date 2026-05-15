@@ -349,9 +349,7 @@ async def _get_or_generate_reasoning(
     cached_sig = clause.disputes_signature
     cached_reasoning = clause.dispute_reasoning
     if cached_sig == signature and cached_reasoning:
-        # cache hit — user_action 은 reasoning 안에 묶여있던 시기가 있을 수 있어
-        # 컬럼 분리는 follow-up. 지금은 reasoning 만 반환.
-        return cached_reasoning, None
+        return cached_reasoning, clause.dispute_user_action
 
     # cache miss → LLM 생성
     from app.services.ai_client import generate_dispute_reasoning
@@ -375,8 +373,7 @@ async def _get_or_generate_reasoning(
     # 라우터에서 처리. 여기선 add/update 만)
     clause.dispute_reasoning = result.reasoning
     clause.disputes_signature = signature
-    # NOTE: user_action 은 응답으로만 노출, DB 컬럼은 미저장 (재방문 시 reasoning
-    # 안에 동일 행동 가이드가 들어있어 redundant).
+    clause.dispute_user_action = result.user_action
     try:
         await db.commit()
         await db.refresh(clause)
@@ -477,14 +474,17 @@ async def find_disputes_for_term(
         return {"term_id": term_id, "clauses": []}
 
     signature = await _compute_disputes_signature(db)
-    out_clauses: list[dict] = []
-    for clause in latest.clauses:
-        sub = await find_disputes_for_clause(
+    
+    import asyncio
+    tasks = [
+        find_disputes_for_clause(
             db, clause_id=clause.id, top_k=top_k,
             disputes_signature=signature,
         )
-        if sub:
-            out_clauses.append(sub)
+        for clause in latest.clauses
+    ]
+    out_clauses_raw = await asyncio.gather(*tasks)
+    out_clauses = [sub for sub in out_clauses_raw if sub]
     return {"term_id": term_id, "clauses": out_clauses}
 
 
