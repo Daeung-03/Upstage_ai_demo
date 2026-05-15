@@ -249,14 +249,24 @@ def _enrich_citation(
     return citation.model_copy(update=updates)
 
 
-def _enrich_with_bbox(
-    terms: SubscriptionTerms, elements: list[ParsedElement]
-) -> SubscriptionTerms:
-    """각 섹션의 모든 FieldValue에 대해 citation.bbox를 element 매칭으로 채움."""
-    for section_name in SECTION_NAMES:
-        section = getattr(terms, section_name)
-        for field_name in section.__class__.model_fields:
-            fv: FieldValue = getattr(section, field_name)
+def _enrich_with_bbox(terms, elements: list[ParsedElement]):
+    """각 섹션의 모든 FieldValue에 대해 citation.bbox를 element 매칭으로 채움.
+
+    Schema-polymorphic — root model의 sub-model 필드를 reflection 으로 순회하므로
+    SubscriptionTerms / FinanceTerms / InsuranceTerms 모두에 동작.
+    """
+    from pydantic import BaseModel
+
+    cls = type(terms)
+    for field_name in cls.model_fields:
+        section = getattr(terms, field_name)
+        if not isinstance(section, BaseModel):
+            continue
+        section_cls = type(section)
+        for inner_name in section_cls.model_fields:
+            fv = getattr(section, inner_name)
+            if not isinstance(fv, FieldValue):
+                continue
             new_citation = _enrich_citation(fv.citation, elements)
             if new_citation is not fv.citation:
                 fv.citation = new_citation
@@ -350,3 +360,182 @@ async def extract_subscription_with_voting(
         )
         runs.append(terms)
     return vote_subscription_terms(runs)
+
+
+# ============ Finance / Insurance 도메인 라우팅 ============
+#
+# OTT 와 달리 도메인 분기 (AUTO_AI_DOMAIN 등) 가 없음 — 호출자가 domain 인자로
+# 명시적으로 routing. 프롬프트는 ai/prompts/extract_{finance,insurance}.py 에서 import.
+# voting 은 ai/services/voting.vote_terms 가 schema-polymorphic 이라 새 schema 에 그대로 동작.
+
+from ai.prompts.extract_finance import (  # noqa: E402
+    SYSTEM_PROMPT as FINANCE_SYSTEM_PROMPT,
+    USER_PROMPT_TEMPLATE as FINANCE_USER_PROMPT_TEMPLATE,
+)
+from ai.prompts.extract_insurance import (  # noqa: E402
+    SYSTEM_PROMPT as INSURANCE_SYSTEM_PROMPT,
+    USER_PROMPT_TEMPLATE as INSURANCE_USER_PROMPT_TEMPLATE,
+)
+from ai.schemas.finance import FinanceTerms  # noqa: E402
+from ai.schemas.insurance import InsuranceTerms  # noqa: E402
+from ai.services.voting import vote_terms  # noqa: E402
+
+
+async def _extract_typed(
+    client: UpstageClient,
+    *,
+    schema_cls,
+    system_prompt: str,
+    user_prompt_template: str,
+    parsed_markdown: str,
+    parsed_elements: list[ParsedElement],
+    service_name: str,
+    service_provider: str,
+):
+    """Generic Solar Pro 3 추출 — schema_cls 의 JSON Schema 로 strict 검증.
+
+    extract_subscription 과 구조는 동일하나 schema/prompt 가 인자화됨. 도메인별
+    프롬프트 분기 (AUTO_AI_DOMAIN 등) 는 적용하지 않음 — 호출자가 도메인을 명시.
+    """
+    response_format = {
+        "type": "json_schema",
+        "json_schema": {
+            "name": schema_cls.__name__,
+            "schema": schema_cls.model_json_schema(),
+            "strict": True,
+        },
+    }
+    payload = {
+        "model": MODEL,
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {
+                "role": "user",
+                "content": user_prompt_template.format(
+                    service_name=service_name,
+                    service_provider=service_provider,
+                    parsed_markdown=parsed_markdown,
+                ),
+            },
+        ],
+        "response_format": response_format,
+        "reasoning_effort": REASONING_EFFORT,
+        "temperature": 0,
+    }
+    raw = await client.post_json(CHAT_COMPLETIONS_PATH, json=payload)
+    content_str = raw["choices"][0]["message"]["content"]
+    parsed = json.loads(content_str)
+    parsed.setdefault("extraction_date", datetime.now(timezone.utc).isoformat())
+    parsed.setdefault("service_name", service_name)
+    parsed.setdefault("service_provider", service_provider)
+    try:
+        terms = schema_cls.model_validate(parsed)
+    except ValidationError as e:
+        raise SchemaValidationError(
+            f"{schema_cls.__name__} response validation failed: {e}"
+        ) from e
+    return _enrich_with_bbox(terms, parsed_elements)
+
+
+async def extract_finance(
+    client: UpstageClient,
+    *,
+    parsed_markdown: str,
+    parsed_elements: list[ParsedElement],
+    service_name: str,
+    service_provider: str,
+) -> FinanceTerms:
+    """전자금융/PG/송금/PFM 도메인 추출. FinanceTerms 반환."""
+    return await _extract_typed(
+        client,
+        schema_cls=FinanceTerms,
+        system_prompt=FINANCE_SYSTEM_PROMPT,
+        user_prompt_template=FINANCE_USER_PROMPT_TEMPLATE,
+        parsed_markdown=parsed_markdown,
+        parsed_elements=parsed_elements,
+        service_name=service_name,
+        service_provider=service_provider,
+    )
+
+
+async def extract_finance_with_voting(
+    client: UpstageClient,
+    *,
+    parsed_markdown: str,
+    parsed_elements: list[ParsedElement],
+    service_name: str,
+    service_provider: str,
+    n: int = ENSEMBLE_N,
+) -> FinanceTerms:
+    if n < 1:
+        raise ValueError(f"n must be >= 1, got {n}")
+    if n == 1:
+        return await extract_finance(
+            client,
+            parsed_markdown=parsed_markdown,
+            parsed_elements=parsed_elements,
+            service_name=service_name,
+            service_provider=service_provider,
+        )
+    runs: list[FinanceTerms] = []
+    for _ in range(n):
+        runs.append(await extract_finance(
+            client,
+            parsed_markdown=parsed_markdown,
+            parsed_elements=parsed_elements,
+            service_name=service_name,
+            service_provider=service_provider,
+        ))
+    return vote_terms(runs)
+
+
+async def extract_insurance(
+    client: UpstageClient,
+    *,
+    parsed_markdown: str,
+    parsed_elements: list[ParsedElement],
+    service_name: str,
+    service_provider: str,
+) -> InsuranceTerms:
+    """보험 도메인 추출. InsuranceTerms 반환."""
+    return await _extract_typed(
+        client,
+        schema_cls=InsuranceTerms,
+        system_prompt=INSURANCE_SYSTEM_PROMPT,
+        user_prompt_template=INSURANCE_USER_PROMPT_TEMPLATE,
+        parsed_markdown=parsed_markdown,
+        parsed_elements=parsed_elements,
+        service_name=service_name,
+        service_provider=service_provider,
+    )
+
+
+async def extract_insurance_with_voting(
+    client: UpstageClient,
+    *,
+    parsed_markdown: str,
+    parsed_elements: list[ParsedElement],
+    service_name: str,
+    service_provider: str,
+    n: int = ENSEMBLE_N,
+) -> InsuranceTerms:
+    if n < 1:
+        raise ValueError(f"n must be >= 1, got {n}")
+    if n == 1:
+        return await extract_insurance(
+            client,
+            parsed_markdown=parsed_markdown,
+            parsed_elements=parsed_elements,
+            service_name=service_name,
+            service_provider=service_provider,
+        )
+    runs: list[InsuranceTerms] = []
+    for _ in range(n):
+        runs.append(await extract_insurance(
+            client,
+            parsed_markdown=parsed_markdown,
+            parsed_elements=parsed_elements,
+            service_name=service_name,
+            service_provider=service_provider,
+        ))
+    return vote_terms(runs)

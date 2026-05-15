@@ -10,9 +10,6 @@ from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ai.schemas.subscription import SubscriptionTerms
-<<<<<<< Updated upstream
-from ai.services.extract import extract_subscription_with_voting
-=======
 from ai.schemas.finance import FinanceTerms
 from ai.schemas.insurance import InsuranceTerms 
 from ai.services.extract import (
@@ -20,11 +17,13 @@ from ai.services.extract import (
     extract_insurance_with_voting,
     extract_subscription_with_voting,
 )
->>>>>>> Stashed changes
+
 from ai.services.ground import check_groundedness
 from ai.services.parse import parse_document
 from ai.services.summarize import KeyClause, summarize_risks
 from ai.services.upstage import UpstageClient
+
+Domain = Literal["subscription", "finance", "insurance"]
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +59,10 @@ def _aggregate_usages(stage: str, usages: list[dict[str, Any]]) -> StageUsage:
 
 
 class AnalysisResult(BaseModel):
-    terms: SubscriptionTerms
+    # terms: 도메인별 schema (SubscriptionTerms / FinanceTerms / InsuranceTerms).
+    # union 타입으로 두면 model_validate 가 헷갈리므로 임의 BaseModel 허용.
+    terms: SubscriptionTerms | FinanceTerms | InsuranceTerms
+    domain: Domain = "subscription"
     summary: str
     key_clauses: list[KeyClause]
     ungrounded_clauses: list[KeyClause] = Field(default_factory=list)
@@ -76,6 +78,7 @@ async def run_pipeline(
     filename: str,
     service_name: str,
     service_provider: str,
+    domain: Domain = "subscription",
 ) -> AnalysisResult:
     timings: list[StageTiming] = []
     usage: list[StageUsage] = []
@@ -88,13 +91,30 @@ async def run_pipeline(
     usage.append(_aggregate_usages("parse", client.snapshot_usage()))
 
     t0 = time.perf_counter()
-    terms = await extract_subscription_with_voting(
-        client,
-        parsed_markdown=parsed.markdown,
-        parsed_elements=parsed.elements,
-        service_name=service_name,
-        service_provider=service_provider,
-    )
+    if domain == "finance":
+        terms = await extract_finance_with_voting(
+            client,
+            parsed_markdown=parsed.markdown,
+            parsed_elements=parsed.elements,
+            service_name=service_name,
+            service_provider=service_provider,
+        )
+    elif domain == "insurance":
+        terms = await extract_insurance_with_voting(
+            client,
+            parsed_markdown=parsed.markdown,
+            parsed_elements=parsed.elements,
+            service_name=service_name,
+            service_provider=service_provider,
+        )
+    else:
+        terms = await extract_subscription_with_voting(
+            client,
+            parsed_markdown=parsed.markdown,
+            parsed_elements=parsed.elements,
+            service_name=service_name,
+            service_provider=service_provider,
+        )
     timings.append(StageTiming(stage="extract", seconds=time.perf_counter() - t0))
     usage.append(_aggregate_usages("extract", client.snapshot_usage()))
 
@@ -118,6 +138,7 @@ async def run_pipeline(
     )
     return AnalysisResult(
         terms=terms,
+        domain=domain,
         summary=ground.summary,
         key_clauses=ground.grounded_clauses,
         ungrounded_clauses=ground.ungrounded_clauses,
