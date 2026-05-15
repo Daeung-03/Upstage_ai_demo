@@ -51,6 +51,10 @@ class TermVersion(Base):
     summary: Mapped[str | None] = mapped_column(Text, nullable=True)
     diff_summary: Mapped[str | None] = mapped_column(Text, nullable=True)
     is_latest: Mapped[bool] = mapped_column(Boolean, default=True)
+    # 약관 자체에 적힌 "이 약관은 YYYY-MM-DD 부터 시행" 날짜. 버전별로 다름.
+    # Term.subscribed_at(사용자가 가입한 날)과 의미 분리.
+    # 미입력 시 NULL — 프론트가 created_at 으로 fallback.
+    effective_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     term: Mapped["Term"] = relationship("Term", back_populates="versions")
