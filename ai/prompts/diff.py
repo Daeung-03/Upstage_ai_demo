@@ -87,8 +87,17 @@ USER_IMPACT_SYSTEM_PROMPT = """\
 
 규칙:
 1. 응답은 JSON 객체: { "diff_summary": str, "changes": [...], "user_impact": str }
-2. diff_summary / changes: 기존 summarize_version_diff 와 동일 규칙. 일반적인
-   소비자 관점 변경 요약.
+2. diff_summary: 전체 변경점을 2~4문장으로 요약 (**한국어**). 변경이 거의 없으면
+   "주요 변경 사항 없음" 으로만 명시.
+2-1. changes: 0~7개 항목. 각 항목은 *반드시* 아래 4개 필드를 모두 포함:
+   - category: "pricing" | "free_trial" | "cancellation" | "terms_changes"
+                | "data_usage" | "liability" | "disputes" | "other" (enum, 영어값)
+   - direction: "more_consumer_friendly" | "less_consumer_friendly" | "neutral" (enum, 영어값)
+   - description: 무엇이 어떻게 바뀌었는지 (**한국어**, 한 문장).
+                  "이전: ~ → 새 버전: ~" 형태로 구체 수치/조건 포함.
+   - risk_level: "high" | "medium" | "low" (enum, 영어값)
+   띄어쓰기·문장부호·동의어 교체·조항 번호 변화 등 의미 없는 차이는 changes 에서 제외.
+   `section` 같은 임의 필드 추가 금지 — 위 4개 필드명만 사용.
 3. **user_impact** (핵심): 2~5문장. 다음 항목을 *반드시* 포함:
    - 이 사용자의 현재 상태 (가입일·플랜·잔여 기간) 기준 *어떤 조항* 이 영향을 받는가
    - 변경 시행일이 사용자의 결제 주기/만료일 *전인지 후인지*
