@@ -168,6 +168,10 @@ async def chat(
     history: list[dict],
     db: AsyncSession,
 ) -> dict:
+    # 같은 client 가 chat → run_pipeline 순으로 재사용될 때 stale usage 가 다음
+    # 파이프라인의 parse stage 에 합산되는 leak 방지. chat 자체의 usage 는 별도
+    # 보고 안 함 — 캐시/사용량 분석 필요 시 호출 후 snapshot_usage() 한 번 더.
+    client.snapshot_usage()
     try:
         # 1. 질문 임베딩
         embed_resp = await client.post_json(
@@ -237,7 +241,6 @@ async def chat(
                 "temperature": 0,
             }
             ground_resp = await client.post_json("chat/completions", json=ground_payload)
-            import json
             ground_data = json.loads(ground_resp["choices"][0]["message"]["content"])
             if not (ground_data.get("grounded") is True and float(ground_data.get("score", 0)) >= 0.6):
                 answer += "\n\n⚠️ 일부 내용은 약관 원문에서 확인이 필요할 수 있습니다."

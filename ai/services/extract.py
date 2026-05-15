@@ -6,7 +6,27 @@ from datetime import datetime, timezone
 
 from pydantic import ValidationError
 
+from ai.prompts.extract_ai import (
+    SYSTEM_PROMPT as AI_DOMAIN_SYSTEM_PROMPT,
+    USER_PROMPT_TEMPLATE as AI_DOMAIN_USER_PROMPT_TEMPLATE,
+)
+from ai.prompts.extract_finance import (
+    SYSTEM_PROMPT as FINANCE_SYSTEM_PROMPT,
+    USER_PROMPT_TEMPLATE as FINANCE_USER_PROMPT_TEMPLATE,
+)
+from ai.prompts.extract_insurance import (
+    SYSTEM_PROMPT as INSURANCE_SYSTEM_PROMPT,
+    USER_PROMPT_TEMPLATE as INSURANCE_USER_PROMPT_TEMPLATE,
+)
 from ai.prompts.extract_subscription import SYSTEM_PROMPT, USER_PROMPT_TEMPLATE
+from ai.schemas.ai_terms import AITerms
+from ai.schemas.common import Citation, FieldValue
+from ai.schemas.finance import FinanceTerms
+from ai.schemas.insurance import InsuranceTerms
+from ai.schemas.subscription import SubscriptionTerms
+from ai.services.parse import ParsedElement
+from ai.services.upstage import UpstageClient
+from ai.services.voting import vote_subscription_terms, vote_terms
 
 # Zero-shot baseline용 minimal 시스템 프롬프트 — 사례/도메인 룰 모두 제거.
 # `MINIMAL_PROMPT=1` 환경변수 설정 시 활성화. 평가 목적 (시스템 가치 측정) 외엔 사용 안 함.
@@ -157,11 +177,6 @@ def _select_system_prompt(service_name: str, parsed_markdown: str | None = None)
             return AI_SYSTEM_PROMPT
         return MINIMAL_SYSTEM_PROMPT
     return SYSTEM_PROMPT
-from ai.schemas.common import Citation, FieldValue
-from ai.schemas.subscription import SubscriptionTerms
-from ai.services.parse import ParsedElement
-from ai.services.upstage import UpstageClient
-from ai.services.voting import vote_subscription_terms
 
 
 class SchemaValidationError(ValueError):
@@ -221,11 +236,17 @@ def _find_element_for_quote(
     qn = _normalize(q)
     if not qn:
         return None
+    # `en in qn` 방향은 element 가 quote 의 일부일 때 (LLM 이 인용을 확장한 경우) 매칭하기
+    # 위한 것. 그러나 짧은 element ("제3조" 등) 가 긴 quote 에 우연히 substring 매칭돼
+    # bbox 가 잘못된 element (제목 등) 로 attach 되는 사례 발생. 최소 길이 가드.
+    MIN_REVERSE_MATCH_LEN = 16
     for elem in elements:
         en = _normalize(elem.text)
         if not en:
             continue  # 빈 element 는 "" in qn 이 항상 True 라 첫 element 가 무조건 잡히는 버그 방지
-        if qn in en or en in qn:
+        if qn in en:
+            return elem
+        if len(en) >= MIN_REVERSE_MATCH_LEN and en in qn:
             return elem
 
     # 4) 앵커(앞 20자) 매칭 — LLM이 인용 끝을 잘랐을 때
@@ -366,28 +387,11 @@ async def extract_subscription_with_voting(
     return vote_subscription_terms(runs)
 
 
-# ============ Finance / Insurance 도메인 라우팅 ============
+# ============ Finance / Insurance / AI 도메인 라우팅 ============
 #
 # OTT 와 달리 도메인 분기 (AUTO_AI_DOMAIN 등) 가 없음 — 호출자가 domain 인자로
-# 명시적으로 routing. 프롬프트는 ai/prompts/extract_{finance,insurance}.py 에서 import.
+# 명시적으로 routing. 프롬프트는 ai/prompts/extract_{finance,insurance,ai}.py 에서 import.
 # voting 은 ai/services/voting.vote_terms 가 schema-polymorphic 이라 새 schema 에 그대로 동작.
-
-from ai.prompts.extract_ai import (  # noqa: E402
-    SYSTEM_PROMPT as AI_DOMAIN_SYSTEM_PROMPT,
-    USER_PROMPT_TEMPLATE as AI_DOMAIN_USER_PROMPT_TEMPLATE,
-)
-from ai.prompts.extract_finance import (  # noqa: E402
-    SYSTEM_PROMPT as FINANCE_SYSTEM_PROMPT,
-    USER_PROMPT_TEMPLATE as FINANCE_USER_PROMPT_TEMPLATE,
-)
-from ai.prompts.extract_insurance import (  # noqa: E402
-    SYSTEM_PROMPT as INSURANCE_SYSTEM_PROMPT,
-    USER_PROMPT_TEMPLATE as INSURANCE_USER_PROMPT_TEMPLATE,
-)
-from ai.schemas.ai_terms import AITerms  # noqa: E402
-from ai.schemas.finance import FinanceTerms  # noqa: E402
-from ai.schemas.insurance import InsuranceTerms  # noqa: E402
-from ai.services.voting import vote_terms  # noqa: E402
 
 
 async def _extract_typed(

@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 import os
 
@@ -82,35 +83,54 @@ async def _check_one(
     return is_grounded, score
 
 
+def _build_clause_answer(clause: KeyClause, quote_anchored: bool) -> str:
+    base = f'{clause.title}: {clause.description}'
+    if quote_anchored:
+        return base + f' (원문 인용 확인됨: "{clause.citation.quote}")'
+    return base + f' (원문 인용 미확인: "{clause.citation.quote}")'
+
+
 async def check_groundedness(
     client: UpstageClient,
     *,
     summary: SummaryResult,
     source_markdown: str,
 ) -> GroundednessResult:
+    # 1차: 각 clause 의 citation.quote 가 원문에 있는지 deterministic 체크.
+    #      있으면 인용 자체는 검증됨 → 설명만 LLM 으로 추가 검증 (의역 허용 prompt 사용).
+    anchored_flags = [
+        _quote_in_source(c.citation.quote, source_markdown) for c in summary.key_clauses
+    ]
+    clause_answers = [
+        _build_clause_answer(c, anchored) for c, anchored in zip(summary.key_clauses, anchored_flags)
+    ]
+
+    # clause N건 + summary 1건을 모두 병렬 호출. accuracy 영향 없이 latency 만 N+1 → 1 wave 로
+    # 단축. 429 retry 는 upstage 클라이언트가 처리하므로 동시성 spike 도 안전.
+    clause_tasks = [
+        _check_one(client, context=source_markdown, answer=ans) for ans in clause_answers
+    ]
+    summary_task = _check_one(client, context=source_markdown, answer=summary.summary)
+    *clause_results, summary_result = await asyncio.gather(*clause_tasks, summary_task)
+    summary_is_grounded, summary_score = summary_result
+
     grounded: list[KeyClause] = []
     ungrounded: list[KeyClause] = []
-    for clause in summary.key_clauses:
-        # 1차: citation.quote가 원문에 있는지 deterministic 체크.
-        #      있으면 인용 자체는 검증됨 → 설명만 LLM으로 추가 검증 (의역 허용 prompt 사용).
-        quote_anchored = _quote_in_source(clause.citation.quote, source_markdown)
-        answer = f'{clause.title}: {clause.description}'
-        if quote_anchored:
-            answer += f' (원문 인용 확인됨: "{clause.citation.quote}")'
-        else:
-            answer += f' (원문 인용 미확인: "{clause.citation.quote}")'
-        is_grounded, score = await _check_one(client, context=source_markdown, answer=answer)
-        # citation이 원문에 anchored이고 LLM이 명백히 모순이라고 안 했으면 (score >= 0.4) 인정
-        if quote_anchored and score >= 0.4:
+    for clause, anchored, (is_grounded, score) in zip(
+        summary.key_clauses, anchored_flags, clause_results
+    ):
+        # citation 이 원문에 anchored 이면 LLM 이 명백히 모순이라고 안 한 한 (score >= 0.4)
+        # 인정. 인용 자체는 deterministic 으로 검증됐으니 LLM 의 grounded=False 모순적 응답은
+        # 약하게 weight — score 만 임계로 사용. 0.4 는 MIN_SCORE(0.6) 보다 약한 임계로,
+        # "명백한 모순" 만 차단하는 게 의도.
+        if anchored and score >= 0.4:
             grounded.append(clause)
         elif is_grounded and score >= MIN_SCORE:
             grounded.append(clause)
         else:
             ungrounded.append(clause)
-    # summary 텍스트는 인용 anchor가 없으므로 LLM 판정에만 의존
-    summary_is_grounded, summary_score = await _check_one(
-        client, context=source_markdown, answer=summary.summary
-    )
+
+    # summary 텍스트는 인용 anchor 가 없으므로 LLM 판정에만 의존
     summary_grounded = summary_is_grounded and summary_score >= MIN_SCORE
     return GroundednessResult(
         summary=summary.summary,
