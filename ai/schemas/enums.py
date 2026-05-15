@@ -85,3 +85,22 @@ class RefundFormula(str, Enum):
     SURRENDER_VALUE_TABLE = "surrender_value_table"  # 해지환급금 표 기준
     CASH_VALUE_BASED = "cash_value_based"  # 책임준비금 기반
     NO_REFUND = "no_refund"
+
+
+# === AI 도메인 ===
+
+class TrainingDataPolicy(str, Enum):
+    """사용자 입력·출력의 학습 활용 정책. AI 약관 핵심 unfair 후보."""
+    USED_DEFAULT = "used_default"             # 옵트인 없이 기본 사용
+    OPT_OUT_AVAILABLE = "opt_out_available"   # 설정으로 거부 가능
+    NOT_USED = "not_used"                     # 학습 미사용 명시
+    EXPLICIT_CONSENT_REQUIRED = "explicit_consent_required"  # 별도 동의 필요
+
+
+class OutputIPOwnership(str, Enum):
+    """생성 결과 (output) 의 저작권/IP 귀속."""
+    USER = "user"               # 이용자 (대부분 영문 LLM 약관 표준)
+    COMPANY = "company"
+    SHARED = "shared"
+    PUBLIC_DOMAIN = "public_domain"
+    AMBIGUOUS = "ambiguous"

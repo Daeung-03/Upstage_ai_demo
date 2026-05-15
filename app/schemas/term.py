@@ -50,6 +50,8 @@ class TermVersionDetail(BaseModel):
     is_latest: bool
     clauses: list[ClauseDetail]
     created_at: datetime
+    # 약관 자체에 적힌 시행일 (버전마다 다름). NULL 일 때 프론트는 created_at fallback.
+    effective_date: Optional[date] = None
 
 class TermDetailResponse(BaseModel):
     id: UUID

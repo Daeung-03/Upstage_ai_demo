@@ -277,6 +277,7 @@ OTT/구독 외 도메인용 추출 스키마를 별도 정의해 두었습니다
 |---|---|---|
 | 전자금융/결제/송금 | [`ai/schemas/finance.py`](ai/schemas/finance.py) — `FinanceTerms` | Fees · TransactionLimits · LiabilityAllocation (EFTA §9) · DepositProtection · AccountTermination · TermsChanges · DataUsage · Disputes |
 | 보험 (실손/생명/손해 등) | [`ai/schemas/insurance.py`](ai/schemas/insurance.py) — `InsuranceTerms` | Coverage · Exclusions · Premium · Claims · CancellationRefund · Renewal · TermsChanges · DataUsage · Disputes |
+| **AI/LLM (Claude/GPT/Gemini/DeepSeek/Upstage 등)** | [`ai/schemas/ai_terms.py`](ai/schemas/ai_terms.py) — `AITerms` | ServiceTier · TrainingDataUse · OutputAndIP · UsageLimits · ProhibitedUse · ExportAndRegional · AICancellation · TermsChanges · DataUsage · Liability · Disputes |
 
 `ai/services/voting.py` 는 schema-polymorphic 으로 리팩되어 위 두 도메인 + 기존 OTT 스키마에 모두 동작합니다 (`vote_terms(terms_list)`). 단위 테스트는 `tests/unit/test_schemas_{finance,insurance}.py`, `test_services_voting.py::test_vote_terms_works_on_*` 에 포함.
 

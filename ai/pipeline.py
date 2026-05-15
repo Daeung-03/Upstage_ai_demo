@@ -11,8 +11,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ai.schemas.subscription import SubscriptionTerms
 from ai.schemas.finance import FinanceTerms
-from ai.schemas.insurance import InsuranceTerms 
+from ai.schemas.insurance import InsuranceTerms
+from ai.schemas.ai_terms import AITerms
 from ai.services.extract import (
+    extract_ai_terms_with_voting,
     extract_finance_with_voting,
     extract_insurance_with_voting,
     extract_subscription_with_voting,
@@ -22,7 +24,7 @@ from ai.services.parse import parse_document
 from ai.services.summarize import KeyClause, summarize_risks
 from ai.services.upstage import UpstageClient
 
-Domain = Literal["subscription", "finance", "insurance"]
+Domain = Literal["subscription", "finance", "insurance", "ai"]
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +62,7 @@ def _aggregate_usages(stage: str, usages: list[dict[str, Any]]) -> StageUsage:
 class AnalysisResult(BaseModel):
     # terms: 도메인별 schema (SubscriptionTerms / FinanceTerms / InsuranceTerms).
     # union 타입으로 두면 model_validate 가 헷갈리므로 임의 BaseModel 허용.
-    terms: SubscriptionTerms | FinanceTerms | InsuranceTerms
+    terms: SubscriptionTerms | FinanceTerms | InsuranceTerms | AITerms
     domain: Domain = "subscription"
     summary: str
     key_clauses: list[KeyClause]
@@ -101,6 +103,14 @@ async def run_pipeline(
         )
     elif domain == "insurance":
         terms = await extract_insurance_with_voting(
+            client,
+            parsed_markdown=parsed.markdown,
+            parsed_elements=parsed.elements,
+            service_name=service_name,
+            service_provider=service_provider,
+        )
+    elif domain == "ai":
+        terms = await extract_ai_terms_with_voting(
             client,
             parsed_markdown=parsed.markdown,
             parsed_elements=parsed.elements,

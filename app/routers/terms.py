@@ -45,6 +45,11 @@ TEMP_USER_ID = uuid.UUID("00000000-0000-0000-0000-000000000001")
 async def upload_term(
     service_name: str = Form(...),
     subscribed_at: Optional[str] = Form(None),
+    effective_date: Optional[str] = Form(
+        None,
+        description="약관 시행일 ISO 8601 date (YYYY-MM-DD). "
+                    "버전별로 다름 — 미입력 시 프론트는 created_at 으로 fallback.",
+    ),
     domain: str = Form("ETC"),
     sub_category: Optional[str] = Form(None),
     file: UploadFile = File(...),
@@ -53,17 +58,22 @@ async def upload_term(
     file_bytes = await file.read()
     file_url = f"/files/{file.filename}"
 
-    # str → date 변환
+    # str → date 변환 (양쪽 동일 패턴)
     try:
-        parsed_date = date.fromisoformat(subscribed_at) if subscribed_at else None
+        parsed_subscribed = date.fromisoformat(subscribed_at) if subscribed_at else None
     except ValueError:
-        parsed_date = None
+        parsed_subscribed = None
+    try:
+        parsed_effective = date.fromisoformat(effective_date) if effective_date else None
+    except ValueError:
+        parsed_effective = None
 
     term, version = await term_service.process_upload(
         db=db,
         user_id=TEMP_USER_ID,
         service_name=service_name,
-        subscribed_at=parsed_date,  # ← str 대신 date 객체로
+        subscribed_at=parsed_subscribed,
+        effective_date=parsed_effective,
         file_bytes=file_bytes,
         file_url=file_url,
         domain=domain,
@@ -171,6 +181,7 @@ async def get_term(
                 diff_summary=v.diff_summary,
                 is_latest=v.is_latest,
                 created_at=v.created_at,
+                effective_date=v.effective_date,
                 clauses=[
                     ClauseDetail(
                         id=c.id,
@@ -216,6 +227,11 @@ async def get_term(
 async def update_term(
     term_id: uuid.UUID,
     file: UploadFile = File(...),
+    effective_date: Optional[str] = Form(
+        None,
+        description="이 새 버전 약관의 시행일 ISO 8601 (YYYY-MM-DD). "
+                    "미입력 시 NULL → 프론트는 created_at 로 fallback.",
+    ),
     include_user_impact: bool = Form(False),
     user_plan: Optional[str] = Form(None),
     user_custom_notes: Optional[str] = Form(None),
@@ -228,12 +244,18 @@ async def update_term(
     file_bytes = await file.read()
     file_url = f"/files/{file.filename}"
 
+    try:
+        parsed_effective = date.fromisoformat(effective_date) if effective_date else None
+    except ValueError:
+        parsed_effective = None
+
     new_version, user_impact = await term_service.process_version_update(
         db=db,
         term_id=term_id,
         user_id=TEMP_USER_ID,
         file_bytes=file_bytes,
         file_url=file_url,
+        effective_date=parsed_effective,
         include_user_impact=include_user_impact,
         user_plan=user_plan,
         user_custom_notes=user_custom_notes,

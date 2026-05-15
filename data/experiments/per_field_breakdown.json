@@ -1,0 +1,664 @@
+{
+  "per_fixture_summary": {
+    "netflix": {
+      "n_runs": 5,
+      "categories": {
+        "A. both null": 13,
+        "D. model never extracted (golden has value)": 13,
+        "A. consensus matches golden": 17,
+        "C. model variance (no consensus)": 3,
+        "X. ambiguous": 3,
+        "B. consensus disagrees with golden": 2
+      }
+    },
+    "spotify": {
+      "n_runs": 5,
+      "categories": {
+        "A. both null": 6,
+        "A. consensus matches golden": 19,
+        "X. ambiguous": 3,
+        "D. model never extracted (golden has value)": 10,
+        "C. model variance (no consensus)": 6,
+        "B. consensus disagrees with golden": 7
+      }
+    },
+    "wavve": {
+      "n_runs": 5,
+      "categories": {
+        "A. both null": 12,
+        "D. model never extracted (golden has value)": 11,
+        "A. consensus matches golden": 16,
+        "B. consensus disagrees with golden": 4,
+        "C. model variance (no consensus)": 5,
+        "E. over-extraction (golden null, model invents)": 3
+      }
+    },
+    "coupang_play": {
+      "n_runs": 5,
+      "categories": {
+        "A. both null": 10,
+        "D. model never extracted (golden has value)": 15,
+        "X. ambiguous": 8,
+        "A. consensus matches golden": 8,
+        "C. model variance (no consensus)": 7,
+        "B. consensus disagrees with golden": 3
+      }
+    },
+    "tving": {
+      "n_runs": 5,
+      "categories": {
+        "A. both null": 9,
+        "A. consensus matches golden": 14,
+        "D. model never extracted (golden has value)": 10,
+        "B. consensus disagrees with golden": 11,
+        "C. model variance (no consensus)": 6,
+        "E. over-extraction (golden null, model invents)": 1
+      }
+    },
+    "disney_plus": {
+      "n_runs": 5,
+      "categories": {
+        "A. both null": 5,
+        "A. consensus matches golden": 19,
+        "C. model variance (no consensus)": 7,
+        "X. ambiguous": 4,
+        "D. model never extracted (golden has value)": 11,
+        "B. consensus disagrees with golden": 5
+      }
+    },
+    "watcha": {
+      "n_runs": 5,
+      "categories": {
+        "A. both null": 6,
+        "A. consensus matches golden": 16,
+        "D. model never extracted (golden has value)": 13,
+        "C. model variance (no consensus)": 8,
+        "B. consensus disagrees with golden": 2,
+        "X. ambiguous": 4,
+        "E. over-extraction (golden null, model invents)": 2
+      }
+    },
+    "claude": {
+      "n_runs": 5,
+      "categories": {
+        "A. both null": 6,
+        "B. consensus disagrees with golden": 9,
+        "A. consensus matches golden": 18,
+        "X. ambiguous": 2,
+        "E. over-extraction (golden null, model invents)": 2,
+        "D. model never extracted (golden has value)": 10,
+        "C. model variance (no consensus)": 4
+      }
+    },
+    "deepseek": {
+      "n_runs": 5,
+      "categories": {
+        "A. both null": 15,
+        "D. model never extracted (golden has value)": 9,
+        "X. ambiguous": 8,
+        "B. consensus disagrees with golden": 3,
+        "A. consensus matches golden": 10,
+        "C. model variance (no consensus)": 3,
+        "E. over-extraction (golden null, model invents)": 3
+      }
+    },
+    "gemini": {
+      "n_runs": 5,
+      "categories": {
+        "A. both null": 7,
+        "D. model never extracted (golden has value)": 18,
+        "X. ambiguous": 6,
+        "A. consensus matches golden": 8,
+        "C. model variance (no consensus)": 10,
+        "B. consensus disagrees with golden": 2
+      }
+    },
+    "gpt": {
+      "n_runs": 5,
+      "categories": {
+        "A. both null": 5,
+        "A. consensus matches golden": 17,
+        "B. consensus disagrees with golden": 6,
+        "E. over-extraction (golden null, model invents)": 7,
+        "C. model variance (no consensus)": 8,
+        "D. model never extracted (golden has value)": 8
+      }
+    },
+    "upstage": {
+      "n_runs": 5,
+      "categories": {
+        "A. both null": 5,
+        "E. over-extraction (golden null, model invents)": 6,
+        "C. model variance (no consensus)": 12,
+        "A. consensus matches golden": 10,
+        "B. consensus disagrees with golden": 10,
+        "D. model never extracted (golden has value)": 8
+      }
+    },
+    "banksalad": {
+      "n_runs": 5,
+      "categories": {
+        "D. model never extracted (golden has value)": 12,
+        "A. both null": 19,
+        "A. consensus matches golden": 8,
+        "C. model variance (no consensus)": 5,
+        "X. ambiguous": 4,
+        "B. consensus disagrees with golden": 3
+      }
+    },
+    "kakaopay": {
+      "n_runs": 5,
+      "categories": {
+        "A. both null": 24,
+        "X. ambiguous": 7,
+        "D. model never extracted (golden has value)": 7,
+        "C. model variance (no consensus)": 2,
+        "A. consensus matches golden": 9,
+        "B. consensus disagrees with golden": 2
+      }
+    },
+    "toss": {
+      "n_runs": 5,
+      "categories": {
+        "A. both null": 25,
+        "A. consensus matches golden": 8,
+        "C. model variance (no consensus)": 1,
+        "D. model never extracted (golden has value)": 11,
+        "X. ambiguous": 4,
+        "B. consensus disagrees with golden": 2
+      }
+    }
+  },
+  "global_field_counts": {
+    "pricing.base_price_krw": {
+      "A": 14,
+      "D": 1
+    },
+    "pricing.billing_cycle": {
+      "D": 4,
+      "A": 9,
+      "B": 1,
+      "E": 1
+    },
+    "pricing.auto_renewal_enabled": {
+      "A": 11,
+      "X": 1,
+      "D": 2,
+      "E": 1
+    },
+    "pricing.auto_renewal_consent": {
+      "A": 10,
+      "X": 1,
+      "B": 2,
+      "D": 1,
+      "E": 1
+    },
+    "pricing.price_change_notice_days": {
+      "D": 4,
+      "A": 9,
+      "E": 1,
+      "C": 1
+    },
+    "pricing.price_change_notice_channels": {
+      "D": 6,
+      "A": 6,
+      "X": 1,
+      "E": 1,
+      "C": 1
+    },
+    "free_trial.offered": {
+      "D": 1,
+      "A": 12,
+      "X": 2
+    },
+    "free_trial.duration_days": {
+      "A": 14,
+      "D": 1
+    },
+    "free_trial.auto_convert_to_paid": {
+      "A": 10,
+      "X": 2,
+      "D": 2,
+      "C": 1
+    },
+    "free_trial.cancel_required_before_end": {
+      "A": 10,
+      "X": 1,
+      "C": 2,
+      "D": 2
+    },
+    "free_trial.payment_method_required_upfront": {
+      "A": 9,
+      "D": 2,
+      "X": 1,
+      "B": 3
+    },
+    "free_trial.notice_before_conversion_days": {
+      "A": 13,
+      "X": 1,
+      "D": 1
+    },
+    "cancellation.method": {
+      "A": 8,
+      "B": 4,
+      "X": 3
+    },
+    "cancellation.method_description": {
+      "C": 11,
+      "B": 1,
+      "X": 3
+    },
+    "cancellation.notice_period_days": {
+      "X": 2,
+      "B": 5,
+      "D": 6,
+      "C": 1,
+      "A": 1
+    },
+    "cancellation.penalty_present": {
+      "A": 9,
+      "D": 3,
+      "X": 3
+    },
+    "cancellation.penalty_description": {
+      "A": 10,
+      "C": 2,
+      "B": 1,
+      "E": 2
+    },
+    "cancellation.proration_policy": {
+      "A": 12,
+      "X": 1,
+      "D": 2
+    },
+    "cancellation.blackout_periods": {
+      "A": 15
+    },
+    "cancellation.cooling_off_refund_days": {
+      "D": 11,
+      "A": 4
+    },
+    "cancellation.cooling_off_conditions": {
+      "D": 11,
+      "A": 4
+    },
+    "cancellation.third_party_cancellation_required": {
+      "D": 15
+    },
+    "terms_changes.notice_channels": {
+      "X": 1,
+      "B": 6,
+      "C": 4,
+      "A": 4
+    },
+    "terms_changes.notice_lead_time_days": {
+      "A": 12,
+      "B": 2,
+      "E": 1
+    },
+    "terms_changes.user_consent_mechanism": {
+      "C": 3,
+      "A": 9,
+      "B": 2,
+      "X": 1
+    },
+    "terms_changes.user_right_to_terminate_on_change": {
+      "A": 13,
+      "X": 2
+    },
+    "terms_changes.silent_acceptance_clause": {
+      "D": 1,
+      "C": 3,
+      "A": 6,
+      "B": 2,
+      "X": 3
+    },
+    "terms_changes.price_change_explicit_consent": {
+      "D": 12,
+      "A": 3
+    },
+    "data_usage.collected_categories": {
+      "C": 9,
+      "E": 2,
+      "A": 1,
+      "B": 1,
+      "X": 1,
+      "D": 1
+    },
+    "data_usage.third_party_sharing": {
+      "A": 7,
+      "B": 4,
+      "C": 2,
+      "E": 1,
+      "X": 1
+    },
+    "data_usage.third_party_recipients": {
+      "A": 3,
+      "E": 2,
+      "C": 9,
+      "X": 1
+    },
+    "data_usage.third_party_purposes": {
+      "A": 3,
+      "E": 2,
+      "C": 7,
+      "D": 1,
+      "X": 2
+    },
+    "data_usage.retention_period_months": {
+      "A": 11,
+      "D": 2,
+      "E": 1,
+      "X": 1
+    },
+    "data_usage.marketing_use": {
+      "A": 5,
+      "C": 2,
+      "B": 3,
+      "E": 2,
+      "D": 3
+    },
+    "data_usage.marketing_consent": {
+      "A": 7,
+      "X": 3,
+      "B": 1,
+      "E": 1,
+      "C": 2,
+      "D": 1
+    },
+    "data_usage.cross_border_transfer": {
+      "A": 10,
+      "D": 2,
+      "B": 2,
+      "X": 1
+    },
+    "liability.service_disruption_compensation": {
+      "A": 10,
+      "B": 3,
+      "X": 2
+    },
+    "liability.compensation_description": {
+      "B": 2,
+      "C": 7,
+      "X": 3,
+      "A": 2,
+      "E": 1
+    },
+    "liability.damages_cap_present": {
+      "A": 11,
+      "D": 1,
+      "X": 2,
+      "C": 1
+    },
+    "liability.damages_cap_description": {
+      "A": 7,
+      "C": 4,
+      "D": 1,
+      "X": 2,
+      "E": 1
+    },
+    "liability.force_majeure_scope": {
+      "X": 1,
+      "D": 3,
+      "A": 5,
+      "C": 3,
+      "B": 2,
+      "E": 1
+    },
+    "liability.indirect_damages_excluded": {
+      "A": 12,
+      "D": 1,
+      "B": 1,
+      "E": 1
+    },
+    "disputes.governing_law": {
+      "A": 9,
+      "E": 1,
+      "B": 5
+    },
+    "disputes.jurisdiction_clause": {
+      "A": 2,
+      "B": 8,
+      "C": 4,
+      "X": 1
+    },
+    "disputes.arbitration_required": {
+      "A": 9,
+      "B": 2,
+      "X": 1,
+      "D": 3
+    },
+    "disputes.class_action_waiver": {
+      "A": 9,
+      "X": 1,
+      "C": 1,
+      "B": 1,
+      "D": 3
+    },
+    "account.minimum_age": {
+      "D": 14,
+      "A": 1
+    },
+    "account.sharing_restrictions": {
+      "D": 15
+    },
+    "service.regional_content_restriction": {
+      "D": 12,
+      "A": 3
+    },
+    "service.availability_disclaimer": {
+      "D": 15
+    },
+    "unfair_clause_flags": {
+      "B": 7,
+      "C": 7,
+      "X": 1
+    }
+  },
+  "d_ranking_top20": [
+    [
+      "cancellation.third_party_cancellation_required",
+      15
+    ],
+    [
+      "account.sharing_restrictions",
+      15
+    ],
+    [
+      "service.availability_disclaimer",
+      15
+    ],
+    [
+      "account.minimum_age",
+      14
+    ],
+    [
+      "terms_changes.price_change_explicit_consent",
+      12
+    ],
+    [
+      "service.regional_content_restriction",
+      12
+    ],
+    [
+      "cancellation.cooling_off_refund_days",
+      11
+    ],
+    [
+      "cancellation.cooling_off_conditions",
+      11
+    ],
+    [
+      "pricing.price_change_notice_channels",
+      6
+    ],
+    [
+      "cancellation.notice_period_days",
+      6
+    ],
+    [
+      "pricing.billing_cycle",
+      4
+    ],
+    [
+      "pricing.price_change_notice_days",
+      4
+    ],
+    [
+      "cancellation.penalty_present",
+      3
+    ],
+    [
+      "data_usage.marketing_use",
+      3
+    ],
+    [
+      "liability.force_majeure_scope",
+      3
+    ],
+    [
+      "disputes.arbitration_required",
+      3
+    ],
+    [
+      "disputes.class_action_waiver",
+      3
+    ],
+    [
+      "pricing.auto_renewal_enabled",
+      2
+    ],
+    [
+      "free_trial.auto_convert_to_paid",
+      2
+    ],
+    [
+      "free_trial.cancel_required_before_end",
+      2
+    ]
+  ],
+  "b_ranking_top20": [
+    [
+      "disputes.jurisdiction_clause",
+      8
+    ],
+    [
+      "unfair_clause_flags",
+      7
+    ],
+    [
+      "terms_changes.notice_channels",
+      6
+    ],
+    [
+      "cancellation.notice_period_days",
+      5
+    ],
+    [
+      "disputes.governing_law",
+      5
+    ],
+    [
+      "cancellation.method",
+      4
+    ],
+    [
+      "data_usage.third_party_sharing",
+      4
+    ],
+    [
+      "free_trial.payment_method_required_upfront",
+      3
+    ],
+    [
+      "data_usage.marketing_use",
+      3
+    ],
+    [
+      "liability.service_disruption_compensation",
+      3
+    ],
+    [
+      "pricing.auto_renewal_consent",
+      2
+    ],
+    [
+      "terms_changes.notice_lead_time_days",
+      2
+    ],
+    [
+      "terms_changes.user_consent_mechanism",
+      2
+    ],
+    [
+      "terms_changes.silent_acceptance_clause",
+      2
+    ],
+    [
+      "data_usage.cross_border_transfer",
+      2
+    ],
+    [
+      "liability.compensation_description",
+      2
+    ],
+    [
+      "liability.force_majeure_scope",
+      2
+    ],
+    [
+      "disputes.arbitration_required",
+      2
+    ],
+    [
+      "pricing.billing_cycle",
+      1
+    ],
+    [
+      "cancellation.method_description",
+      1
+    ]
+  ],
+  "e_ranking_top10": [
+    [
+      "cancellation.penalty_description",
+      2
+    ],
+    [
+      "data_usage.collected_categories",
+      2
+    ],
+    [
+      "data_usage.third_party_recipients",
+      2
+    ],
+    [
+      "data_usage.third_party_purposes",
+      2
+    ],
+    [
+      "data_usage.marketing_use",
+      2
+    ],
+    [
+      "pricing.billing_cycle",
+      1
+    ],
+    [
+      "pricing.auto_renewal_enabled",
+      1
+    ],
+    [
+      "pricing.auto_renewal_consent",
+      1
+    ],
+    [
+      "pricing.price_change_notice_days",
+      1
+    ],
+    [
+      "pricing.price_change_notice_channels",
+      1
+    ]
+  ]
+}

@@ -368,6 +368,10 @@ async def extract_subscription_with_voting(
 # 명시적으로 routing. 프롬프트는 ai/prompts/extract_{finance,insurance}.py 에서 import.
 # voting 은 ai/services/voting.vote_terms 가 schema-polymorphic 이라 새 schema 에 그대로 동작.
 
+from ai.prompts.extract_ai import (  # noqa: E402
+    SYSTEM_PROMPT as AI_DOMAIN_SYSTEM_PROMPT,
+    USER_PROMPT_TEMPLATE as AI_DOMAIN_USER_PROMPT_TEMPLATE,
+)
 from ai.prompts.extract_finance import (  # noqa: E402
     SYSTEM_PROMPT as FINANCE_SYSTEM_PROMPT,
     USER_PROMPT_TEMPLATE as FINANCE_USER_PROMPT_TEMPLATE,
@@ -376,6 +380,7 @@ from ai.prompts.extract_insurance import (  # noqa: E402
     SYSTEM_PROMPT as INSURANCE_SYSTEM_PROMPT,
     USER_PROMPT_TEMPLATE as INSURANCE_USER_PROMPT_TEMPLATE,
 )
+from ai.schemas.ai_terms import AITerms  # noqa: E402
 from ai.schemas.finance import FinanceTerms  # noqa: E402
 from ai.schemas.insurance import InsuranceTerms  # noqa: E402
 from ai.services.voting import vote_terms  # noqa: E402
@@ -532,6 +537,64 @@ async def extract_insurance_with_voting(
     runs: list[InsuranceTerms] = []
     for _ in range(n):
         runs.append(await extract_insurance(
+            client,
+            parsed_markdown=parsed_markdown,
+            parsed_elements=parsed_elements,
+            service_name=service_name,
+            service_provider=service_provider,
+        ))
+    return vote_terms(runs)
+
+
+async def extract_ai_terms(
+    client: UpstageClient,
+    *,
+    parsed_markdown: str,
+    parsed_elements: list[ParsedElement],
+    service_name: str,
+    service_provider: str,
+) -> AITerms:
+    """AI/LLM 도메인 추출. AITerms 반환.
+
+    R9 vs R11 비교 (2026-05-16, EXPERIMENTS.md) 결과 prompt 차원 개선이 noise floor
+    안에 있음을 확인. 본 함수는 AI 약관 고유 필드 (training_data_use, output_and_ip,
+    usage_limits, prohibited_use, export_and_regional) 를 정확한 schema 좌표계로
+    추출. SubscriptionTerms 7섹션 매핑 misfit 회피.
+    """
+    return await _extract_typed(
+        client,
+        schema_cls=AITerms,
+        system_prompt=AI_DOMAIN_SYSTEM_PROMPT,
+        user_prompt_template=AI_DOMAIN_USER_PROMPT_TEMPLATE,
+        parsed_markdown=parsed_markdown,
+        parsed_elements=parsed_elements,
+        service_name=service_name,
+        service_provider=service_provider,
+    )
+
+
+async def extract_ai_terms_with_voting(
+    client: UpstageClient,
+    *,
+    parsed_markdown: str,
+    parsed_elements: list[ParsedElement],
+    service_name: str,
+    service_provider: str,
+    n: int = ENSEMBLE_N,
+) -> AITerms:
+    if n < 1:
+        raise ValueError(f"n must be >= 1, got {n}")
+    if n == 1:
+        return await extract_ai_terms(
+            client,
+            parsed_markdown=parsed_markdown,
+            parsed_elements=parsed_elements,
+            service_name=service_name,
+            service_provider=service_provider,
+        )
+    runs: list[AITerms] = []
+    for _ in range(n):
+        runs.append(await extract_ai_terms(
             client,
             parsed_markdown=parsed_markdown,
             parsed_elements=parsed_elements,

@@ -115,3 +115,100 @@ def test_upload_endpoint_missing_service_name_returns_422(client):
         files={"file": ("netflix.pdf", b"%PDF", "application/pdf")},
     )
     assert r.status_code == 422
+
+
+# ── effective_date 회귀 가드 ──────────────────────────────
+
+
+def test_upload_endpoint_parses_effective_date_form_field(monkeypatch, client):
+    """effective_date form 값이 date 객체로 파싱되어 process_upload 에 전달."""
+    captured = {}
+
+    async def fake_upload(**kwargs):
+        captured["effective_date"] = kwargs.get("effective_date")
+        return _fake_term_version()
+
+    monkeypatch.setattr(term_service, "process_upload", fake_upload)
+
+    class _DummyDB:
+        async def commit(self): return None
+        async def refresh(self, obj): return None
+
+    async def _dummy_get_db():
+        yield _DummyDB()
+
+    app.dependency_overrides[get_db] = _dummy_get_db
+    try:
+        r = client.post(
+            "/terms/upload",
+            files={"file": ("netflix.pdf", b"%PDF", "application/pdf")},
+            data={"service_name": "Netflix", "effective_date": "2025-03-15"},
+        )
+    finally:
+        app.dependency_overrides[get_db] = lambda: iter([None])
+
+    assert r.status_code == 201, r.text
+    # 라우터가 str → date 변환 후 service 에 전달
+    assert captured["effective_date"] == date(2025, 3, 15)
+
+
+def test_upload_endpoint_invalid_effective_date_silently_drops(monkeypatch, client):
+    """잘못된 날짜 문자열은 None 으로 fallback (요청 자체는 성공)."""
+    captured = {}
+
+    async def fake_upload(**kwargs):
+        captured["effective_date"] = kwargs.get("effective_date")
+        return _fake_term_version()
+
+    monkeypatch.setattr(term_service, "process_upload", fake_upload)
+
+    class _DummyDB:
+        async def commit(self): return None
+        async def refresh(self, obj): return None
+
+    async def _dummy_get_db():
+        yield _DummyDB()
+
+    app.dependency_overrides[get_db] = _dummy_get_db
+    try:
+        r = client.post(
+            "/terms/upload",
+            files={"file": ("netflix.pdf", b"%PDF", "application/pdf")},
+            data={"service_name": "Netflix", "effective_date": "not-a-date"},
+        )
+    finally:
+        app.dependency_overrides[get_db] = lambda: iter([None])
+
+    assert r.status_code == 201, r.text
+    assert captured["effective_date"] is None  # ValueError → None fallback
+
+
+def test_upload_endpoint_missing_effective_date_defaults_to_none(monkeypatch, client):
+    """effective_date 미입력 시 service 에 None 전달."""
+    captured = {}
+
+    async def fake_upload(**kwargs):
+        captured["effective_date"] = kwargs.get("effective_date")
+        return _fake_term_version()
+
+    monkeypatch.setattr(term_service, "process_upload", fake_upload)
+
+    class _DummyDB:
+        async def commit(self): return None
+        async def refresh(self, obj): return None
+
+    async def _dummy_get_db():
+        yield _DummyDB()
+
+    app.dependency_overrides[get_db] = _dummy_get_db
+    try:
+        r = client.post(
+            "/terms/upload",
+            files={"file": ("netflix.pdf", b"%PDF", "application/pdf")},
+            data={"service_name": "Netflix"},
+        )
+    finally:
+        app.dependency_overrides[get_db] = lambda: iter([None])
+
+    assert r.status_code == 201
+    assert captured["effective_date"] is None
