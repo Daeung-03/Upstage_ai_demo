@@ -156,3 +156,47 @@ def test_find_element_for_quote_returns_none_when_all_empty():
         ParsedElement(id=1, page=1, category="paragraph", text="", bbox=(0.2, 0.2, 0.3, 0.3)),
     ]
     assert _find_element_for_quote("어떤 문장이든", page=1, elements=elements) is None
+
+
+def test_find_element_for_quote_rejects_short_reverse_substring():
+    """회귀 가드 (C2): 짧은 element 가 긴 quote 의 substring 인 케이스에서 오매칭 차단.
+
+    이전 버그: step 3 의 `en in qn` 방향이 길이 가드 없이 매칭돼, 4자 제목 element
+    가 28자짜리 quote 와 매칭되며 bbox 가 제목 영역으로 attach 됨. 가드 후 MIN
+    (16자) 미만의 element 는 reverse 방향에서 제외돼, anchor (step 4) 로 폴백.
+    """
+    elements = [
+        # 짧은 제목 element — 이전엔 quote 에 "제3조" 가 포함됐다는 이유로 매칭
+        ParsedElement(id=1, page=1, category="heading", text="제3조", bbox=(0.0, 0.0, 0.1, 0.1)),
+        # 실제 본문 단락 — quote 의 prefix 가 여기 들어있으므로 anchor 폴백으로 잡힘
+        ParsedElement(
+            id=2, page=1, category="paragraph",
+            text="제3조 (개인정보 보호) 회사는 사용자의 개인정보를 수집하고 보호합니다. 자세한 사항은 ...",
+            bbox=(0.2, 0.2, 0.9, 0.4),
+        ),
+    ]
+    quote = "제3조 (개인정보 보호) 회사는 사용자의 개인정보를 수집합니다."
+    match = _find_element_for_quote(quote, page=1, elements=elements)
+    assert match is not None
+    # 짧은 제목 element(id=1) 가 아니라 실제 본문(id=2) 에 매칭돼야 함
+    assert match.id == 2
+    assert match.bbox == (0.2, 0.2, 0.9, 0.4)
+
+
+def test_find_element_for_quote_still_matches_long_reverse_substring():
+    """C2 가드가 *과보호*하지 않는지 확인: 충분히 긴 element 는 reverse 방향 매칭 유지.
+
+    LLM 이 element.text 외에 추가 문구를 붙여 quote 를 확장한 정상 케이스.
+    """
+    elements = [
+        ParsedElement(
+            id=1, page=2, category="paragraph",
+            text="구독은 결제 주기 종료일에 자동으로 갱신됩니다.",  # 24자 (>=16) → 가드 통과
+            bbox=(0.1, 0.1, 0.9, 0.3),
+        ),
+    ]
+    # quote 가 element.text 를 그대로 포함 + 추가 컨텍스트
+    quote = "구독은 결제 주기 종료일에 자동으로 갱신됩니다. 사용자는 결제일 전까지 해지할 수 있습니다."
+    match = _find_element_for_quote(quote, page=2, elements=elements)
+    assert match is not None
+    assert match.id == 1

@@ -99,3 +99,60 @@ async def test_retry_does_not_sleep_after_final_attempt(httpx_mock, settings, mo
     # MAX_RETRIES=3 → 첫 시도와 두 번째 시도 후에만 sleep, 마지막 시도 후엔 sleep 없이 즉시 raise
     assert len(sleep_calls) == 2
     assert sleep_calls == [0.5, 1.0]  # 0.5 * 2^0, 0.5 * 2^1
+
+
+async def test_client_retries_on_429_then_success(httpx_mock, settings, monkeypatch):
+    """429 (rate limit) 는 5xx 와 동일하게 retry. 두 번째 시도에서 200 회복."""
+    httpx_mock.add_response(status_code=429, url=f"{settings.upstage_base_url}/rl")
+    httpx_mock.add_response(json={"ok": True}, url=f"{settings.upstage_base_url}/rl")
+
+    sleep_calls: list[float] = []
+
+    async def fake_sleep(seconds: float) -> None:
+        sleep_calls.append(seconds)
+
+    monkeypatch.setattr("ai.services.upstage.asyncio.sleep", fake_sleep)
+
+    async with UpstageClient(settings) as client:
+        r = await client.post_json("/rl", json={})
+    assert r["ok"] is True
+    # 429 는 5xx 보다 길게 backoff — Retry-After 헤더 없으면 0.5 * 2^(0+1) = 1.0s
+    assert sleep_calls == [1.0]
+
+
+async def test_client_429_honors_retry_after_header(httpx_mock, settings, monkeypatch):
+    """429 에 Retry-After 헤더 있으면 그 값으로 sleep (exponential backoff 무시)."""
+    httpx_mock.add_response(
+        status_code=429,
+        headers={"Retry-After": "3"},
+        url=f"{settings.upstage_base_url}/rl",
+    )
+    httpx_mock.add_response(json={"ok": True}, url=f"{settings.upstage_base_url}/rl")
+
+    sleep_calls: list[float] = []
+
+    async def fake_sleep(seconds: float) -> None:
+        sleep_calls.append(seconds)
+
+    monkeypatch.setattr("ai.services.upstage.asyncio.sleep", fake_sleep)
+
+    async with UpstageClient(settings) as client:
+        r = await client.post_json("/rl", json={})
+    assert r["ok"] is True
+    assert sleep_calls == [3.0]  # Retry-After 헤더 우선
+
+
+async def test_client_429_exhausts_retries(httpx_mock, settings, monkeypatch):
+    """3번 다 429 면 마지막엔 HTTPStatusError raise (5xx 와 동일)."""
+    httpx_mock.add_response(
+        status_code=429, url=f"{settings.upstage_base_url}/rl_loop", is_reusable=True
+    )
+
+    async def fake_sleep(seconds: float) -> None:
+        pass
+
+    monkeypatch.setattr("ai.services.upstage.asyncio.sleep", fake_sleep)
+
+    async with UpstageClient(settings) as client:
+        with pytest.raises(httpx.HTTPStatusError):
+            await client.post_json("/rl_loop", json={})

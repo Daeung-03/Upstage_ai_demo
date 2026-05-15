@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import mimetypes
+import re
 from html.parser import HTMLParser
 
 from pydantic import BaseModel
@@ -15,6 +16,10 @@ DEFAULT_CONTENT_TYPE = "application/pdf"
 # 가능한 값: "standard" (기본 OCR), "enhanced" (VLM), "auto" (자동 선택).
 DEFAULT_PARSE_MODE = "enhanced"
 HTML_EXTS = (".html", ".htm")
+
+# heading 시작 토큰이 단독으로 한 줄 차지하면 (빈 heading) 정리 시 제거.
+# class 본문에서 lookup 되므로 class 위에 정의해야 forward-reference 회피.
+HEADING_TAGS_ALONE = {"# ", "## ", "### ", "#### ", "##### ", "###### "}
 
 
 class _HTMLTextExtractor(HTMLParser):
@@ -72,15 +77,11 @@ class _HTMLTextExtractor(HTMLParser):
     def get_text(self) -> str:
         raw = "".join(self.parts)
         # 4+ 연속 줄바꿈 → 2개로 정리 (markdown 단락 구분 유지)
-        import re
         raw = re.sub(r"\n{3,}", "\n\n", raw)
         # 공백 정리: 한 줄 안에서 연속 공백 1개로
         lines = [re.sub(r" +", " ", line).strip() for line in raw.split("\n")]
         # 헤더 행이 공백 헤더 ("## ") 만 있으면 제거
         return "\n".join(line for line in lines if line and line not in HEADING_TAGS_ALONE).strip()
-
-
-HEADING_TAGS_ALONE = {"# ", "## ", "### ", "#### ", "##### ", "###### "}
 
 
 def _guess_content_type(filename: str) -> str:

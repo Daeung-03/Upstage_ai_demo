@@ -26,19 +26,24 @@ only.
 
 ## Upstage API key 분리 정책
 
-`.env` 에 키 4개 (`UPSTAGE_API_KEY`, `UPSTAGE_API_KEY_2/3/4`). 용도가 명확히 분리됨:
+`.env` 에 키 4개 (`UPSTAGE_API_KEY`, `UPSTAGE_API_KEY_2/3/4`). 두 사용 패턴:
 
-- **Key #1 (`UPSTAGE_API_KEY`)** — **서비스 dev / FastAPI app / 데모 / `scripts/single_run.py`**
-  전용. quota / rate limit 이 평가 작업과 겹치면 dev 중인 서비스 호출이 깨지므로
-  격리. `app/services/ai_client.py` 와 `Settings.service_api_key` property 가 이
-  키만 사용.
-- **Key #2/3/4 (`UPSTAGE_API_KEY_2/3/4`)** — **평가 / 벤치마크 스크립트 전용**.
-  `parallel_run.py`, `run_all_fixtures.py`, `eval_variance.py` 가 사용. `Settings.eval_api_keys`
-  property 가 set 된 것만 리턴. 비어있으면 스크립트가 exit 1 — silent fallback 금지
-  (key #1 으로 흘러가면 정책 무의미).
+- **FastAPI app (`app/services/ai_client.py`)** — `AISettings.app_api_key_pool`
+  property 를 통해 **설정된 모든 키를 round-robin** 으로 사용. bulk upload / 데모
+  동시 요청이 단일 키 rate-limit 에서 직렬화되는 걸 막기 위함. Railway 환경에서
+  Key #2/3/4 를 비워두면 pool = `[Key #1]` 로 자동 축소돼 이전 동작과 동일.
+- **평가 / 벤치마크 스크립트** — `parallel_run.py`, `run_all_fixtures.py`,
+  `eval_variance.py` 등은 `Settings.eval_api_keys` 만 사용. Key #2/3/4 중 설정된
+  것만 리턴 — 비어있으면 스크립트가 exit 1 (silent fallback 금지: key #1 으로
+  흘러가면 분리 정책 무의미).
 
-새 평가/벤치마크 스크립트 추가 시: `settings.eval_api_keys` 만 사용. `service_api_key`
-는 절대 평가 코드에서 호출하지 말 것.
+eval 격리는 "평가 스크립트가 app 키를 안 쓴다" 한 방향으로만 강제. app 도 키
+2/3/4 를 활용해 throughput 을 늘릴 수 있지만, 평가 작업과 시간이 겹치면 quota 가
+경합할 수 있으니 대용량 eval 돌릴 땐 bulk upload 를 피하거나 Railway 의
+Key #2/3/4 env 를 일시 unset.
+
+새 평가/벤치마크 스크립트 추가 시: `settings.eval_api_keys` 만 사용.
+`service_api_key` 는 절대 평가 코드에서 호출하지 말 것.
 
 ### Chatbot exception
 The chatbot service (`app/services/chat_service.py`, `chat_with_ai`) has a
@@ -98,7 +103,7 @@ Evaluation scripts (require a real `UPSTAGE_API_KEY` and the Netflix PDF fixture
 
 2. **`services/extract.py`** — `POST /chat/completions` with `model=solar-pro3`, `response_format.json_schema`, `reasoning_effort=high`, `temperature=0`. The Information Extract API is **not** used: it forbids nested root objects, which conflicts with the 7-section `SubscriptionTerms` schema. After parsing, `_enrich_with_bbox` walks every `FieldValue.citation`, matches `citation.quote` against `ParsedElement.text` (page-first → global → whitespace-normalized → 20-char anchor prefix) and back-fills `bbox` + `section`.
 
-   Wrapped by `extract_subscription_with_voting()`: **N=3 sequential** calls (`ENSEMBLE_N`). Parallel calls hit Upstage 429 rate limits, so calls are serial. Aggregation lives in `services/voting.py`: per-field majority vote across the three `SubscriptionTerms` results, then `unfair_clause_flags = union`. The winning `FieldValue` is kept whole, preserving its `citation` (including bbox). `None` is treated as "empty"; `[]` and `""` are considered meaningful (e.g., `blackout_periods=[]` means "no blackouts").
+   Wrapped by `extract_subscription_with_voting()`: **default N=2 sequential** calls (`ENSEMBLE_N`, env-overridable). Parallel calls hit Upstage 429 rate limits, so calls are serial (429 is now retried with `Retry-After` honored, see `services/upstage.py`). N=2 + `reasoning_effort=medium` is the experimentally chosen winner (2026-05-14 23-run benchmark: avg 71.6% vs N=3 medium 65.8% at -28% wall-time; see `ai/EXPERIMENTS.md`). Aggregation lives in `services/voting.py`: per-field majority vote across the runs, then `unfair_clause_flags = union`. The winning `FieldValue` is kept whole, preserving its `citation` (including bbox). `None` is treated as "empty"; `[]` and `""` are considered meaningful (e.g., `blackout_periods=[]` means "no blackouts").
 
 3. **`services/summarize.py`** — `POST /chat/completions` with `response_format=json_object`, `temperature=0`. Produces `summary` + 3–5 `KeyClause` objects (`title`, `description`, `risk_level`, `pain_point_id`, `citation`).
 

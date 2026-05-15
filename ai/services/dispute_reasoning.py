@@ -63,12 +63,14 @@ async def generate_clause_reasoning(
     matches: list[dict[str, Any]],
 ) -> ReasoningResult:
     """단일 TermClause + 매칭 사례 K건 → reasoning 단락 생성."""
+    # 토큰 비용은 제약 아님 (CLAUDE.md) + dispute reasoning 은 DB 캐시되므로 latency 부담
+    # 없음 → quote/description 전체 길이 전달. 이전 600/400자 truncation 은 매직 넘버였음.
     user_msg = USER_PROMPT_TEMPLATE.format(
         clause_title=clause_title or "(제목 없음)",
         risk_level=risk_level or "unknown",
         pain_point_id=pain_point_id or "unknown",
-        clause_quote=(clause_quote or "")[:600] or "(원문 없음)",
-        clause_description=(clause_description or "")[:400] or "(설명 없음)",
+        clause_quote=clause_quote or "(원문 없음)",
+        clause_description=clause_description or "(설명 없음)",
         n=len(matches),
         cases_block=_format_cases(matches),
     )

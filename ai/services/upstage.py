@@ -57,25 +57,55 @@ class UpstageClient:
     ) -> dict[str, Any]:
         return await self._request("POST", path, files=files, data=data)
 
-    async def _backoff_if_more_attempts(self, attempt: int, reason: str) -> None:
-        """마지막 시도면 sleep 없이 즉시 실패. 그 외엔 exponential backoff."""
+    async def _backoff_if_more_attempts(
+        self, attempt: int, reason: str, *, delay: float | None = None
+    ) -> None:
+        """마지막 시도면 sleep 없이 즉시 실패. 그 외엔 exponential backoff.
+
+        `delay` 가 주어지면 그 값으로 sleep (429 의 Retry-After 우선 적용용).
+        """
         if attempt < self.MAX_RETRIES - 1:
-            delay = self.RETRY_BACKOFF_S * (2**attempt)
-            logger.info("upstage retry (%s), sleeping %.2fs (attempt %d)", reason, delay, attempt + 1)
-            await asyncio.sleep(delay)
+            d = delay if delay is not None else self.RETRY_BACKOFF_S * (2**attempt)
+            logger.info("upstage retry (%s), sleeping %.2fs (attempt %d)", reason, d, attempt + 1)
+            await asyncio.sleep(d)
+
+    def _parse_retry_after(self, value: str | None) -> float | None:
+        """Retry-After 헤더 파싱. 초 단위 정수만 지원 (HTTP-date 형식은 무시).
+
+        Upstage 는 초 단위만 반환 (관찰), 음수/0 은 무시. 잘못된 포맷도 None.
+        """
+        if not value:
+            return None
+        try:
+            v = float(value)
+        except (TypeError, ValueError):
+            return None
+        return v if v > 0 else None
 
     async def _request(self, method: str, path: str, **kwargs) -> dict[str, Any]:
         last_exc: Exception | None = None
         for attempt in range(self.MAX_RETRIES):
             try:
                 resp = await self._client.request(method, path, **kwargs)
+                # 429 (rate limit): Retry-After 헤더 우선, 없으면 5xx 보다 길게 backoff.
+                # 평가 / bulk upload 동시 호출 시 자주 발생 → silent fail 대신 retry.
+                if resp.status_code == 429:
+                    last_exc = httpx.HTTPStatusError(
+                        f"rate limited {resp.status_code}", request=resp.request, response=resp
+                    )
+                    retry_after = self._parse_retry_after(resp.headers.get("retry-after"))
+                    # 기본 backoff: 5xx 보다 길게 (1s/2s/4s) — 동시성 충돌 식히기 위함
+                    fallback_delay = self.RETRY_BACKOFF_S * (2 ** (attempt + 1))
+                    delay = retry_after if retry_after is not None else fallback_delay
+                    await self._backoff_if_more_attempts(attempt, "429", delay=delay)
+                    continue
                 if resp.status_code >= 500:
                     last_exc = httpx.HTTPStatusError(
                         f"server {resp.status_code}", request=resp.request, response=resp
                     )
                     await self._backoff_if_more_attempts(attempt, f"{resp.status_code}")
                     continue
-                
+
                 if resp.status_code >= 400:
                     logger.error("upstage error body: %s", resp.text) # 클라이언트 오류 디버깅용
                 resp.raise_for_status()
