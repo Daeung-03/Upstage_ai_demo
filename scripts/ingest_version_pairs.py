@@ -153,8 +153,11 @@ async def _ingest_one(
             if upd.status_code != 201:
                 return {"key": pair["key"], "ok": False, "term_id": term_id,
                         "error": f"update {upd.status_code}: {upd.text[:300]}"}
-        except httpx.HTTPError as exc:
-            return {"key": pair["key"], "ok": False, "error": f"transport: {exc}"}
+        except Exception as exc:
+            # httpx.HTTPError 외에 raw ssl.SSLError 등도 잡아 한 서비스 실패가
+            # 다른 서비스 task 를 죽이지 않게 격리.
+            return {"key": pair["key"], "ok": False,
+                    "error": f"transport: {type(exc).__name__}: {exc}"}
         dt = time.perf_counter() - t0
 
     payload = upd.json()
