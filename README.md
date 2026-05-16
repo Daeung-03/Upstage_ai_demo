@@ -29,6 +29,44 @@
 
 집계 대상: 2026-05-15 01:45 ~ 23:47 사이 12개 `data/experiments/all_fixtures_*.json` × 15 fixture × N=2 inner runs = **311 개별 measurement**. fixture 당 평균 21회 측정 (최소 15, 최대 24). 시간대 분포가 다양해 backend 부하 변동까지 자연 평균됨.
 
+### 🧪 골든 테스트 구조 — 이 점수를 어떻게 읽어야 하나
+
+> **57%가 곧 "성능이 낮다"는 뜻이 아니다.** 이 테스트는 점수가 잘 나오도록 설계한 게 아니라 *진짜 갭을 드러내도록* 설계됐다. 아래 채점 구조를 먼저 이해하고 표를 보길 권장.
+
+**골든 파일** (`data/fixtures/<service>_golden.json`) — 사람이 약관 원문을 보고 직접 편집한 ground truth. fixture 당 `_meta` + **50개 leaf 필드 + `unfair_clause_flags`** = 51 키. 각 엔트리는 채점 기준인 `expected` 외에 `source_quote`·`source_page`·`note`(라벨 근거)를 함께 보관해, 점수가 틀렸을 때 원문 대조가 가능하다.
+
+**채점** ([`scripts/score_against_golden.py`](scripts/score_against_golden.py)) — 파이프라인 출력을 `expected` 와 필드별 비교해 5가지로 분류하고 `정확도 = (ok + ok_null) / total` 을 계산. 섹션별·타입별(int/bool/enum/list/str) 분해, `unfair_clause_flags` 는 precision/recall 로 별도 측정.
+
+| 분류 | 의미 | 정답? |
+|---|---|---|
+| `ok` | non-null 값 일치 | ✅ |
+| `ok_null` | 둘 다 null — "약관에 해당 조항 없음"을 맞춤 | ✅ |
+| `wrong` | 값이 다름 | ❌ |
+| `missed` | 정답이 있는데 모델이 null | ❌ |
+| `over_extracted` | 정답이 없는데 모델이 값을 지어냄 | ❌ |
+
+**Strict vs Semantic** — strict 는 정규화(enum alias·list vocab·괄호 부연 제거) 후 완전 일치만 인정. semantic(`--semantic`)은 자유 텍스트(str/list)에 fuzzy 매칭(SequenceMatcher·토큰 Jaccard·substring·multilingual 임베딩 cosine)을 적용해 의역·한↔영 표기 차이를 회수한다. 두 값의 격차(57 → 63%)가 곧 *"의역 페널티의 크기"* 이며, semantic 쪽이 실질 상한선에 더 가깝다.
+
+**왜 57%(strict)가 "낮은 점수"가 아닌가**
+
+- **자유 텍스트 페널티** — `*_description`·`governing_law` 같은 str 필드는 모델이 의역만 해도 strict 에서 `wrong` 처리. str 타입 정확도가 ~57%로 전 타입 최저인데, 이는 모델이 틀린 게 아니라 *표현이 다를 뿐*인 경우가 다수 (semantic 으로 회수됨).
+- **null 변별을 요구** — 약관에 없는 값을 별도 가격 페이지·정책 문서에서 추론하면 `over_extracted` 로 감점. "모르는 건 모른다"를 강제한다 (counter-intuitive 발견: netflix 80% run 의 결정적 차이가 `over_extracted=0` 이었음).
+- **ceiling 미측정** — inter-annotator agreement 를 재지 않아 골든 라벨 자체의 상한선을 모른다. 우리 64%가 ceiling 85% 대비인지 75% 대비인지 불확실 (아래 [한계 #5](#-한계-및-다음-단계)).
+- **MCQ 벤치마크와 다른 task** — Solar Pro 3 한국어 MCQ 80%는 *4지선다*, 이 테스트는 *51필드 자유 추출*. 직접 비교는 부적절하다 (아래 표 참조).
+
+**Upstage 공개 80% 벤치마크와의 차이**
+
+Upstage 가 공개한 Solar Pro 3 한국어 ~80%는 KMMLU 류의 **4지선다 객관식(MCQ)** 점수다. 본 골든 테스트와는 *task 자체가 다르므로* strict 57%와의 갭(-23%p)을 모델 능력 저하로 읽으면 안 된다.
+
+| 항목 | Upstage MCQ 벤치마크 (~80%) | 본 골든 테스트 (strict 57%) |
+|---|---|---|
+| 형식 | 4지선다 — 정답이 보기 안에 존재 | 51필드 자유 추출 — 정답 후보 없음 |
+| 채점 | 보기 일치 (binary) | 5-way 분류 — 의역·null 누락·over-extraction 모두 감점 |
+| 입력 | 짧은 문항 1개 | 30KB~437KB 장문 약관 (parse 단계 오류까지 누적) |
+| 정답 출처 | 데이터셋 제작자 (검증된 ceiling) | 우리 팀 라벨 (ceiling 미측정) |
+
+MCQ 는 *"주어진 보기 중 고르기"*, 우리 테스트는 *"장문 약관을 구조화 스키마로 정확히 옮겨 적기"* — 후자가 본질적으로 더 어렵다. 따라서 -23%p 갭은 **모델 성능 차이가 아니라 task 난이도 차이**다. 동일 task 에서 모델의 진짜 baseline 을 보려면 zero-shot 측정치(`MINIMAL_PROMPT=1`)와 비교해야 한다.
+
 ### 🏆 전체 평균 (per-fixture trimmed mean 의 산술평균)
 
 | 메트릭 | 값 |
