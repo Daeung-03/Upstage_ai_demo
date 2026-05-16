@@ -186,6 +186,28 @@ class SchemaValidationError(ValueError):
     """
 
 
+def _parse_extract_content(raw: dict, *, markdown_len: int) -> dict:
+    """Solar Pro 3 chat completion 응답에서 JSON content 를 dict 로 파싱.
+
+    빈 content / 비-JSON 응답을 SchemaValidationError(→422)로 승격해, raw
+    JSONDecodeError 로 인한 500 을 막는다. content 가 비는 대표 원인은 입력
+    (parsed_markdown)이 모델 컨텍스트 윈도우를 초과하는 경우 — 100p+ 약관
+    (대형 보험 약관 등)은 현재 파이프라인이 단발 추출로 처리하지 못한다.
+    """
+    content_str = raw["choices"][0]["message"].get("content")
+    if not content_str or not content_str.strip():
+        finish = raw["choices"][0].get("finish_reason")
+        raise SchemaValidationError(
+            f"Extract 응답 content 가 비어 있음 (finish_reason={finish}) — "
+            f"문서가 추출 모델 컨텍스트를 초과했을 가능성 "
+            f"(parsed_markdown {markdown_len:,}자)"
+        )
+    try:
+        return json.loads(content_str)
+    except json.JSONDecodeError as e:
+        raise SchemaValidationError(f"Extract 응답이 유효한 JSON 이 아님: {e}") from e
+
+
 ENSEMBLE_N = int(os.getenv("EXTRACT_ENSEMBLE_N", "2"))
 # Default: N=2 + medium — 23-run 실험(2026-05-14) 결과 G config(N=2 medium)이 평균 71.6%로 winner.
 # N=3 medium(65.8%) 대비 +5.8%p, 시간 -28%, 토큰 -24%.
@@ -337,8 +359,7 @@ async def extract_subscription(
         "temperature": 0,  # 추출은 결정론적으로 (Solar는 완전 결정적이진 않지만 variance 최소화)
     }
     raw = await client.post_json(CHAT_COMPLETIONS_PATH, json=payload)
-    content_str = raw["choices"][0]["message"]["content"]
-    parsed = json.loads(content_str)
+    parsed = _parse_extract_content(raw, markdown_len=len(parsed_markdown))
     parsed.setdefault("extraction_date", datetime.now(timezone.utc).isoformat())
     parsed.setdefault("service_name", service_name)
     parsed.setdefault("service_provider", service_provider)
@@ -436,8 +457,7 @@ async def _extract_typed(
         "temperature": 0,
     }
     raw = await client.post_json(CHAT_COMPLETIONS_PATH, json=payload)
-    content_str = raw["choices"][0]["message"]["content"]
-    parsed = json.loads(content_str)
+    parsed = _parse_extract_content(raw, markdown_len=len(parsed_markdown))
     parsed.setdefault("extraction_date", datetime.now(timezone.utc).isoformat())
     parsed.setdefault("service_name", service_name)
     parsed.setdefault("service_provider", service_provider)
