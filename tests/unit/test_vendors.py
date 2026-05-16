@@ -15,15 +15,15 @@ from app.models.vendors import (
 client = TestClient(app)
 
 
-def test_vendors_catalog_has_15_services():
-    assert len(VENDORS) == 15
+def test_vendors_catalog_has_16_services():
+    assert len(VENDORS) == 16
 
 
 def test_vendors_catalog_domain_distribution():
     counts: dict[str, int] = {}
     for meta in VENDORS.values():
         counts[meta["domain"]] = counts.get(meta["domain"], 0) + 1
-    assert counts == {"OTT": 6, "FINANCE": 3, "APP": 1, "AI": 5}
+    assert counts == {"OTT": 6, "FINANCE": 3, "APP": 1, "AI": 5, "INSURANCE": 1}
 
 
 def test_all_slugs_are_kebab_case():
@@ -65,6 +65,10 @@ def test_each_vendor_has_at_least_one_alias():
     ("업스테이지", "upstage"),
     ("뱅크샐러드", "bank-salad"),
     ("banksalad", "bank-salad"),
+    ("캐롯", "carrot"),
+    ("캐롯손해보험", "carrot"),
+    ("캐롯 자동차보험", "carrot"),
+    ("캐롯 해외여행보험", "carrot"),
     ("제미나이", "gemini"),
     ("제미니", "gemini"),
     ("Gemini", "gemini"),
@@ -95,15 +99,16 @@ def test_vendor_domain_returns_enum_value():
     assert vendor_domain("kakao-pay") == "FINANCE"
     assert vendor_domain("claude") == "AI"
     assert vendor_domain("spotify") == "APP"
+    assert vendor_domain("carrot") == "INSURANCE"
     assert vendor_domain("unknown-slug") is None
 
 
-def test_get_vendors_returns_15():
+def test_get_vendors_returns_16():
     r = client.get("/vendors")
     assert r.status_code == 200
     body = r.json()
-    assert body["total"] == 15
-    assert len(body["vendors"]) == 15
+    assert body["total"] == 16
+    assert len(body["vendors"]) == 16
 
 
 def test_get_vendors_each_item_shape():
@@ -111,7 +116,7 @@ def test_get_vendors_each_item_shape():
     body = r.json()
     for v in body["vendors"]:
         assert set(v.keys()) == {"slug", "display_name", "domain", "aliases"}
-        assert v["domain"] in ("OTT", "FINANCE", "APP", "AI")
+        assert v["domain"] in ("OTT", "FINANCE", "APP", "AI", "INSURANCE")
         assert len(v["aliases"]) >= 1
 
 

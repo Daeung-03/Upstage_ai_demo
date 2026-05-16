@@ -13,6 +13,8 @@ E2E / 평가용 실제 약관 PDF·HTML 보관소. 모두 `.gitignore` 대상 �
 | Wavve | `wavve_terms.html` | HTML (서비스 + 유료 결합) | `wavve_golden.json` |
 | Coupang Play | `coupang_play_terms.html` | HTML (이용 기준 + 유료 결합) | `coupang_play_golden.json` |
 | TVING | `tving_terms.html` | HTML (서비스 + 유료 탭 결합) | `tving_golden.json` |
+| 캐롯 자동차보험 | `carrot_auto_terms.pdf` | PDF (Document Parse) | — (보험 golden 미작성) |
+| 캐롯 해외여행보험 | `carrot_travel_terms.pdf` | PDF (Document Parse) | — (보험 golden 미작성) |
 
 ## 추가 방법
 
@@ -43,6 +45,17 @@ SPA(JS 렌더링 필수). Playwright + 모바일 UA로 두 탭(서비스/유료)
     .venv/bin/python -m playwright install chromium
     # 그 후 임시 스크립트로 m.tving.com/guide/term.tving 렌더링
     # → '유료이용약관' 탭 클릭으로 두 번째 문서까지 수집
+
+### 캐롯손해보험 (보험 도메인)
+보험 상품 약관은 보험사가 PDF 로만 배포 → `carrotins.com` 정적 CDN 에서 직접 다운로드:
+
+    .venv/bin/python scripts/fetch_public_terms.py carrot
+
+자동차보험(퍼마일 특약 포함)·해외여행보험 약관 PDF 2건이 `carrot_auto_terms.pdf` /
+`carrot_travel_terms.pdf` 로 저장된다. 약관 개정 시 CDN URL(시행일/seq)이 바뀌어
+다운로드가 404 나면, `fetch_public_terms.py` 의 `CARROT_PRODUCTS` URL 을
+https://www.carrotins.com/desktop/disclosure/sale/ 의 최신 약관으로 갱신한다.
+상품 추가는 `CARROT_PRODUCTS` 에 튜플 1줄 append.
 
 ## 실행
 

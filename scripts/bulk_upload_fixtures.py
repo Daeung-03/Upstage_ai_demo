@@ -1,4 +1,4 @@
-"""HTML fixture 를 `/terms/upload` 엔드포인트로 자동 업로드 (13개; toss/spotify 는 수동).
+"""HTML/PDF fixture 를 `/terms/upload` 엔드포인트로 자동 업로드 (15개; toss/spotify 는 수동).
 
 각 fixture 의 5개 form 필드 (service_name / subscribed_at / effective_date /
 domain / sub_category) 를 미리 매핑해두고 multipart 요청을 전송한다. 파이프라인이
@@ -72,12 +72,30 @@ FIXTURES: list[FixtureSpec] = [
      "sub_category": "PG/결제대행", "subscribed_at": "2025-09-01", "effective_date": "2025-01-01"},
     {"stem": "banksalad",    "service_name": "뱅크샐러드",   "domain": "FINANCE",
      "sub_category": "PFM/자산관리", "subscribed_at": "2025-09-01", "effective_date": "2024-11-15"},
+    # INSURANCE — 캐롯손해보험 상품 약관 (PDF fixture). service_name 은 상품명이지만
+    # vendors.py 의 carrot alias 에 등록돼 vendor_slug=carrot + domain=INSURANCE 로 매핑됨.
+    {"stem": "carrot_auto",   "service_name": "캐롯 자동차보험",   "domain": "INSURANCE",
+     "sub_category": "자동차보험", "subscribed_at": "2025-09-01", "effective_date": "2024-07-01"},
+    {"stem": "carrot_travel", "service_name": "캐롯 해외여행보험", "domain": "INSURANCE",
+     "sub_category": "여행자보험", "subscribed_at": "2025-09-01", "effective_date": "2023-08-10"},
 ]
 
 
-def _resolve_html(stem: str) -> Path | None:
-    p = FIXTURE_DIR / f"{stem}_terms.html"
-    return p if p.exists() else None
+# 확장자 → multipart content-type. .html 우선 — Netflix 처럼 둘 다 있으면
+# parse 단을 우회하는 HTML 을 쓰고, 보험 약관처럼 PDF 만 있으면 PDF 로 fallback.
+_FIXTURE_EXTS: list[tuple[str, str]] = [
+    (".html", "text/html"),
+    (".pdf", "application/pdf"),
+]
+
+
+def _resolve_fixture(stem: str) -> tuple[Path, str] | None:
+    """<stem>_terms.{html,pdf} 중 존재하는 파일 + multipart content-type 반환."""
+    for ext, content_type in _FIXTURE_EXTS:
+        p = FIXTURE_DIR / f"{stem}_terms{ext}"
+        if p.exists():
+            return p, content_type
+    return None
 
 
 async def _upload_one(
@@ -87,9 +105,10 @@ async def _upload_one(
     spec: FixtureSpec,
 ) -> dict:
     """단일 fixture 업로드. 결과 dict 반환 — main 에서 집계."""
-    html_path = _resolve_html(spec["stem"])
-    if html_path is None:
-        return {"fixture": spec["stem"], "ok": False, "error": "html not found"}
+    resolved = _resolve_fixture(spec["stem"])
+    if resolved is None:
+        return {"fixture": spec["stem"], "ok": False, "error": "fixture not found (.html/.pdf)"}
+    fixture_path, content_type = resolved
 
     # data: 5개 form 필드 — None 인 optional 은 생략 (FastAPI Form(None) 매칭).
     data: dict[str, str] = {
@@ -103,7 +122,7 @@ async def _upload_one(
     if spec["effective_date"]:
         data["effective_date"] = spec["effective_date"]
 
-    files = {"file": (html_path.name, html_path.read_bytes(), "text/html")}
+    files = {"file": (fixture_path.name, fixture_path.read_bytes(), content_type)}
     url = f"{base_url.rstrip('/')}/terms/upload"
 
     async with sem:

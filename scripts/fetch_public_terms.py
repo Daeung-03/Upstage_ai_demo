@@ -1,13 +1,15 @@
-"""공개된 약관 페이지에서 텍스트 추출 → data/fixtures/<service>_terms.html 저장.
+"""공개된 약관 페이지/문서 → data/fixtures/<stem>_terms.{html,pdf} 저장.
 
-각 서비스마다 SPA 구조가 달라 fetch 로직 분리.
-HTML 파일은 .gitignore 되어 있어 각 환경에서 이 스크립트로 재현 가능.
+각 서비스마다 SPA 구조가 달라 fetch 로직 분리. 보험 상품 약관처럼 PDF 로만
+배포되는 문서는 바이너리 그대로 저장 (parse.py 의 Document Parse 단이 처리).
+fixture 파일은 .gitignore 되어 있어 각 환경에서 이 스크립트로 재현 가능.
 
 사용:
     .venv/bin/python scripts/fetch_public_terms.py netflix    # (수동: PDF 다운로드 안내만 출력)
     .venv/bin/python scripts/fetch_public_terms.py spotify    # Spotify Korea ToS 자동 추출
     .venv/bin/python scripts/fetch_public_terms.py wavve      # Wavve API 직접 호출
     .venv/bin/python scripts/fetch_public_terms.py claude     # Anthropic consumer + privacy
+    .venv/bin/python scripts/fetch_public_terms.py carrot     # 캐롯손해보험 상품 약관 PDF
     .venv/bin/python scripts/fetch_public_terms.py all        # spotify + wavve
 """
 
@@ -16,6 +18,7 @@ from __future__ import annotations
 import json
 import re
 import sys
+import urllib.error
 import urllib.request
 from pathlib import Path
 
@@ -35,6 +38,26 @@ def _get(url: str) -> bytes:
         if resp.headers.get("Content-Encoding") == "gzip":
             body = gzip.decompress(body)
         return body
+
+
+def _get_pdf(url: str) -> bytes:
+    """PDF 바이너리 다운로드 (timeout 60s — 보험 약관 PDF 가 수 MB).
+
+    404 등 HTTP 오류나 PDF 가 아닌 응답은 URL 갱신 안내와 함께 RuntimeError 로
+    승격 — 호출자가 disclosure 페이지에서 최신 URL 을 다시 확인하도록.
+    """
+    req = urllib.request.Request(url, headers={"User-Agent": UA})
+    try:
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            body = resp.read()
+    except urllib.error.HTTPError as exc:
+        raise RuntimeError(
+            f"{url} → HTTP {exc.code} (약관 개정으로 URL 이 바뀌었을 수 있음 — "
+            "disclosure 페이지에서 최신 PDF URL 확인 필요)"
+        ) from exc
+    if not body.startswith(b"%PDF-"):
+        raise RuntimeError(f"{url} → PDF 가 아닌 응답 (URL 변경 의심)")
+    return body
 
 
 def fetch_spotify() -> None:
@@ -308,6 +331,51 @@ def fetch_claude() -> None:
     print(f"  → claude_terms.html ({len(docs)} docs, total {total:,} chars)")
 
 
+# 캐롯손해보험 상품 약관 PDF — 정적 CDN(carrotins.com/cdn/dis/doc/pdf/disclosure).
+# URL 에 약관 시행일/seq 가 박혀 있어 개정 시 바뀐다 — 다운로드가 404 면
+# https://www.carrotins.com/desktop/disclosure/sale/ 에서 최신 URL 을 확인해 갱신.
+# sub_category 는 RECOMMENDED_SUB_CATEGORIES[INSURANCE] vocab 과 일치시킬 것.
+CARROT_PRODUCTS: list[dict[str, str]] = [
+    {
+        "stem": "carrot_auto",
+        "name": "캐롯 자동차보험",  # 퍼마일 특약 포함 (개인용 약관)
+        "sub_category": "자동차보험",
+        "url": (
+            "https://www.carrotins.com/cdn/dis/doc/pdf/disclosure/car/"
+            "CA00044001/terms/CA00044001_20240701_01.pdf"
+        ),
+    },
+    {
+        "stem": "carrot_travel",
+        "name": "캐롯 해외여행보험",
+        "sub_category": "여행자보험",
+        "url": (
+            "https://www.carrotins.com/cdn/dis/doc/pdf/disclosure/general/"
+            "FA00045001/terms/FA00045001_20230810_01.pdf"
+        ),
+    },
+]
+
+
+def fetch_carrot() -> None:
+    """캐롯손해보험 상품 약관 PDF → data/fixtures/<stem>_terms.pdf.
+
+    보험 도메인 fixture 입력. 보험 상품 약관은 보험사가 PDF 로만 배포하므로
+    HTML 추출 대신 바이너리 그대로 저장 — parse.py 의 Document Parse 단이
+    PDF 를 처리한다 (Netflix fixture 와 동일 경로).
+
+    한 상품이라도 실패하면 즉시 중단 (부분 성공으로 stale fixture 가 섞이는 것 방지).
+    """
+    for product in CARROT_PRODUCTS:
+        body = _get_pdf(product["url"])
+        out = FIXTURE_DIR / f"{product['stem']}_terms.pdf"
+        out.write_bytes(body)
+        print(
+            f"  → {out.name} ({product['name']}, "
+            f"sub_category={product['sub_category']}, {len(body):,} bytes)"
+        )
+
+
 def main():
     if len(sys.argv) < 2:
         print(__doc__)
@@ -339,6 +407,9 @@ def main():
     elif service == "deepseek":
         print("Fetching DeepSeek ToS + Privacy Policy...")
         fetch_deepseek()
+    elif service == "carrot":
+        print("Fetching 캐롯손해보험 상품 약관 PDF...")
+        fetch_carrot()
     elif service == "all":
         print("Fetching Spotify + Wavve...")
         fetch_spotify()
