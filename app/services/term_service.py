@@ -19,14 +19,40 @@ def _split_chunks(text: str, size: int = CHUNK_SIZE) -> list[str]:
     return [text[i:i+size] for i in range(0, len(text), size)]
 
 
-def _split_clauses(text: str) -> list[str]:
+CLAUSE_MAX_CHARS = 2000
+
+
+def _split_clauses(text: str, max_chars: int = CLAUSE_MAX_CHARS) -> list[str]:
     """raw_text 를 *조항 단위* 로 split. Document Parse markdown 의 빈 줄 기준.
 
     process_version_update 의 semantic diff 와 compute_user_impacted_diff 가
     공유. token chunking (_split_chunks) 과 다름 — 임베딩 기반 의미 비교는
     *의미 단위* 가 필요해 빈 줄 기준이 더 정확.
+
+    빈 줄(`\\n\\n`)이 드문 대형 문서는 한 블록이 수만 자가 될 수 있다. 그러면
+    (a) 임베딩 4000-토큰 한도에 걸려 truncate 되고 (b) 조항 단위 cosine 비교가
+    문서 전체 단위 비교로 뭉개져 semantic diff 가 무의미해진다 (실제 변경을
+    "phrasing_only" 로 오분류). 따라서 max_chars 초과 블록은 줄 단위로 다시
+    묶어 작은 조각으로 쪼갠다.
     """
-    return [c.strip() for c in (text or "").split("\n\n") if c.strip()]
+    out: list[str] = []
+    for block in (text or "").split("\n\n"):
+        block = block.strip()
+        if not block:
+            continue
+        if len(block) <= max_chars:
+            out.append(block)
+            continue
+        buf = ""
+        for line in block.split("\n"):
+            if buf and len(buf) + len(line) + 1 > max_chars:
+                out.append(buf.strip())
+                buf = line
+            else:
+                buf = f"{buf}\n{line}" if buf else line
+        if buf.strip():
+            out.append(buf.strip())
+    return out
 
 
 # ── AnalysisResult → DB 저장용 변환 헬퍼 ──────────────────

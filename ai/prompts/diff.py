@@ -105,8 +105,12 @@ USER_IMPACT_SYSTEM_PROMPT = """\
    - 영향의 *체감 정도* (높음/중간/낮음/영향 없음)
 4. 사용자 컨텍스트가 빈약하면 (예: subscribed_at 만 있고 plan 없음) 가능한 범위에서만
    진술하고 추측 금지.
-5. semantic_diff_summary 가 "phrasing_only 만 N건" 같이 실질 변경 없음을 시사하면
-   user_impact 도 "실질 영향 없음" 으로 작성.
+5. semantic_diff_summary 는 임베딩 기반 *참고 힌트* 일 뿐이며 부정확할 수 있다
+   (특히 문서가 길거나 조항 분할이 거친 경우). **최종 판단은 반드시 아래 OLD/NEW
+   약관 본문을 직접 대조해서** 내릴 것. 본문에 신설·삭제·수치 변경 조항이 보이면
+   semantic_diff_summary 가 "변경 없음" 을 시사하더라도 그 변경을 반영하라.
+   본문 대조 결과와 semantic 힌트가 모두 실질 변경 없음을 가리킬 때에만
+   user_impact 를 "실질 영향 없음" 으로 작성한다.
 6. **citation 절대 만들지 말 것**. user_impact 는 자유 문장 (citation 필드 없음).
 
 JSON 외 다른 텍스트 절대 출력 금지.
