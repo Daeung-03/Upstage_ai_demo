@@ -76,6 +76,9 @@ def compute_calendar_events(
 ) -> list[dict]:
     """SubscriptionTerms + 사용자 가입일 → CalendarEvent 후보 dict 리스트.
 
+    비-subscription terms(InsuranceTerms/FinanceTerms 등)는 free_trial/pricing
+    필드가 없어 getattr 가드에 모두 걸러지고 SUBSCRIBED_AT 만 반환된다 (크래시 없음).
+
     가입일이 없으면 무료 체험 종료/해지 마감/다음 결제는 계산 불가 → 빈 리스트.
     절대 날짜가 약관 본문에 나오는 케이스(프로모션 종료 등)는 향후 별도
     LLM-기반 추출로 보강 가능 — 현재는 구조화된 데이터만 사용.

@@ -8,7 +8,6 @@ from sqlalchemy import delete, select, update
 from app.models.term import Term, TermVersion, TermChunk, TermClause
 from app.models.calendar import CalendarEvent
 from app.models.chat import ChatSession
-from app.models.enums import ClauseType, EventType
 from app.models.vendors import canonical_vendor_slug, vendor_domain
 from app.services import ai_client
 from app.services.calendar_service import compute_calendar_events
@@ -221,6 +220,16 @@ def _get_domain(result) -> str:
     return "ETC"
 
 
+# TermDomain(업로드 폼 / vendor 카탈로그) → 파이프라인 추출기 도메인.
+# 전용 추출기가 없는 도메인(APP/MEDICAL/TELECOM/ETC)은 subscription 으로 fallback.
+_PIPELINE_DOMAIN: dict[str, str] = {
+    "OTT": "subscription",
+    "FINANCE": "finance",
+    "INSURANCE": "insurance",
+    "AI": "ai",
+}
+
+
 # ── process_upload ────────────────────────────────────────
 async def process_upload(
     db: AsyncSession,
@@ -234,25 +243,30 @@ async def process_upload(
     effective_date: date | None = None,
 ) -> tuple[Term, TermVersion]:
 
-    # 1. AI 파이프라인 (단일 호출로 통합)
+    # 도메인 결정 — vendor 카탈로그 매핑 우선, 없으면 업로드 폼 domain.
+    # 파이프라인 추출기 분기와 Term.domain 컬럼에 같은 도메인을 쓴다.
+    # 매칭 안 되면 vendor_slug=NULL + 사용자 명시 domain 그대로.
+    resolved_vendor = canonical_vendor_slug(service_name)
+    resolved_domain = (
+        (vendor_domain(resolved_vendor) if resolved_vendor else None)
+        or domain.upper()
+    )
+
+    # 1. AI 파이프라인 — resolved_domain 을 파이프라인 도메인으로 매핑해 추출기 분기.
+    # domain 을 안 넘기면 run_full_pipeline 기본값(subscription)이 적용돼 보험/금융
+    # 약관까지 OTT 스키마로 잘못 추출된다.
     result = await ai_client.run_full_pipeline(
         file_bytes=file_bytes,
         filename=file_url.split("/")[-1],
         service_name=service_name,
+        domain=_PIPELINE_DOMAIN.get(resolved_domain, "subscription"),
     )
 
     raw_text = _get_raw_text(result)
-    domain   = _get_domain(result)
     clauses  = _parse_result_to_clauses(result)
     chunks   = _split_chunks(raw_text)
     vectors  = await ai_client.embed_chunks(chunks)
     dates    = compute_calendar_events(result.terms, subscribed_at)
-
-    # Vendor 카탈로그 자동 매핑 — 15 서비스 중 하나로 인식되면 canonical slug 저장,
-    # domain 도 vendor 가 명시한 값으로 override (정책 b: vendor mapping 우선).
-    # 매칭 안 되면 vendor_slug=NULL + 사용자 명시 domain 그대로.
-    resolved_vendor = canonical_vendor_slug(service_name)
-    resolved_domain = (vendor_domain(resolved_vendor) if resolved_vendor else None) or domain.upper()
 
     # 2. Term 저장
     term = Term(
