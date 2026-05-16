@@ -107,6 +107,45 @@ MCQ 는 *"주어진 보기 중 고르기"*, 우리 테스트는 *"장문 약관�
 
 전체 표 + raw measurements: [`data/experiments/trimmed_mean_drop1_20260515_234743.md`](data/experiments/trimmed_mean_drop1_20260515_234743.md).
 
+### 벤더별 정확도 해석 — 왜 이 점수인가
+
+대략 두 축으로 읽으면 대부분 설명된다:
+
+1. **스키마-도메인 fit** — `SubscriptionTerms` 7섹션은 OTT/구독 약관을 기준으로
+   설계됐다. 그 약관이 스키마에 잘 맞을수록 점수 상한이 높다.
+2. **semantic − strict 격차** — 격차가 크면(예: disney +11%p) "값은 맞는데 표현이
+   달라" strict 가 과소평가된 것, 작으면(gemini +4%p) 진짜 누락·오류다.
+
+**높음 (🟢)**
+- **netflix 71.9%** — `SubscriptionTerms` 스키마가 사실상 이런 OTT 약관을 모델로
+  설계됨 + 약관이 짧고 조항 구조가 정형적 → parse·extract 오류 누적이 가장 적다.
+- **kakaopay 68.1% / toss 65.3%** — 전자금융거래법 강행규정이 가격·해지·분쟁
+  조항의 위치·표현을 표준화 → 추출기가 예측 가능한 자리에서 찾는다. toss 는
+  std ±2.7 로 분산도 가장 작다.
+
+**중간**
+- **spotify 64.5% / disney_plus 59.2%** — 전형적 OTT 라 스키마 fit 은 좋다.
+  semantic 이 strict 보다 +10%p 이상(disney 59→70) → 값은 맞고 표현만 달라
+  strict 가 과소평가, 실제 추출 품질은 점수보다 높다.
+- **wavve 62.0%** — 가격·환불 조항이 서비스약관과 유료약관에 분산. fetcher 가
+  두 문서를 결합해야 이 점수가 유지된다(미결합 시 pricing 실측 17%→50%).
+- **tving 57.3%** — OTT 지만 SPA(JS 렌더링) 2개 탭 결합 소스라 parse 단계
+  노이즈가 더 낀다.
+- **banksalad 58.3%** — fintech 지만 3사 중 최저. PFM/자산관리 성격이라
+  전자금융 표준조항 비중이 kakaopay/toss 보다 낮다(해석).
+- **gpt 56.3% / claude 56.0% / deepseek 53.2%** — AI 약관. 학습 데이터 사용·
+  출력물 IP·prompt 옵트아웃 같은 핵심 필드가 `SubscriptionTerms` 에 아예 없어
+  구조적 상한이 낮다. claude 는 semantic 65%(+9%p) — 값은 잡지만 담을 칸이
+  없어 strict 에서 손해.
+
+**낮음 (🔴)**
+- **watcha 51.2% / coupang_play 47.2%** — OTT 최하위. semantic 회복폭이 +6%p
+  안팎으로 작아 표현 문제가 아니라 진짜 누락·오류다. coupang_play 는 이용기준+
+  유료 iframe 결합 소스라 parse 노이즈도 가중.
+- **upstage 46.3% / gemini 40.3%** — AI 한국어. 위 AI 스키마 미스핏이 근본
+  원인. gemini 는 fixture 가 437KB(ToS+개인정보+Gemini Apps 3문서 결합)로 가장
+  커, 장문 parse 노이즈가 미스핏 위에 누적 — semantic 회복도 +4%p 로 최소.
+
 ### 관찰
 
 - **단일 winner 보고치 (이전 README): 55.3% strict / 60.5% sem 은 자연 분산의 한쪽 꼬리**. 실제 trimmed mean 은 +1.8/+2.8%p 더 높음.
