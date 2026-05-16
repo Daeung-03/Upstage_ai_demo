@@ -4,7 +4,8 @@ Single source of truth. 프론트는 `GET /vendors` 로 받아서 카테고리 �
 사용. 백엔드는 업로드 시 `service_name` 을 alias 로 보고 canonical slug + domain
 자동 매핑.
 
-총 15 vendor: OTT 5 + FINANCE 3 + APP 6 + (그 외 = ETC, vendor_slug=None).
+총 16 vendor: OTT 6 + FINANCE 3 + APP 1 + AI 5 + INSURANCE 1
+(그 외 = ETC, vendor_slug=None).
 
 slug 규칙: 소문자 + `-` 구분 (kebab-case). 프론트의 NAME_ALIASES 와 동일.
 """
@@ -99,6 +100,18 @@ VENDORS: dict[str, VendorDef] = {
         "display_name": "Upstage",
         "aliases": ["업스테이지", "upstage"],
         "domain": "AI",
+    },
+    # ── INSURANCE (1) ───────────────────────────────────
+    # 캐롯손해보험 — 단일 보험사 vendor. 상품(자동차/해외여행)별 약관은 같은
+    # vendor_slug 아래 sub_category 로 구분. 상품명도 alias 에 포함해 상품명으로
+    # 업로드해도 canonical slug 로 매핑되게 함.
+    "carrot": {
+        "display_name": "캐롯손해보험",
+        "aliases": [
+            "캐롯", "캐롯손해보험", "캐롯손보", "carrot",
+            "캐롯 자동차보험", "캐롯 해외여행보험",
+        ],
+        "domain": "INSURANCE",
     },
 }
 
