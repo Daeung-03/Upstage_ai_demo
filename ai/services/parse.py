@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import io
 import mimetypes
 import re
 from html.parser import HTMLParser
 
 from pydantic import BaseModel
+from pypdf import PdfReader, PdfWriter
 
 from ai.services.upstage import UpstageClient
 
@@ -16,6 +18,9 @@ DEFAULT_CONTENT_TYPE = "application/pdf"
 # 가능한 값: "standard" (기본 OCR), "enhanced" (VLM), "auto" (자동 선택).
 DEFAULT_PARSE_MODE = "enhanced"
 HTML_EXTS = (".html", ".htm")
+# Upstage Document Parse 동기 엔드포인트는 1회 100페이지 한도(초과 시 413).
+# 100p 초과 PDF 는 _split_pdf 로 ≤100p 청크로 나눠 호출 후 결과를 병합한다.
+MAX_SYNC_PAGES = 100
 
 # heading 시작 토큰이 단독으로 한 줄 차지하면 (빈 heading) 정리 시 제거.
 # class 본문에서 lookup 되므로 class 위에 정의해야 forward-reference 회피.
@@ -142,6 +147,47 @@ def _parse_html_directly(file_bytes: bytes) -> DocumentParseResult:
     return DocumentParseResult(markdown=markdown, elements=[element])
 
 
+def _split_pdf(file_bytes: bytes, chunk_pages: int) -> list[bytes]:
+    """PDF 를 chunk_pages 페이지 단위로 분할.
+
+    페이지 수가 chunk_pages 이하면 [원본] 그대로 반환. PDF 가 아니거나 손상돼
+    PdfReader 가 실패하면 예외 전파 — 호출자가 단일 호출로 fallback.
+    """
+    reader = PdfReader(io.BytesIO(file_bytes))
+    total = len(reader.pages)
+    if total <= chunk_pages:
+        return [file_bytes]
+    chunks: list[bytes] = []
+    for start in range(0, total, chunk_pages):
+        writer = PdfWriter()
+        for i in range(start, min(start + chunk_pages, total)):
+            writer.add_page(reader.pages[i])
+        buf = io.BytesIO()
+        writer.write(buf)
+        chunks.append(buf.getvalue())
+    return chunks
+
+
+async def _parse_one(
+    client: UpstageClient, file_bytes: bytes, filename: str, mode: str
+) -> tuple[str, list[dict]]:
+    """Document Parse 단일 호출 → (markdown, elements_raw)."""
+    files = {"document": (filename, file_bytes, _guess_content_type(filename))}
+    data = {
+        "model": MODEL,
+        "output_formats": '["markdown"]',
+        "coordinates": "true",
+        "ocr": "auto",
+        "mode": mode,
+    }
+    raw = await client.post_multipart(DOCUMENT_PARSE_PATH, files=files, data=data)
+    markdown = (raw.get("content") or {}).get("markdown", "")
+    elements_raw = raw.get("elements") or []
+    if not markdown and not elements_raw:
+        raise ValueError("Document Parse returned empty content")
+    return markdown, elements_raw
+
+
 async def parse_document(
     client: UpstageClient,
     *,
@@ -152,38 +198,36 @@ async def parse_document(
     """파일을 markdown + elements로 변환.
 
     - PDF/이미지: Upstage Document Parse 호출 (OCR + layout). 좌표는 0-1 normalized.
+      100페이지 초과 PDF 는 동기 엔드포인트 한도(100p) 때문에 ≤100p 청크로 나눠
+      호출하고, markdown 을 이어붙이며 element.page 를 청크 오프셋만큼 보정한다.
     - HTML: 직접 텍스트 추출 (Document Parse 미지원 + 이미 구조화됨).
     mode 인자는 Document Parse 모드 (HTML 경로에서는 무시됨).
     """
     if filename.lower().endswith(HTML_EXTS):
         return _parse_html_directly(file_bytes)
 
-    files = {"document": (filename, file_bytes, _guess_content_type(filename))}
-    data = {
-        "model": MODEL,
-        "output_formats": '["markdown"]',
-        "coordinates": "true",
-        "ocr": "auto",
-        "mode": mode,
-    }
-    raw = await client.post_multipart(DOCUMENT_PARSE_PATH, files=files, data=data)
+    try:
+        chunks = _split_pdf(file_bytes, MAX_SYNC_PAGES)
+    except Exception:
+        # PDF 가 아니거나(이미지 등) 손상 → 분할 없이 단일 호출, API 가 판정.
+        chunks = [file_bytes]
 
-    markdown = (raw.get("content") or {}).get("markdown", "")
-    elements_raw = raw.get("elements") or []
-
-    if not markdown and not elements_raw:
-        raise ValueError("Document Parse returned empty content")
-
-    elements = [
-        ParsedElement(
-            id=e["id"],
-            page=e["page"],
-            category=e["category"],
-            # Upstage 응답은 content.markdown 에 실제 텍스트를 담고, content.text 는
-            # 항상 빈 문자열로 비워둠. markdown 우선, 비면 text 로 fallback (방어용).
-            text=_element_text(e.get("content")),
-            bbox=_coords_to_bbox(e.get("coordinates") or []),
-        )
-        for e in elements_raw
-    ]
-    return DocumentParseResult(markdown=markdown, elements=elements)
+    markdown_parts: list[str] = []
+    elements: list[ParsedElement] = []
+    for idx, chunk in enumerate(chunks):
+        page_offset = idx * MAX_SYNC_PAGES
+        chunk_markdown, elements_raw = await _parse_one(client, chunk, filename, mode)
+        markdown_parts.append(chunk_markdown)
+        for e in elements_raw:
+            elements.append(
+                ParsedElement(
+                    id=len(elements) + 1,  # 청크 병합 시 id 재부여 (1-base 연속)
+                    page=e["page"] + page_offset,
+                    category=e["category"],
+                    # Upstage 응답은 content.markdown 에 실제 텍스트를 담고,
+                    # content.text 는 항상 빈 문자열. markdown 우선, 비면 text fallback.
+                    text=_element_text(e.get("content")),
+                    bbox=_coords_to_bbox(e.get("coordinates") or []),
+                )
+            )
+    return DocumentParseResult(markdown="\n\n".join(markdown_parts), elements=elements)
